@@ -123,6 +123,7 @@ const els = {
   clientName: document.querySelector("#clientName"),
   inspectorName: document.querySelector("#inspectorName"),
   startBtn: document.querySelector("#startBtn"),
+  backToWelcomeBtn: document.querySelector("#backToWelcomeBtn"),
   areaName: document.querySelector("#areaName"),
   areaType: document.querySelector("#areaType"),
   addAreaBtn: document.querySelector("#addAreaBtn"),
@@ -490,6 +491,10 @@ function addArea(name, type) {
 els.startBtn.addEventListener("click", () => {
   updateProjectFields();
   setScreen("rooms", { scroll: true });
+});
+
+els.backToWelcomeBtn.addEventListener("click", () => {
+  setScreen("welcome", { scroll: true });
 });
 
 els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));

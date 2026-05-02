@@ -178,6 +178,10 @@ select {
   width: 100%;
 }
 
+.back-btn {
+  margin-bottom: 12px;
+}
+
 .inline-badge {
   padding: 8px 12px;
   border-radius: 999px;
