@@ -14,6 +14,9 @@ const baseChecks = {
     { code: "2.1.4", name: "גבס", category: "גמר פנים" },
     { code: "2.1.5", name: "מדרגות וגמרים", category: "גמר פנים" }
   ],
+  wetRoomFinishes: [
+    { code: "2.1.4W", name: "חיפוי", category: "גמר פנים" }
+  ],
   openingsDoors: [
     { code: "3.1.1", name: "בדיקת חלונות", category: "פתחים ודלתות" },
     { code: "3.1.2", name: "דלתות", category: "פתחים ודלתות" },
@@ -51,7 +54,7 @@ const baseChecks = {
 
 const checkSets = {
   dry: [
-    ...baseChecks.structureEnvelope,
+    ...baseChecks.structureEnvelope.filter((check) => check.code !== "1.1.5"),
     ...baseChecks.interiorFinishes.filter((check) => check.code !== "2.1.5"),
     ...baseChecks.openingsDoors,
     ...baseChecks.electricityCommunication,
@@ -60,6 +63,7 @@ const checkSets = {
   wet: [
     ...baseChecks.structureEnvelope.filter((check) => check.code !== "1.1.4"),
     ...baseChecks.interiorFinishes.filter((check) => check.code !== "2.1.5"),
+    ...baseChecks.wetRoomFinishes,
     ...baseChecks.openingsDoors,
     ...baseChecks.plumbingDrainage,
     ...baseChecks.electricityCommunication,
