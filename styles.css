@@ -200,6 +200,7 @@ select {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  box-shadow: inset 0 0 0 1px transparent;
 }
 
 .room-pick.active {
@@ -227,8 +228,18 @@ select {
   color: #8a5535;
 }
 
+.room-pick.status-pending {
+  background: linear-gradient(180deg, #fffaf3, #fff);
+  border-color: rgba(194, 120, 79, 0.4);
+}
+
 .room-pick.status-progress .room-pick-status {
   color: var(--accent);
+}
+
+.room-pick.status-progress {
+  background: linear-gradient(180deg, rgba(24, 90, 97, 0.12), #fff);
+  border-color: rgba(24, 90, 97, 0.45);
 }
 
 .room-pick.status-complete .room-pick-status,
@@ -236,9 +247,31 @@ select {
   color: var(--ok);
 }
 
+.room-pick.status-complete {
+  background: linear-gradient(180deg, rgba(42, 127, 98, 0.12), #fff);
+  border-color: rgba(42, 127, 98, 0.35);
+}
+
 .room-pick.status-locked {
   border-color: rgba(42, 127, 98, 0.5);
-  background: rgba(42, 127, 98, 0.08);
+  background: linear-gradient(180deg, rgba(42, 127, 98, 0.2), rgba(42, 127, 98, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(42, 127, 98, 0.18);
+}
+
+.room-pick.active.status-pending {
+  background: linear-gradient(180deg, rgba(194, 120, 79, 0.2), #fff9f2);
+}
+
+.room-pick.active.status-progress {
+  background: linear-gradient(180deg, rgba(24, 90, 97, 0.2), #f7fbfb);
+}
+
+.room-pick.active.status-complete {
+  background: linear-gradient(180deg, rgba(42, 127, 98, 0.18), #f8fcfa);
+}
+
+.room-pick.active.status-locked {
+  background: linear-gradient(180deg, rgba(42, 127, 98, 0.26), #f3faf6);
 }
 
 .compact-panel {
