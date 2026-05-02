@@ -515,11 +515,12 @@ function renderSummaryReports() {
 function loadState() {
   const raw = localStorage.getItem(storageKey);
   if (!raw) {
+    state.currentScreen = "welcome";
     state.areas = buildPresetAreas();
     return;
   }
   const parsed = JSON.parse(raw);
-  state.currentScreen = parsed.currentScreen || "welcome";
+  state.currentScreen = "welcome";
   state.activeInspectionAreaId = parsed.activeInspectionAreaId || null;
   state.propertyName = parsed.propertyName || "";
   state.propertyAddress = parsed.propertyAddress || "";
