@@ -112,6 +112,7 @@ const state = {
   propertyAddress: "",
   clientName: "",
   inspectorName: "",
+  activeInspectionAreaId: null,
   areas: []
 };
 
@@ -130,6 +131,9 @@ const els = {
   addAreaBtn: document.querySelector("#addAreaBtn"),
   resetBtn: document.querySelector("#resetBtn"),
   printBtn: document.querySelector("#printBtn"),
+  prevAreaBtn: document.querySelector("#prevAreaBtn"),
+  nextAreaBtn: document.querySelector("#nextAreaBtn"),
+  currentAreaIndicator: document.querySelector("#currentAreaIndicator"),
   navButtons: [...document.querySelectorAll(".nav-btn")],
   screens: [...document.querySelectorAll(".screen")],
   roomsSelection: document.querySelector("#roomsSelection"),
@@ -208,6 +212,27 @@ function buildPresetAreas() {
 
 function selectedAreas() {
   return state.areas.filter((area) => area.selected);
+}
+
+function ensureActiveInspectionArea() {
+  const selected = selectedAreas();
+  if (!selected.length) {
+    state.activeInspectionAreaId = null;
+    return null;
+  }
+  const current = selected.find((area) => area.id === state.activeInspectionAreaId);
+  if (current) return current;
+  state.activeInspectionAreaId = selected[0].id;
+  return selected[0];
+}
+
+function moveInspectionArea(direction) {
+  const selected = selectedAreas();
+  if (!selected.length) return;
+  const index = Math.max(0, selected.findIndex((area) => area.id === state.activeInspectionAreaId));
+  const nextIndex = Math.min(selected.length - 1, Math.max(0, index + direction));
+  state.activeInspectionAreaId = selected[nextIndex].id;
+  render({ preserveScroll: false });
 }
 
 function normalizeNumber(value) {
@@ -339,7 +364,18 @@ function renderRoomSelection() {
 
 function renderAreas() {
   els.areasContainer.innerHTML = "";
-  selectedAreas().forEach((area) => {
+  const activeArea = ensureActiveInspectionArea();
+  const selected = selectedAreas();
+  const activeIndex = activeArea ? selected.findIndex((area) => area.id === activeArea.id) : -1;
+  els.currentAreaIndicator.textContent = activeArea ? `${activeIndex + 1} / ${selected.length}` : "0 / 0";
+  els.prevAreaBtn.disabled = activeIndex <= 0;
+  els.nextAreaBtn.disabled = activeIndex === -1 || activeIndex >= selected.length - 1;
+  if (!activeArea) {
+    els.areasContainer.innerHTML = `<div class="empty-state">בחר לפחות חדר אחד במסך החדרים כדי להתחיל בדיקה.</div>`;
+    return;
+  }
+
+  [activeArea].forEach((area) => {
     const node = els.areaTemplate.content.firstElementChild.cloneNode(true);
     node.querySelector(".area-title").textContent = area.name;
     node.querySelector(".area-type").textContent = areaTypeLabels[area.type];
@@ -470,6 +506,7 @@ function loadState() {
   }
   const parsed = JSON.parse(raw);
   state.currentScreen = parsed.currentScreen || "welcome";
+  state.activeInspectionAreaId = parsed.activeInspectionAreaId || null;
   state.propertyName = parsed.propertyName || "";
   state.propertyAddress = parsed.propertyAddress || "";
   state.clientName = parsed.clientName || "";
@@ -520,7 +557,16 @@ els.backToWelcomeBtn.addEventListener("click", () => {
 });
 
 els.continueToInspectionBtn.addEventListener("click", () => {
+  ensureActiveInspectionArea();
   setScreen("inspection", { scroll: true });
+});
+
+els.prevAreaBtn.addEventListener("click", () => {
+  moveInspectionArea(-1);
+});
+
+els.nextAreaBtn.addEventListener("click", () => {
+  moveInspectionArea(1);
 });
 
 els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
