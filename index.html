@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inspector App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">IN</div>
+        <div>
+          <h1>Inspector</h1>
+          <p>מערכת בדיקות הנדסיות לנכס</p>
+        </div>
+      </div>
+
+      <section class="panel">
+        <h2>פרטי הדוח</h2>
+        <label>
+          <span>שם הנכס</span>
+          <input id="propertyName" type="text" placeholder="למשל: דירה 7, רחוב הרצל 12">
+        </label>
+        <label>
+          <span>כתובת</span>
+          <input id="propertyAddress" type="text" placeholder="הזן כתובת">
+        </label>
+        <label>
+          <span>שם הלקוח</span>
+          <input id="clientName" type="text" placeholder="הזן שם לקוח">
+        </label>
+        <label>
+          <span>שם הבודק</span>
+          <input id="inspectorName" type="text" placeholder="הזן שם בודק">
+        </label>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>הוספת חדר / אזור</h2>
+          <button id="addAreaBtn" class="ghost-btn" type="button">הוסף</button>
+        </div>
+        <label>
+          <span>שם החדר / האזור</span>
+          <input id="areaName" type="text" placeholder="למשל: סלון, מטבח, חדר רחצה הורים">
+        </label>
+        <label>
+          <span>סוג אזור</span>
+          <select id="areaType">
+            <option value="dry">חדר יבש</option>
+            <option value="wet">חדר רטוב</option>
+            <option value="outdoor">חוץ / מרפסת</option>
+          </select>
+        </label>
+        <div class="quick-adds">
+          <button class="chip" type="button" data-area-name="סלון" data-area-type="dry">סלון</button>
+          <button class="chip" type="button" data-area-name="מטבח" data-area-type="wet">מטבח</button>
+          <button class="chip" type="button" data-area-name="חדר רחצה" data-area-type="wet">חדר רחצה</button>
+          <button class="chip" type="button" data-area-name="חדר שינה" data-area-type="dry">חדר שינה</button>
+          <button class="chip" type="button" data-area-name="מרפסת" data-area-type="outdoor">מרפסת</button>
+        </div>
+      </section>
+
+      <section class="panel panel-accent">
+        <h2>דוח מסכם</h2>
+        <div id="summaryStats" class="summary-stats"></div>
+        <button id="printBtn" class="primary-btn" type="button">הדפס / שמור כ-PDF</button>
+      </section>
+    </aside>
+
+    <main class="main-content">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">בדיקות לפי אזורים</p>
+          <h2>צ'קליסט דינמי לדירה חדשה או יד שנייה</h2>
+          <p>
+            בחר חדרים, מלא סטטוסים לכל בדיקה, וקבל דוח מסכם עם ממצאים לפי חומרה, אזור וסוג ליקוי.
+          </p>
+        </div>
+        <div class="hero-card">
+          <strong>סטים אוטומטיים</strong>
+          <span>חדרים יבשים, חדרים רטובים, אזורי חוץ</span>
+        </div>
+      </section>
+
+      <section class="report-header panel">
+        <div>
+          <h3 id="reportTitle">דוח בדיקה הנדסית</h3>
+          <p id="reportMeta">התחל בהזנת פרטי הנכס והוספת אזורים לבדיקה.</p>
+        </div>
+      </section>
+
+      <section class="panel live-summary">
+        <div class="panel-head">
+          <h2>ממצאים מרכזיים</h2>
+          <button id="resetBtn" class="ghost-btn" type="button">איפוס טופס</button>
+        </div>
+        <div id="issueSummary" class="issue-summary"></div>
+      </section>
+
+      <section id="areasContainer" class="areas-grid"></section>
+    </main>
+  </div>
+
+<template id="areaTemplate">
+    <article class="area-card">
+      <header class="area-head">
+        <div>
+          <p class="area-type"></p>
+          <h3 class="area-title"></h3>
+        </div>
+        <button class="delete-btn" type="button">הסר</button>
+      </header>
+      <section class="dimensions-box">
+        <div class="dimensions-head">
+          <strong>מידות החדר</strong>
+          <span class="dimension-badge">ממתין להזנה</span>
+        </div>
+        <div class="dimensions-grid">
+          <label>
+            <span>רוחב לפי תכנית (מ')</span>
+            <input class="dimension-input" data-dimension-group="plan" data-dimension-field="width" type="number" min="0" step="0.01" placeholder="0.00">
+          </label>
+          <label>
+            <span>אורך לפי תכנית (מ')</span>
+            <input class="dimension-input" data-dimension-group="plan" data-dimension-field="length" type="number" min="0" step="0.01" placeholder="0.00">
+          </label>
+          <label>
+            <span>רוחב בפועל (מ')</span>
+            <input class="dimension-input" data-dimension-group="actual" data-dimension-field="width" type="number" min="0" step="0.01" placeholder="0.00">
+          </label>
+          <label>
+            <span>אורך בפועל (מ')</span>
+            <input class="dimension-input" data-dimension-group="actual" data-dimension-field="length" type="number" min="0" step="0.01" placeholder="0.00">
+          </label>
+        </div>
+        <p class="dimension-note">הזינו מידות מהתכנית ומהמדידה בפועל לקבלת חיווי צבע אוטומטי.</p>
+      </section>
+      <div class="checks-list"></div>
+    </article>
+  </template>
+
+  <template id="checkTemplate">
+    <div class="check-row">
+      <div class="check-info">
+        <strong class="check-name"></strong>
+        <small class="check-category"></small>
+      </div>
+      <div class="check-controls">
+        <select class="status-select">
+          <option value="pending">לבדיקה</option>
+          <option value="ok">תקין</option>
+          <option value="issue">ליקוי</option>
+          <option value="na">לא רלוונטי</option>
+        </select>
+        <select class="severity-select">
+          <option value="low">נמוכה</option>
+          <option value="medium">בינונית</option>
+          <option value="high">גבוהה</option>
+        </select>
+        <input class="note-input" type="text" placeholder="הערה / ממצא">
+      </div>
+    </div>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
