@@ -115,7 +115,7 @@ const state = {
   areas: []
 };
 
-const storageKey = "inspector-mobile-state-v1";
+const storageKey = "inspector-mobile-state-v2";
 
 const els = {
   propertyName: document.querySelector("#propertyName"),
@@ -157,34 +157,17 @@ function uniqueChecks(items) {
 }
 
 function createDimensions() {
-  return {
-    planWidth: "",
-    planLength: "",
-    actualWidth: "",
-    actualLength: ""
-  };
+  return { planWidth: "", planLength: "", actualWidth: "", actualLength: "" };
 }
 
 function inferAreaType(name) {
-  if (
-    name.includes("רחצה") ||
-    name.includes("מטבח") ||
-    name.includes("ש.אורחים") ||
-    name.includes("שרות")
-  ) {
-    return "wet";
-  }
-
-  if (name.includes("מרפסת") || name.includes("גג")) {
-    return "outdoor";
-  }
-
+  if (name.includes("רחצה") || name.includes("מטבח") || name.includes("ש.אורחים") || name.includes("שרות")) return "wet";
+  if (name.includes("מרפסת") || name.includes("גג")) return "outdoor";
   return "dry";
 }
 
 function defaultChecks(type, areaName = "") {
   let checks = checkSets[type] || [];
-
   if (areaName.includes("מדרגות")) {
     checks = uniqueChecks([
       ...checks,
@@ -193,37 +176,16 @@ function defaultChecks(type, areaName = "") {
       baseChecks.safetyRegulations.find((check) => check.code === "7.1.4")
     ]);
   }
-
   if (areaName.includes("גג")) {
-    checks = uniqueChecks([
-      ...checks,
-      ...baseChecks.outdoorRoof,
-      baseChecks.safetyRegulations.find((check) => check.code === "7.1.2")
-    ]);
+    checks = uniqueChecks([...checks, ...baseChecks.outdoorRoof, baseChecks.safetyRegulations.find((check) => check.code === "7.1.2")]);
   }
-
   if (areaName.includes("מרפסת")) {
-    checks = uniqueChecks([
-      ...checks,
-      ...baseChecks.outdoorRoof,
-      ...baseChecks.plumbingDrainage.filter((check) => ["4.1.3", "4.1.4"].includes(check.code))
-    ]);
+    checks = uniqueChecks([...checks, ...baseChecks.outdoorRoof, ...baseChecks.plumbingDrainage.filter((check) => ["4.1.3", "4.1.4"].includes(check.code))]);
   }
-
   if (areaName.includes("מטבח")) {
-    checks = uniqueChecks([
-      ...checks,
-      ...baseChecks.plumbingDrainage
-    ]);
+    checks = uniqueChecks([...checks, ...baseChecks.plumbingDrainage]);
   }
-
-  return checks.map((check) => ({
-    id: uid(),
-    ...check,
-    status: "pending",
-    severity: "medium",
-    note: ""
-  }));
+  return checks.map((check) => ({ id: uid(), ...check, status: "pending", severity: "medium", note: "" }));
 }
 
 function createArea(name, type, selected = true) {
@@ -232,6 +194,7 @@ function createArea(name, type, selected = true) {
     name,
     type,
     selected,
+    locked: false,
     checks: defaultChecks(type, name),
     dimensions: createDimensions()
   };
@@ -263,17 +226,21 @@ function getDimensionStatus(area) {
   const dims = area.dimensions || createDimensions();
   const widthStatus = classifyDelta(normalizeNumber(dims.planWidth), normalizeNumber(dims.actualWidth));
   const lengthStatus = classifyDelta(normalizeNumber(dims.planLength), normalizeNumber(dims.actualLength));
-
-  if (widthStatus === "empty" || lengthStatus === "empty") {
-    return { label: "ממתין להזנה", badgeClass: "", widthStatus, lengthStatus };
-  }
-  if (widthStatus === "issue" || lengthStatus === "issue") {
-    return { label: "פער חריג במידות", badgeClass: "status-issue", widthStatus, lengthStatus };
-  }
-  if (widthStatus === "warn" || lengthStatus === "warn") {
-    return { label: "סטייה קלה במידות", badgeClass: "status-warn", widthStatus, lengthStatus };
-  }
+  if (widthStatus === "empty" || lengthStatus === "empty") return { label: "ממתין להזנה", badgeClass: "", widthStatus, lengthStatus };
+  if (widthStatus === "issue" || lengthStatus === "issue") return { label: "פער חריג במידות", badgeClass: "status-issue", widthStatus, lengthStatus };
+  if (widthStatus === "warn" || lengthStatus === "warn") return { label: "סטייה קלה במידות", badgeClass: "status-warn", widthStatus, lengthStatus };
   return { label: "תואם לתכנית", badgeClass: "status-ok", widthStatus, lengthStatus };
+}
+
+function getAreaProgress(area) {
+  if (area.locked) return { key: "locked", label: "הושלם וננעל" };
+  const total = area.checks.length;
+  const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
+  const touchedDimensions = Object.values(area.dimensions || {}).filter(Boolean).length;
+  const touched = touchedChecks + touchedDimensions;
+  if (touched === 0) return { key: "pending", label: "לא התחיל" };
+  if (touchedChecks >= total && total > 0) return { key: "complete", label: "הושלם" };
+  return { key: "progress", label: "בבדיקה" };
 }
 
 function computeSummary() {
@@ -307,28 +274,29 @@ function updateHeader() {
   els.reportMeta.textContent = parts.length ? parts.join(" | ") : "בחר חדרים ומלא את הבדיקות בשטח.";
 }
 
+function saveState() {
+  localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
 function setScreen(screen, options = {}) {
   const { scroll = true } = options;
   state.currentScreen = screen;
-  els.screens.forEach((section) => {
-    section.classList.toggle("active", section.id === `screen-${screen}`);
-  });
-  els.navButtons.forEach((button) => {
-    button.classList.toggle("active", button.dataset.screen === screen);
-  });
+  els.screens.forEach((section) => section.classList.toggle("active", section.id === `screen-${screen}`));
+  els.navButtons.forEach((button) => button.classList.toggle("active", button.dataset.screen === screen));
   saveState();
-  if (scroll) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function renderRoomSelection() {
   els.roomsSelection.innerHTML = "";
   state.areas.forEach((area) => {
     const button = els.roomChipTemplate.content.firstElementChild.cloneNode(true);
+    const progress = getAreaProgress(area);
     button.querySelector(".room-pick-name").textContent = area.name;
     button.querySelector(".room-pick-type").textContent = areaTypeLabels[area.type];
+    button.querySelector(".room-pick-status").textContent = progress.label;
     button.classList.toggle("active", area.selected);
+    button.classList.add(`status-${progress.key}`);
     button.addEventListener("click", () => {
       area.selected = !area.selected;
       render();
@@ -340,35 +308,38 @@ function renderRoomSelection() {
 
 function renderAreas() {
   els.areasContainer.innerHTML = "";
-
   selectedAreas().forEach((area) => {
     const node = els.areaTemplate.content.firstElementChild.cloneNode(true);
     node.querySelector(".area-title").textContent = area.name;
     node.querySelector(".area-type").textContent = areaTypeLabels[area.type];
+    if (area.locked) node.classList.add("is-locked");
+
+    const lockBtn = node.querySelector(".lock-btn");
+    lockBtn.textContent = area.locked ? "פתח לעריכה" : "סיום ונעילה";
+    if (area.locked) lockBtn.classList.add("locked");
+    lockBtn.addEventListener("click", () => {
+      area.locked = !area.locked;
+      render();
+    });
 
     const dimensionState = getDimensionStatus(area);
     const dimensionBadge = node.querySelector(".dimension-badge");
     dimensionBadge.textContent = dimensionState.label;
-    if (dimensionState.badgeClass) {
-      dimensionBadge.classList.add(dimensionState.badgeClass);
-    }
+    if (dimensionState.badgeClass) dimensionBadge.classList.add(dimensionState.badgeClass);
 
     node.querySelectorAll(".dimension-input").forEach((input) => {
       const group = input.dataset.dimensionGroup;
       const field = input.dataset.dimensionField;
-      const key = group === "plan"
-        ? (field === "width" ? "planWidth" : "planLength")
-        : (field === "width" ? "actualWidth" : "actualLength");
-
+      const key = group === "plan" ? (field === "width" ? "planWidth" : "planLength") : (field === "width" ? "actualWidth" : "actualLength");
       input.value = area.dimensions[key];
-
+      input.disabled = area.locked;
+      if (area.locked) input.classList.add("field-locked");
       const pairStatus = field === "width" ? dimensionState.widthStatus : dimensionState.lengthStatus;
       if (group === "actual") {
         if (pairStatus === "ok") input.classList.add("match-ok");
         if (pairStatus === "warn") input.classList.add("match-warn");
         if (pairStatus === "issue") input.classList.add("match-issue");
       }
-
       input.addEventListener("input", (event) => {
         area.dimensions[key] = event.target.value;
         render();
@@ -385,15 +356,20 @@ function renderAreas() {
       const checkNode = els.checkTemplate.content.firstElementChild.cloneNode(true);
       checkNode.querySelector(".check-name").textContent = check.name;
       checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
-
       const statusSelect = checkNode.querySelector(".status-select");
       const severitySelect = checkNode.querySelector(".severity-select");
       const noteInput = checkNode.querySelector(".note-input");
-
       statusSelect.value = check.status;
       severitySelect.value = check.severity;
       noteInput.value = check.note;
-
+      statusSelect.disabled = area.locked;
+      severitySelect.disabled = area.locked;
+      noteInput.disabled = area.locked;
+      if (area.locked) {
+        statusSelect.classList.add("field-locked");
+        severitySelect.classList.add("field-locked");
+        noteInput.classList.add("field-locked");
+      }
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
         render();
@@ -407,7 +383,6 @@ function renderAreas() {
         saveState();
         renderSummaryReports();
       });
-
       checksList.appendChild(checkNode);
     });
 
@@ -425,41 +400,29 @@ function renderSummaryReports() {
     { label: "לבדיקה", value: summary.pending },
     { label: "ליקוי גבוה", value: summary.highIssues }
   ];
-
-  els.summaryStats.innerHTML = stats.map((item) => `
-    <div class="summary-card">
-      <p>${item.label}</p>
-      <strong>${item.value}</strong>
-    </div>
-  `).join("");
+  els.summaryStats.innerHTML = stats.map((item) => `<div class="summary-card"><p>${item.label}</p><strong>${item.value}</strong></div>`).join("");
 
   const issues = selectedAreas().flatMap((area) =>
-    area.checks
-      .filter((check) => check.status === "issue")
-      .map((check) => ({
-        area: area.name,
-        code: check.code,
-        category: check.category,
-        name: check.name,
-        severity: check.severity,
-        note: check.note
-      }))
+    area.checks.filter((check) => check.status === "issue").map((check) => ({
+      area: area.name,
+      code: check.code,
+      category: check.category,
+      name: check.name,
+      severity: check.severity,
+      note: check.note
+    }))
   );
-
   if (!issues.length) {
     els.issueSummary.innerHTML = `<div class="empty-state">עדיין לא סומנו ליקויים. ברגע שתעדכן ממצא כליקוי, הוא יופיע כאן.</div>`;
   } else {
     const order = { high: 0, medium: 1, low: 2 };
-    els.issueSummary.innerHTML = issues
-      .sort((a, b) => order[a.severity] - order[b.severity])
-      .map((issue) => `
-        <div class="issue-item">
-          <strong>${issue.area} • ${issue.code} • ${issue.name}</strong>
-          <div class="issue-meta">${issue.category} | חומרה: ${severityLabels[issue.severity]}</div>
-          <div>${issue.note || "לא הוזנה הערה."}</div>
-        </div>
-      `)
-      .join("");
+    els.issueSummary.innerHTML = issues.sort((a, b) => order[a.severity] - order[b.severity]).map((issue) => `
+      <div class="issue-item">
+        <strong>${issue.area} • ${issue.code} • ${issue.name}</strong>
+        <div class="issue-meta">${issue.category} | חומרה: ${severityLabels[issue.severity]}</div>
+        <div>${issue.note || "לא הוזנה הערה."}</div>
+      </div>
+    `).join("");
   }
 
   els.reportAreasSummary.innerHTML = selectedAreas().map((area) => {
@@ -467,18 +430,15 @@ function renderSummaryReports() {
     const issuesCount = area.checks.filter((check) => check.status === "issue").length;
     const done = area.checks.filter((check) => check.status !== "pending").length;
     const dims = getDimensionStatus(area);
+    const progress = getAreaProgress(area);
     return `
       <div class="summary-card">
         <strong>${area.name}</strong>
-        <p>${areaTypeLabels[area.type]} | הושלמו ${done} מתוך ${total}</p>
-        <p>ליקויים: ${issuesCount} | מצב מידות: ${dims.label}</p>
+        <p>${areaTypeLabels[area.type]} | ${progress.label}</p>
+        <p>הושלמו ${done} מתוך ${total} | ליקויים: ${issuesCount} | מצב מידות: ${dims.label}</p>
       </div>
     `;
   }).join("");
-}
-
-function saveState() {
-  localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
 function loadState() {
@@ -487,7 +447,6 @@ function loadState() {
     state.areas = buildPresetAreas();
     return;
   }
-
   const parsed = JSON.parse(raw);
   state.currentScreen = parsed.currentScreen || "welcome";
   state.propertyName = parsed.propertyName || "";
@@ -495,14 +454,13 @@ function loadState() {
   state.clientName = parsed.clientName || "";
   state.inspectorName = parsed.inspectorName || "";
   state.areas = Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas();
-
   state.areas = state.areas.map((area) => ({
     ...area,
     selected: area.selected !== false,
+    locked: area.locked === true,
     checks: Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name),
     dimensions: area.dimensions || createDimensions()
   }));
-
   els.propertyName.value = state.propertyName;
   els.propertyAddress.value = state.propertyAddress;
   els.clientName.value = state.clientName;
@@ -517,9 +475,7 @@ function render(options = {}) {
   renderAreas();
   renderSummaryReports();
   setScreen(state.currentScreen, { scroll: false });
-  if (preserveScroll) {
-    window.scrollTo(0, previousScrollY);
-  }
+  if (preserveScroll) window.scrollTo(0, previousScrollY);
 }
 
 function addArea(name, type) {
@@ -535,9 +491,7 @@ els.startBtn.addEventListener("click", () => {
   setScreen("rooms", { scroll: true });
 });
 
-els.addAreaBtn.addEventListener("click", () => {
-  addArea(els.areaName.value, els.areaType.value);
-});
+els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
 
 [els.propertyName, els.propertyAddress, els.clientName, els.inspectorName].forEach((input) => {
   input.addEventListener("input", () => {
@@ -548,15 +502,11 @@ els.addAreaBtn.addEventListener("click", () => {
 });
 
 els.areaName.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    addArea(els.areaName.value, els.areaType.value);
-  }
+  if (event.key === "Enter") addArea(els.areaName.value, els.areaType.value);
 });
 
 els.navButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    setScreen(button.dataset.screen, { scroll: true });
-  });
+  button.addEventListener("click", () => setScreen(button.dataset.screen, { scroll: true }));
 });
 
 els.resetBtn.addEventListener("click", () => {
@@ -580,7 +530,5 @@ els.printBtn.addEventListener("click", () => {
 });
 
 loadState();
-if (!state.areas.length) {
-  state.areas = buildPresetAreas();
-}
+if (!state.areas.length) state.areas = buildPresetAreas();
 render();

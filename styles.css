@@ -197,6 +197,9 @@ select {
   padding: 14px;
   background: white;
   border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .room-pick.active {
@@ -212,6 +215,30 @@ select {
 
 .room-pick-type {
   color: var(--muted);
+}
+
+.room-pick-status {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.room-pick.status-pending .room-pick-status {
+  color: #8a5535;
+}
+
+.room-pick.status-progress .room-pick-status {
+  color: var(--accent);
+}
+
+.room-pick.status-complete .room-pick-status,
+.room-pick.status-locked .room-pick-status {
+  color: var(--ok);
+}
+
+.room-pick.status-locked {
+  border-color: rgba(42, 127, 98, 0.5);
+  background: rgba(42, 127, 98, 0.08);
 }
 
 .compact-panel {
@@ -238,6 +265,12 @@ select {
   gap: 12px;
 }
 
+.area-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .area-head {
   margin-bottom: 14px;
 }
@@ -246,6 +279,19 @@ select {
   padding: 10px 12px;
   background: rgba(180, 63, 63, 0.12);
   color: var(--issue);
+}
+
+.lock-btn.locked {
+  background: rgba(42, 127, 98, 0.14);
+  color: var(--ok);
+}
+
+.area-card.is-locked {
+  border-color: rgba(42, 127, 98, 0.45);
+}
+
+.field-locked {
+  opacity: 0.7;
 }
 
 .dimensions-box {
