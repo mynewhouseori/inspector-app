@@ -210,7 +210,8 @@ function selectedAreas() {
 
 function normalizeNumber(value) {
   if (value === "" || value === null || value === undefined) return null;
-  const num = Number(value);
+  const normalized = String(value).trim().replace(",", ".");
+  const num = Number(normalized);
   return Number.isFinite(num) ? num : null;
 }
 
@@ -341,7 +342,7 @@ function renderAreas() {
         if (pairStatus === "issue") input.classList.add("match-issue");
       }
       input.addEventListener("input", (event) => {
-        area.dimensions[key] = event.target.value;
+        area.dimensions[key] = event.target.value.replace(",", ".");
         render();
       });
     });
