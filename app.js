@@ -107,6 +107,7 @@ const severityLabels = {
 };
 
 const state = {
+  currentScreen: "welcome",
   propertyName: "",
   propertyAddress: "",
   clientName: "",
@@ -114,23 +115,30 @@ const state = {
   areas: []
 };
 
-const storageKey = "inspector-app-state-v2";
+const storageKey = "inspector-mobile-state-v1";
 
 const els = {
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
   clientName: document.querySelector("#clientName"),
   inspectorName: document.querySelector("#inspectorName"),
+  startBtn: document.querySelector("#startBtn"),
   areaName: document.querySelector("#areaName"),
   areaType: document.querySelector("#areaType"),
   addAreaBtn: document.querySelector("#addAreaBtn"),
+  resetBtn: document.querySelector("#resetBtn"),
+  printBtn: document.querySelector("#printBtn"),
+  navButtons: [...document.querySelectorAll(".nav-btn")],
+  screens: [...document.querySelectorAll(".screen")],
+  roomsSelection: document.querySelector("#roomsSelection"),
+  roomChipTemplate: document.querySelector("#roomChipTemplate"),
+  selectedRoomsCount: document.querySelector("#selectedRoomsCount"),
   areasContainer: document.querySelector("#areasContainer"),
   areaTemplate: document.querySelector("#areaTemplate"),
   checkTemplate: document.querySelector("#checkTemplate"),
   summaryStats: document.querySelector("#summaryStats"),
   issueSummary: document.querySelector("#issueSummary"),
-  printBtn: document.querySelector("#printBtn"),
-  resetBtn: document.querySelector("#resetBtn"),
+  reportAreasSummary: document.querySelector("#reportAreasSummary"),
   reportTitle: document.querySelector("#reportTitle"),
   reportMeta: document.querySelector("#reportMeta")
 };
@@ -142,7 +150,7 @@ function uid() {
 function uniqueChecks(items) {
   const seen = new Set();
   return items.filter((item) => {
-    if (seen.has(item.code)) return false;
+    if (!item || seen.has(item.code)) return false;
     seen.add(item.code);
     return true;
   });
@@ -157,6 +165,23 @@ function createDimensions() {
   };
 }
 
+function inferAreaType(name) {
+  if (
+    name.includes("רחצה") ||
+    name.includes("מטבח") ||
+    name.includes("ש.אורחים") ||
+    name.includes("שרות")
+  ) {
+    return "wet";
+  }
+
+  if (name.includes("מרפסת") || name.includes("גג")) {
+    return "outdoor";
+  }
+
+  return "dry";
+}
+
 function defaultChecks(type, areaName = "") {
   let checks = checkSets[type] || [];
 
@@ -166,7 +191,7 @@ function defaultChecks(type, areaName = "") {
       baseChecks.interiorFinishes.find((check) => check.code === "2.1.5"),
       baseChecks.safetyRegulations.find((check) => check.code === "7.1.2"),
       baseChecks.safetyRegulations.find((check) => check.code === "7.1.4")
-    ].filter(Boolean));
+    ]);
   }
 
   if (areaName.includes("גג")) {
@@ -174,14 +199,14 @@ function defaultChecks(type, areaName = "") {
       ...checks,
       ...baseChecks.outdoorRoof,
       baseChecks.safetyRegulations.find((check) => check.code === "7.1.2")
-    ].filter(Boolean));
+    ]);
   }
 
   if (areaName.includes("מרפסת")) {
     checks = uniqueChecks([
       ...checks,
       ...baseChecks.outdoorRoof,
-      ...baseChecks.plumbingDrainage.filter((check) => check.code === "4.1.3" || check.code === "4.1.4")
+      ...baseChecks.plumbingDrainage.filter((check) => ["4.1.3", "4.1.4"].includes(check.code))
     ]);
   }
 
@@ -201,51 +226,23 @@ function defaultChecks(type, areaName = "") {
   }));
 }
 
-function inferAreaType(name) {
-  if (
-    name.includes("רחצה") ||
-    name.includes("מטבח") ||
-    name.includes("ש.אורחים") ||
-    name.includes("שרות")
-  ) {
-    return "wet";
-  }
-
-  if (
-    name.includes("מרפסת") ||
-    name.includes("גג")
-  ) {
-    return "outdoor";
-  }
-
-  return "dry";
-}
-
-function createArea(name, type) {
+function createArea(name, type, selected = true) {
   return {
     id: uid(),
     name,
     type,
+    selected,
     checks: defaultChecks(type, name),
     dimensions: createDimensions()
   };
 }
 
 function buildPresetAreas() {
-  return defaultAreaPreset.map((name) => createArea(name, inferAreaType(name)));
+  return defaultAreaPreset.map((name) => createArea(name, inferAreaType(name), true));
 }
 
-function addArea(name, type) {
-  const cleanName = name.trim();
-  if (!cleanName) return;
-  state.areas.push(createArea(cleanName, type));
-  els.areaName.value = "";
-  render();
-}
-
-function removeArea(areaId) {
-  state.areas = state.areas.filter((area) => area.id !== areaId);
-  render();
+function selectedAreas() {
+  return state.areas.filter((area) => area.selected);
 }
 
 function normalizeNumber(value) {
@@ -264,53 +261,26 @@ function classifyDelta(planValue, actualValue) {
 
 function getDimensionStatus(area) {
   const dims = area.dimensions || createDimensions();
-  const planWidth = normalizeNumber(dims.planWidth);
-  const planLength = normalizeNumber(dims.planLength);
-  const actualWidth = normalizeNumber(dims.actualWidth);
-  const actualLength = normalizeNumber(dims.actualLength);
-
-  const widthStatus = classifyDelta(planWidth, actualWidth);
-  const lengthStatus = classifyDelta(planLength, actualLength);
+  const widthStatus = classifyDelta(normalizeNumber(dims.planWidth), normalizeNumber(dims.actualWidth));
+  const lengthStatus = classifyDelta(normalizeNumber(dims.planLength), normalizeNumber(dims.actualLength));
 
   if (widthStatus === "empty" || lengthStatus === "empty") {
     return { label: "ממתין להזנה", badgeClass: "", widthStatus, lengthStatus };
   }
-
   if (widthStatus === "issue" || lengthStatus === "issue") {
     return { label: "פער חריג במידות", badgeClass: "status-issue", widthStatus, lengthStatus };
   }
-
   if (widthStatus === "warn" || lengthStatus === "warn") {
     return { label: "סטייה קלה במידות", badgeClass: "status-warn", widthStatus, lengthStatus };
   }
-
   return { label: "תואם לתכנית", badgeClass: "status-ok", widthStatus, lengthStatus };
 }
 
-function updateHeader() {
-  state.propertyName = els.propertyName.value.trim();
-  state.propertyAddress = els.propertyAddress.value.trim();
-  state.clientName = els.clientName.value.trim();
-  state.inspectorName = els.inspectorName.value.trim();
-
-  els.reportTitle.textContent = state.propertyName || "דוח בדיקה הנדסית";
-
-  const parts = [
-    state.propertyAddress && `כתובת: ${state.propertyAddress}`,
-    state.clientName && `לקוח: ${state.clientName}`,
-    state.inspectorName && `בודק: ${state.inspectorName}`
-  ].filter(Boolean);
-
-  els.reportMeta.textContent = parts.length
-    ? parts.join(" | ")
-    : "התחל בהזנת פרטי הנכס והוספת אזורים לבדיקה.";
-}
-
 function computeSummary() {
-  const checks = state.areas.flatMap((area) => area.checks);
+  const checks = selectedAreas().flatMap((area) => area.checks);
   const issueChecks = checks.filter((check) => check.status === "issue");
   return {
-    totalAreas: state.areas.length,
+    totalAreas: selectedAreas().length,
     totalChecks: checks.length,
     ok: checks.filter((check) => check.status === "ok").length,
     pending: checks.filter((check) => check.status === "pending").length,
@@ -319,104 +289,59 @@ function computeSummary() {
   };
 }
 
-function saveState() {
-  localStorage.setItem(storageKey, JSON.stringify(state));
+function updateProjectFields() {
+  state.propertyName = els.propertyName.value.trim();
+  state.propertyAddress = els.propertyAddress.value.trim();
+  state.clientName = els.clientName.value.trim();
+  state.inspectorName = els.inspectorName.value.trim();
 }
 
-function loadState() {
-  const raw = localStorage.getItem(storageKey);
-  if (!raw) {
-    state.areas = buildPresetAreas();
-    return;
-  }
-
-  const parsed = JSON.parse(raw);
-  state.propertyName = parsed.propertyName || "";
-  state.propertyAddress = parsed.propertyAddress || "";
-  state.clientName = parsed.clientName || "";
-  state.inspectorName = parsed.inspectorName || "";
-  state.areas = Array.isArray(parsed.areas) ? parsed.areas : [];
-
-  if (!state.areas.length) {
-    state.areas = buildPresetAreas();
-  }
-
-  state.areas = state.areas.map((area) => ({
-    ...area,
-    checks: Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name),
-    dimensions: area.dimensions || createDimensions()
-  }));
-
-  els.propertyName.value = state.propertyName;
-  els.propertyAddress.value = state.propertyAddress;
-  els.clientName.value = state.clientName;
-  els.inspectorName.value = state.inspectorName;
+function updateHeader() {
+  updateProjectFields();
+  els.reportTitle.textContent = state.propertyName || "דוח בדיקה הנדסית";
+  const parts = [
+    state.propertyAddress && `כתובת: ${state.propertyAddress}`,
+    state.clientName && `לקוח: ${state.clientName}`,
+    state.inspectorName && `בודק: ${state.inspectorName}`
+  ].filter(Boolean);
+  els.reportMeta.textContent = parts.length ? parts.join(" | ") : "בחר חדרים ומלא את הבדיקות בשטח.";
 }
 
-function renderSummary() {
-  const summary = computeSummary();
-  const items = [
-    { label: "אזורים", value: summary.totalAreas },
-    { label: "בדיקות", value: summary.totalChecks },
-    { label: "תקין", value: summary.ok },
-    { label: "ליקויים", value: summary.issues },
-    { label: "לבדיקה", value: summary.pending },
-    { label: "ליקוי גבוה", value: summary.highIssues }
-  ];
-
-  els.summaryStats.innerHTML = items.map((item) => `
-    <div class="stat-box">
-      <small>${item.label}</small>
-      <strong>${item.value}</strong>
-    </div>
-  `).join("");
+function setScreen(screen) {
+  state.currentScreen = screen;
+  els.screens.forEach((section) => {
+    section.classList.toggle("active", section.id === `screen-${screen}`);
+  });
+  els.navButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.screen === screen);
+  });
+  saveState();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function renderIssueSummary() {
-  const issues = state.areas.flatMap((area) =>
-    area.checks
-      .filter((check) => check.status === "issue")
-      .map((check) => ({
-        area: area.name,
-        code: check.code,
-        name: check.name,
-        category: check.category,
-        severity: check.severity,
-        note: check.note
-      }))
-  );
-
-  if (!issues.length) {
-    els.issueSummary.innerHTML = `
-      <div class="empty-state">
-        עדיין לא סומנו ליקויים. ברגע שתסמן בדיקה כ"ליקוי", היא תופיע כאן בדוח המסכם.
-      </div>
-    `;
-    return;
-  }
-
-  const order = { high: 0, medium: 1, low: 2 };
-  els.issueSummary.innerHTML = issues
-    .sort((a, b) => order[a.severity] - order[b.severity])
-    .map((issue) => `
-      <div class="issue-item">
-        <strong>${issue.area} • ${issue.code} • ${issue.name}</strong>
-        <div class="issue-meta">${issue.category} | חומרה: ${severityLabels[issue.severity]}</div>
-        <div>${issue.note || "לא הוזנה הערה."}</div>
-      </div>
-    `)
-    .join("");
+function renderRoomSelection() {
+  els.roomsSelection.innerHTML = "";
+  state.areas.forEach((area) => {
+    const button = els.roomChipTemplate.content.firstElementChild.cloneNode(true);
+    button.querySelector(".room-pick-name").textContent = area.name;
+    button.querySelector(".room-pick-type").textContent = areaTypeLabels[area.type];
+    button.classList.toggle("active", area.selected);
+    button.addEventListener("click", () => {
+      area.selected = !area.selected;
+      render();
+    });
+    els.roomsSelection.appendChild(button);
+  });
+  els.selectedRoomsCount.textContent = `${selectedAreas().length} חדרים`;
 }
 
 function renderAreas() {
   els.areasContainer.innerHTML = "";
 
-  state.areas.forEach((area) => {
+  selectedAreas().forEach((area) => {
     const node = els.areaTemplate.content.firstElementChild.cloneNode(true);
     node.querySelector(".area-title").textContent = area.name;
     node.querySelector(".area-type").textContent = areaTypeLabels[area.type];
-
-    area.dimensions = area.dimensions || createDimensions();
 
     const dimensionState = getDimensionStatus(area);
     const dimensionBadge = node.querySelector(".dimension-badge");
@@ -448,7 +373,8 @@ function renderAreas() {
     });
 
     node.querySelector(".delete-btn").addEventListener("click", () => {
-      removeArea(area.id);
+      state.areas = state.areas.filter((item) => item.id !== area.id);
+      render();
     });
 
     const checksList = node.querySelector(".checks-list");
@@ -469,16 +395,14 @@ function renderAreas() {
         check.status = event.target.value;
         render();
       });
-
       severitySelect.addEventListener("change", (event) => {
         check.severity = event.target.value;
         render();
       });
-
       noteInput.addEventListener("input", (event) => {
         check.note = event.target.value;
         saveState();
-        renderIssueSummary();
+        renderSummaryReports();
       });
 
       checksList.appendChild(checkNode);
@@ -488,26 +412,131 @@ function renderAreas() {
   });
 }
 
+function renderSummaryReports() {
+  const summary = computeSummary();
+  const stats = [
+    { label: "אזורים", value: summary.totalAreas },
+    { label: "בדיקות", value: summary.totalChecks },
+    { label: "תקין", value: summary.ok },
+    { label: "ליקויים", value: summary.issues },
+    { label: "לבדיקה", value: summary.pending },
+    { label: "ליקוי גבוה", value: summary.highIssues }
+  ];
+
+  els.summaryStats.innerHTML = stats.map((item) => `
+    <div class="summary-card">
+      <p>${item.label}</p>
+      <strong>${item.value}</strong>
+    </div>
+  `).join("");
+
+  const issues = selectedAreas().flatMap((area) =>
+    area.checks
+      .filter((check) => check.status === "issue")
+      .map((check) => ({
+        area: area.name,
+        code: check.code,
+        category: check.category,
+        name: check.name,
+        severity: check.severity,
+        note: check.note
+      }))
+  );
+
+  if (!issues.length) {
+    els.issueSummary.innerHTML = `<div class="empty-state">עדיין לא סומנו ליקויים. ברגע שתעדכן ממצא כליקוי, הוא יופיע כאן.</div>`;
+  } else {
+    const order = { high: 0, medium: 1, low: 2 };
+    els.issueSummary.innerHTML = issues
+      .sort((a, b) => order[a.severity] - order[b.severity])
+      .map((issue) => `
+        <div class="issue-item">
+          <strong>${issue.area} • ${issue.code} • ${issue.name}</strong>
+          <div class="issue-meta">${issue.category} | חומרה: ${severityLabels[issue.severity]}</div>
+          <div>${issue.note || "לא הוזנה הערה."}</div>
+        </div>
+      `)
+      .join("");
+  }
+
+  els.reportAreasSummary.innerHTML = selectedAreas().map((area) => {
+    const total = area.checks.length;
+    const issuesCount = area.checks.filter((check) => check.status === "issue").length;
+    const done = area.checks.filter((check) => check.status !== "pending").length;
+    const dims = getDimensionStatus(area);
+    return `
+      <div class="summary-card">
+        <strong>${area.name}</strong>
+        <p>${areaTypeLabels[area.type]} | הושלמו ${done} מתוך ${total}</p>
+        <p>ליקויים: ${issuesCount} | מצב מידות: ${dims.label}</p>
+      </div>
+    `;
+  }).join("");
+}
+
+function saveState() {
+  localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
+function loadState() {
+  const raw = localStorage.getItem(storageKey);
+  if (!raw) {
+    state.areas = buildPresetAreas();
+    return;
+  }
+
+  const parsed = JSON.parse(raw);
+  state.currentScreen = parsed.currentScreen || "welcome";
+  state.propertyName = parsed.propertyName || "";
+  state.propertyAddress = parsed.propertyAddress || "";
+  state.clientName = parsed.clientName || "";
+  state.inspectorName = parsed.inspectorName || "";
+  state.areas = Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas();
+
+  state.areas = state.areas.map((area) => ({
+    ...area,
+    selected: area.selected !== false,
+    checks: Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name),
+    dimensions: area.dimensions || createDimensions()
+  }));
+
+  els.propertyName.value = state.propertyName;
+  els.propertyAddress.value = state.propertyAddress;
+  els.clientName.value = state.clientName;
+  els.inspectorName.value = state.inspectorName;
+}
+
 function render() {
   updateHeader();
-  renderSummary();
-  renderIssueSummary();
+  renderRoomSelection();
   renderAreas();
-  saveState();
+  renderSummaryReports();
+  setScreen(state.currentScreen);
 }
+
+function addArea(name, type) {
+  const cleanName = name.trim();
+  if (!cleanName) return;
+  state.areas.push(createArea(cleanName, type, true));
+  els.areaName.value = "";
+  render();
+}
+
+els.startBtn.addEventListener("click", () => {
+  updateProjectFields();
+  setScreen("rooms");
+});
 
 els.addAreaBtn.addEventListener("click", () => {
   addArea(els.areaName.value, els.areaType.value);
 });
 
-document.querySelectorAll(".chip").forEach((chip) => {
-  chip.addEventListener("click", () => {
-    addArea(chip.dataset.areaName, chip.dataset.areaType);
-  });
-});
-
 [els.propertyName, els.propertyAddress, els.clientName, els.inspectorName].forEach((input) => {
-  input.addEventListener("input", render);
+  input.addEventListener("input", () => {
+    updateProjectFields();
+    saveState();
+    updateHeader();
+  });
 });
 
 els.areaName.addEventListener("keydown", (event) => {
@@ -516,43 +545,20 @@ els.areaName.addEventListener("keydown", (event) => {
   }
 });
 
-els.printBtn.addEventListener("click", () => {
-  const summary = computeSummary();
-  const issueLines = state.areas
-    .flatMap((area) =>
-      area.checks
-        .filter((check) => check.status === "issue")
-        .map((check) => `${area.name}: ${check.code} ${check.name} (${severityLabels[check.severity]})${check.note ? ` - ${check.note}` : ""}`)
-    )
-    .slice(0, 12);
-
-  const existing = document.querySelector(".print-summary");
-  if (existing) existing.remove();
-
-  const summarySection = document.createElement("section");
-  summarySection.className = "panel report-header print-summary";
-  summarySection.innerHTML = `
-    <h3>דוח מסכם</h3>
-    <p>
-      סה"כ אזורים: ${summary.totalAreas} |
-      סה"כ בדיקות: ${summary.totalChecks} |
-      תקין: ${summary.ok} |
-      ליקויים: ${summary.issues} |
-      לבדיקה: ${summary.pending}
-    </p>
-    <p>${issueLines.length ? `ממצאים בולטים: ${issueLines.join(" | ")}` : "לא הוזנו ליקויים מסומנים בשלב זה."}</p>
-  `;
-  els.areasContainer.prepend(summarySection);
-  window.print();
+els.navButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setScreen(button.dataset.screen);
+  });
 });
 
 els.resetBtn.addEventListener("click", () => {
   localStorage.removeItem(storageKey);
+  state.currentScreen = "welcome";
   state.propertyName = "";
   state.propertyAddress = "";
   state.clientName = "";
   state.inspectorName = "";
-  state.areas = [];
+  state.areas = buildPresetAreas();
   els.propertyName.value = "";
   els.propertyAddress.value = "";
   els.clientName.value = "";
@@ -560,5 +566,13 @@ els.resetBtn.addEventListener("click", () => {
   render();
 });
 
+els.printBtn.addEventListener("click", () => {
+  setScreen("summary");
+  setTimeout(() => window.print(), 80);
+});
+
 loadState();
+if (!state.areas.length) {
+  state.areas = buildPresetAreas();
+}
 render();

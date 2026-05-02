@@ -2,109 +2,139 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inspector App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Inspector Mobile</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">IN</div>
-        <div>
-          <h1>Inspector</h1>
-          <p>מערכת בדיקות הנדסיות לנכס</p>
-        </div>
+  <div class="mobile-app">
+    <header class="topbar">
+      <div class="brand-pill">IN</div>
+      <div>
+        <h1>Inspector</h1>
+        <p>בדיקות הנדסיות לנכס</p>
       </div>
+    </header>
 
-      <section class="panel">
-        <h2>פרטי הדוח</h2>
-        <label>
-          <span>שם הנכס</span>
-          <input id="propertyName" type="text" placeholder="למשל: דירה 7, רחוב הרצל 12">
-        </label>
-        <label>
-          <span>כתובת</span>
-          <input id="propertyAddress" type="text" placeholder="הזן כתובת">
-        </label>
-        <label>
-          <span>שם הלקוח</span>
-          <input id="clientName" type="text" placeholder="הזן שם לקוח">
-        </label>
-        <label>
-          <span>שם הבודק</span>
-          <input id="inspectorName" type="text" placeholder="הזן שם בודק">
-        </label>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head">
-          <h2>הוספת חדר / אזור</h2>
-          <button id="addAreaBtn" class="ghost-btn" type="button">הוסף</button>
-        </div>
-        <label>
-          <span>שם החדר / האזור</span>
-          <input id="areaName" type="text" placeholder="למשל: סלון, מטבח, חדר רחצה הורים">
-        </label>
-        <label>
-          <span>סוג אזור</span>
-          <select id="areaType">
-            <option value="dry">חדר יבש</option>
-            <option value="wet">חדר רטוב</option>
-            <option value="outdoor">חוץ / מרפסת</option>
-          </select>
-        </label>
-        <div class="quick-adds">
-          <button class="chip" type="button" data-area-name="סלון" data-area-type="dry">סלון</button>
-          <button class="chip" type="button" data-area-name="מטבח" data-area-type="wet">מטבח</button>
-          <button class="chip" type="button" data-area-name="חדר רחצה" data-area-type="wet">חדר רחצה</button>
-          <button class="chip" type="button" data-area-name="חדר שינה" data-area-type="dry">חדר שינה</button>
-          <button class="chip" type="button" data-area-name="מרפסת" data-area-type="outdoor">מרפסת</button>
-        </div>
-      </section>
-
-      <section class="panel panel-accent">
-        <h2>דוח מסכם</h2>
-        <div id="summaryStats" class="summary-stats"></div>
-        <button id="printBtn" class="primary-btn" type="button">הדפס / שמור כ-PDF</button>
-      </section>
-    </aside>
-
-    <main class="main-content">
-      <section class="hero">
-        <div>
-          <p class="eyebrow">בדיקות לפי אזורים</p>
-          <h2>צ'קליסט דינמי לדירה חדשה או יד שנייה</h2>
+    <main class="screen-stack">
+      <section id="screen-welcome" class="screen active">
+        <div class="hero-card">
+          <p class="eyebrow">גרסת מובייל</p>
+          <h2>מתחילים בדיקת דירה לפי חדרים</h2>
           <p>
-            בחר חדרים, מלא סטטוסים לכל בדיקה, וקבל דוח מסכם עם ממצאים לפי חומרה, אזור וסוג ליקוי.
+            הזן פרטי נכס, בחר חדרים, מלא מידות וממצאים, וקבל דוח מסכם שנוח לשמור או להדפיס.
           </p>
         </div>
-        <div class="hero-card">
-          <strong>סטים אוטומטיים</strong>
-          <span>חדרים יבשים, חדרים רטובים, אזורי חוץ</span>
-        </div>
+
+        <section class="panel">
+          <h3>פתיחת פרויקט</h3>
+          <label>
+            <span>שם הנכס</span>
+            <input id="propertyName" type="text" placeholder="למשל: דירה 7">
+          </label>
+          <label>
+            <span>כתובת</span>
+            <input id="propertyAddress" type="text" placeholder="רחוב, עיר">
+          </label>
+          <label>
+            <span>שם הלקוח</span>
+            <input id="clientName" type="text" placeholder="הזן שם לקוח">
+          </label>
+          <label>
+            <span>שם הבודק</span>
+            <input id="inspectorName" type="text" placeholder="הזן שם בודק">
+          </label>
+          <button id="startBtn" class="primary-btn" type="button">המשך לבחירת חדרים</button>
+        </section>
       </section>
 
-      <section class="report-header panel">
-        <div>
-          <h3 id="reportTitle">דוח בדיקה הנדסית</h3>
-          <p id="reportMeta">התחל בהזנת פרטי הנכס והוספת אזורים לבדיקה.</p>
-        </div>
+      <section id="screen-rooms" class="screen">
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">שלב 1</p>
+              <h3>בחירת חדרים</h3>
+            </div>
+            <span id="selectedRoomsCount" class="inline-badge">0 חדרים</span>
+          </div>
+          <p class="section-text">בחר אילו אזורים כלולים בבדיקה. אפשר להוסיף חדרים מותאמים בהמשך.</p>
+          <div id="roomsSelection" class="room-selector-grid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="section-head">
+            <h3>הוספת אזור מותאם</h3>
+          </div>
+          <label>
+            <span>שם חדר / אזור</span>
+            <input id="areaName" type="text" placeholder="למשל: חדר עבודה">
+          </label>
+          <label>
+            <span>סוג אזור</span>
+            <select id="areaType">
+              <option value="dry">חדר יבש</option>
+              <option value="wet">חדר רטוב</option>
+              <option value="outdoor">אזור חוץ</option>
+            </select>
+          </label>
+          <button id="addAreaBtn" class="ghost-btn full-width" type="button">הוסף אזור</button>
+        </section>
       </section>
 
-      <section class="panel live-summary">
-        <div class="panel-head">
-          <h2>ממצאים מרכזיים</h2>
-          <button id="resetBtn" class="ghost-btn" type="button">איפוס טופס</button>
-        </div>
-        <div id="issueSummary" class="issue-summary"></div>
+      <section id="screen-inspection" class="screen">
+        <section class="panel compact-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">שלב 2</p>
+              <h3 id="reportTitle">דוח בדיקה הנדסית</h3>
+            </div>
+            <button id="resetBtn" class="ghost-btn" type="button">איפוס</button>
+          </div>
+          <p id="reportMeta" class="section-text">התחל בהזנת פרטי הנכס והוספת אזורים לבדיקה.</p>
+        </section>
+        <section id="areasContainer" class="areas-list"></section>
       </section>
 
-      <section id="areasContainer" class="areas-grid"></section>
+      <section id="screen-summary" class="screen">
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">שלב 3</p>
+              <h3>דוחות סיכום</h3>
+            </div>
+            <button id="printBtn" class="ghost-btn" type="button">הדפס / PDF</button>
+          </div>
+          <div id="summaryStats" class="summary-stats"></div>
+        </section>
+
+        <section class="panel">
+          <h3>ממצאים מרכזיים</h3>
+          <div id="issueSummary" class="issue-summary"></div>
+        </section>
+
+        <section class="panel">
+          <h3>סיכום חדרים</h3>
+          <div id="reportAreasSummary" class="report-areas-summary"></div>
+        </section>
+      </section>
     </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-screen="welcome" type="button">פתיחה</button>
+      <button class="nav-btn" data-screen="rooms" type="button">חדרים</button>
+      <button class="nav-btn" data-screen="inspection" type="button">בדיקה</button>
+      <button class="nav-btn" data-screen="summary" type="button">דוחות</button>
+    </nav>
   </div>
 
-<template id="areaTemplate">
+  <template id="roomChipTemplate">
+    <button class="room-pick" type="button">
+      <span class="room-pick-name"></span>
+      <small class="room-pick-type"></small>
+    </button>
+  </template>
+
+  <template id="areaTemplate">
     <article class="area-card">
       <header class="area-head">
         <div>
@@ -136,7 +166,7 @@
             <input class="dimension-input" data-dimension-group="actual" data-dimension-field="length" type="number" min="0" step="0.01" placeholder="0.00">
           </label>
         </div>
-        <p class="dimension-note">הזינו מידות מהתכנית ומהמדידה בפועל לקבלת חיווי צבע אוטומטי.</p>
+        <p class="dimension-note">ירוק: תואם. כתום: סטייה קלה. אדום: פער חריג.</p>
       </section>
       <div class="checks-list"></div>
     </article>
