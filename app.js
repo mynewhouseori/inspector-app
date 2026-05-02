@@ -56,7 +56,7 @@ const checkSets = {
   dry: [
     ...baseChecks.structureEnvelope.filter((check) => check.code !== "1.1.5"),
     ...baseChecks.interiorFinishes.filter((check) => check.code !== "2.1.5"),
-    ...baseChecks.openingsDoors,
+    ...baseChecks.openingsDoors.filter((check) => check.code !== "3.1.4"),
     ...baseChecks.electricityCommunication,
     ...baseChecks.safetyRegulations.filter((check) => check.code !== "7.1.2")
   ],
