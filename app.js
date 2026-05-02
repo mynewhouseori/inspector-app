@@ -307,7 +307,8 @@ function updateHeader() {
   els.reportMeta.textContent = parts.length ? parts.join(" | ") : "בחר חדרים ומלא את הבדיקות בשטח.";
 }
 
-function setScreen(screen) {
+function setScreen(screen, options = {}) {
+  const { scroll = true } = options;
   state.currentScreen = screen;
   els.screens.forEach((section) => {
     section.classList.toggle("active", section.id === `screen-${screen}`);
@@ -316,7 +317,9 @@ function setScreen(screen) {
     button.classList.toggle("active", button.dataset.screen === screen);
   });
   saveState();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (scroll) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 function renderRoomSelection() {
@@ -506,12 +509,17 @@ function loadState() {
   els.inspectorName.value = state.inspectorName;
 }
 
-function render() {
+function render(options = {}) {
+  const { preserveScroll = true } = options;
+  const previousScrollY = preserveScroll ? window.scrollY : 0;
   updateHeader();
   renderRoomSelection();
   renderAreas();
   renderSummaryReports();
-  setScreen(state.currentScreen);
+  setScreen(state.currentScreen, { scroll: false });
+  if (preserveScroll) {
+    window.scrollTo(0, previousScrollY);
+  }
 }
 
 function addArea(name, type) {
@@ -524,7 +532,7 @@ function addArea(name, type) {
 
 els.startBtn.addEventListener("click", () => {
   updateProjectFields();
-  setScreen("rooms");
+  setScreen("rooms", { scroll: true });
 });
 
 els.addAreaBtn.addEventListener("click", () => {
@@ -547,7 +555,7 @@ els.areaName.addEventListener("keydown", (event) => {
 
 els.navButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    setScreen(button.dataset.screen);
+    setScreen(button.dataset.screen, { scroll: true });
   });
 });
 
@@ -567,7 +575,7 @@ els.resetBtn.addEventListener("click", () => {
 });
 
 els.printBtn.addEventListener("click", () => {
-  setScreen("summary");
+  setScreen("summary", { scroll: true });
   setTimeout(() => window.print(), 80);
 });
 
