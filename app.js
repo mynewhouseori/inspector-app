@@ -230,6 +230,11 @@ function ensureActiveInspectionArea() {
   return selected[0];
 }
 
+function setActiveInspectionAreaToFirstSelected() {
+  const selected = selectedAreas();
+  state.activeInspectionAreaId = selected.length ? selected[0].id : null;
+}
+
 function moveInspectionArea(direction) {
   const selected = selectedAreas();
   if (!selected.length) return;
@@ -359,6 +364,11 @@ function renderRoomSelection() {
     button.classList.add(`status-${progress.key}`);
     button.addEventListener("click", () => {
       area.selected = !area.selected;
+      if (area.selected) {
+        state.activeInspectionAreaId = area.id;
+      } else if (state.activeInspectionAreaId === area.id) {
+        setActiveInspectionAreaToFirstSelected();
+      }
       render();
     });
     els.roomsSelection.appendChild(button);
@@ -561,6 +571,7 @@ els.backToWelcomeBtn.addEventListener("click", () => {
 });
 
 els.continueToInspectionBtn.addEventListener("click", () => {
+  setActiveInspectionAreaToFirstSelected();
   ensureActiveInspectionArea();
   setScreen("inspection", { scroll: true });
 });
@@ -588,7 +599,13 @@ els.areaName.addEventListener("keydown", (event) => {
 });
 
 els.navButtons.forEach((button) => {
-  button.addEventListener("click", () => setScreen(button.dataset.screen, { scroll: true }));
+  button.addEventListener("click", () => {
+    if (button.dataset.screen === "inspection") {
+      setActiveInspectionAreaToFirstSelected();
+      ensureActiveInspectionArea();
+    }
+    setScreen(button.dataset.screen, { scroll: true });
+  });
 });
 
 els.resetBtn.addEventListener("click", () => {
