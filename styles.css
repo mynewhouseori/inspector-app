@@ -286,6 +286,10 @@ select {
   background: linear-gradient(180deg, rgba(42, 127, 98, 0.26), #f3faf6);
 }
 
+.room-pick.is-current {
+  box-shadow: 0 0 0 3px rgba(24, 90, 97, 0.22);
+}
+
 .compact-panel {
   position: sticky;
   top: 12px;

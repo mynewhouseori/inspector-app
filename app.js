@@ -377,14 +377,11 @@ function renderRoomSelection() {
     button.querySelector(".room-pick-type").textContent = areaTypeLabels[area.type];
     button.querySelector(".room-pick-status").textContent = progress.label;
     button.classList.toggle("active", area.selected);
+    button.classList.toggle("is-current", area.id === state.activeInspectionAreaId);
     button.classList.add(`status-${progress.key}`);
     button.addEventListener("click", () => {
-      area.selected = !area.selected;
-      if (area.selected) {
-        state.activeInspectionAreaId = area.id;
-      } else if (state.activeInspectionAreaId === area.id) {
-        setActiveInspectionAreaToFirstSelected();
-      }
+      area.selected = true;
+      state.activeInspectionAreaId = area.id;
       render();
     });
     els.roomsSelection.appendChild(button);
@@ -644,5 +641,11 @@ els.printBtn.addEventListener("click", () => {
 });
 
 loadState();
+state.currentScreen = "welcome";
 if (!state.areas.length) state.areas = buildPresetAreas();
 render();
+
+window.addEventListener("pageshow", () => {
+  state.currentScreen = "welcome";
+  setScreen("welcome", { scroll: false });
+});
