@@ -235,6 +235,22 @@ function setActiveInspectionAreaToFirstSelected() {
   state.activeInspectionAreaId = selected.length ? selected[0].id : null;
 }
 
+function syncActiveInspectionArea() {
+  const selected = selectedAreas();
+  if (!selected.length) {
+    state.activeInspectionAreaId = null;
+    return null;
+  }
+
+  const current = selected.find((area) => area.id === state.activeInspectionAreaId);
+  if (current) {
+    return current;
+  }
+
+  state.activeInspectionAreaId = selected[0].id;
+  return selected[0];
+}
+
 function moveInspectionArea(direction) {
   const selected = selectedAreas();
   if (!selected.length) return;
@@ -572,8 +588,7 @@ els.backToWelcomeBtn.addEventListener("click", () => {
 });
 
 els.continueToInspectionBtn.addEventListener("click", () => {
-  setActiveInspectionAreaToFirstSelected();
-  ensureActiveInspectionArea();
+  syncActiveInspectionArea();
   setScreen("inspection", { scroll: true });
 });
 
@@ -602,8 +617,7 @@ els.areaName.addEventListener("keydown", (event) => {
 els.navButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (button.dataset.screen === "inspection") {
-      setActiveInspectionAreaToFirstSelected();
-      ensureActiveInspectionArea();
+      syncActiveInspectionArea();
     }
     setScreen(button.dataset.screen, { scroll: true });
   });
