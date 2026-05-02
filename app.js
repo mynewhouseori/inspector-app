@@ -124,6 +124,7 @@ const els = {
   inspectorName: document.querySelector("#inspectorName"),
   startBtn: document.querySelector("#startBtn"),
   backToWelcomeBtn: document.querySelector("#backToWelcomeBtn"),
+  continueToInspectionBtn: document.querySelector("#continueToInspectionBtn"),
   areaName: document.querySelector("#areaName"),
   areaType: document.querySelector("#areaType"),
   addAreaBtn: document.querySelector("#addAreaBtn"),
@@ -245,6 +246,34 @@ function getAreaProgress(area) {
   return { key: "progress", label: "בבדיקה" };
 }
 
+function applyDimensionStateToCard(cardNode, area) {
+  const dimensionState = getDimensionStatus(area);
+  const badge = cardNode.querySelector(".dimension-badge");
+  badge.textContent = dimensionState.label;
+  badge.classList.remove("status-ok", "status-warn", "status-issue");
+  if (dimensionState.badgeClass) {
+    badge.classList.add(dimensionState.badgeClass);
+  }
+
+  cardNode.querySelectorAll(".dimension-input").forEach((input) => {
+    input.classList.remove("match-ok", "match-warn", "match-issue");
+    const field = input.dataset.dimensionField;
+    const group = input.dataset.dimensionGroup;
+    const pairStatus = field === "width" ? dimensionState.widthStatus : dimensionState.lengthStatus;
+    if (group === "actual") {
+      if (pairStatus === "ok") input.classList.add("match-ok");
+      if (pairStatus === "warn") input.classList.add("match-warn");
+      if (pairStatus === "issue") input.classList.add("match-issue");
+    }
+  });
+}
+
+function refreshProgressAndSummary() {
+  renderRoomSelection();
+  renderSummaryReports();
+  saveState();
+}
+
 function computeSummary() {
   const checks = selectedAreas().flatMap((area) => area.checks);
   const issueChecks = checks.filter((check) => check.status === "issue");
@@ -324,11 +353,6 @@ function renderAreas() {
       render();
     });
 
-    const dimensionState = getDimensionStatus(area);
-    const dimensionBadge = node.querySelector(".dimension-badge");
-    dimensionBadge.textContent = dimensionState.label;
-    if (dimensionState.badgeClass) dimensionBadge.classList.add(dimensionState.badgeClass);
-
     node.querySelectorAll(".dimension-input").forEach((input) => {
       const group = input.dataset.dimensionGroup;
       const field = input.dataset.dimensionField;
@@ -336,17 +360,13 @@ function renderAreas() {
       input.value = area.dimensions[key];
       input.disabled = area.locked;
       if (area.locked) input.classList.add("field-locked");
-      const pairStatus = field === "width" ? dimensionState.widthStatus : dimensionState.lengthStatus;
-      if (group === "actual") {
-        if (pairStatus === "ok") input.classList.add("match-ok");
-        if (pairStatus === "warn") input.classList.add("match-warn");
-        if (pairStatus === "issue") input.classList.add("match-issue");
-      }
       input.addEventListener("input", (event) => {
         area.dimensions[key] = event.target.value.replace(",", ".");
-        render();
+        applyDimensionStateToCard(node, area);
+        refreshProgressAndSummary();
       });
     });
+    applyDimensionStateToCard(node, area);
 
     node.querySelector(".delete-btn").addEventListener("click", () => {
       state.areas = state.areas.filter((item) => item.id !== area.id);
@@ -374,16 +394,15 @@ function renderAreas() {
       }
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
-        render();
+        refreshProgressAndSummary();
       });
       severitySelect.addEventListener("change", (event) => {
         check.severity = event.target.value;
-        render();
+        refreshProgressAndSummary();
       });
       noteInput.addEventListener("input", (event) => {
         check.note = event.target.value;
-        saveState();
-        renderSummaryReports();
+        refreshProgressAndSummary();
       });
       checksList.appendChild(checkNode);
     });
@@ -456,6 +475,9 @@ function loadState() {
   state.clientName = parsed.clientName || "";
   state.inspectorName = parsed.inspectorName || "";
   state.areas = Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas();
+  if (!state.areas.length) {
+    state.areas = buildPresetAreas();
+  }
   state.areas = state.areas.map((area) => ({
     ...area,
     selected: area.selected !== false,
@@ -495,6 +517,10 @@ els.startBtn.addEventListener("click", () => {
 
 els.backToWelcomeBtn.addEventListener("click", () => {
   setScreen("welcome", { scroll: true });
+});
+
+els.continueToInspectionBtn.addEventListener("click", () => {
+  setScreen("inspection", { scroll: true });
 });
 
 els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
