@@ -432,6 +432,8 @@ function renderAreas() {
     applyDimensionStateToCard(node, area);
 
     node.querySelector(".delete-btn").addEventListener("click", () => {
+      const confirmed = window.confirm(`למחוק את "${area.name}" מהבדיקה?`);
+      if (!confirmed) return;
       state.areas = state.areas.filter((item) => item.id !== area.id);
       render();
     });
