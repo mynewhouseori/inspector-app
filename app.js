@@ -129,6 +129,7 @@ const els = {
   clientName: document.querySelector("#clientName"),
   inspectorName: document.querySelector("#inspectorName"),
   saveProjectBtn: document.querySelector("#saveProjectBtn"),
+  jumpToSavedProjectsBtn: document.querySelector("#jumpToSavedProjectsBtn"),
   newProjectBtn: document.querySelector("#newProjectBtn"),
   backToWelcomeBtn: document.querySelector("#backToWelcomeBtn"),
   areaName: document.querySelector("#areaName"),
@@ -467,6 +468,10 @@ function startNewProject() {
 function renderSavedProjects() {
   if (!els.savedProjectsList) return;
 
+  if (els.jumpToSavedProjectsBtn) {
+    els.jumpToSavedProjectsBtn.hidden = !state.savedProjects.length;
+  }
+
   if (!state.savedProjects.length) {
     els.savedProjectsList.innerHTML = `<div class="empty-state">עדיין אין בדיקות שמורות. שמור את הדירה הנוכחית כדי לחזור אליה בהמשך.</div>`;
     return;
@@ -746,6 +751,10 @@ els.saveProjectBtn.addEventListener("click", () => {
   if (saveCurrentProject()) {
     window.alert("הבדיקה נשמרה ותופיע ברשימת הבדיקות השמורות.");
   }
+});
+
+els.jumpToSavedProjectsBtn.addEventListener("click", () => {
+  els.savedProjectsList.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 els.newProjectBtn.addEventListener("click", () => {

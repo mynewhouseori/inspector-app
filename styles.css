@@ -208,6 +208,13 @@ select {
   background: linear-gradient(135deg, rgba(42, 127, 98, 0.22), rgba(42, 127, 98, 0.3));
 }
 
+.quick-switch-btn {
+  margin-top: 14px;
+  background: linear-gradient(135deg, rgba(194, 120, 79, 0.14), rgba(194, 120, 79, 0.24));
+  color: #8a5535;
+  border: 1px solid rgba(194, 120, 79, 0.34);
+}
+
 .full-width {
   width: 100%;
 }
@@ -235,6 +242,7 @@ select {
 .saved-projects-list {
   display: grid;
   gap: 10px;
+  scroll-margin-top: 20px;
 }
 
 .saved-project {
