@@ -599,13 +599,15 @@ function loadProject(projectId) {
   if (!project || !project.data) return;
 
   state.currentProjectId = project.id;
-  state.currentScreen = "welcome";
   isApplyingCloudProject = true;
   applyProjectData(project.data);
   lastCloudAppliedAt = project.updatedAtMs || Date.now();
   isApplyingCloudProject = false;
+  const targetScreen = selectedAreas().length ? "inspection" : "rooms";
+  state.currentScreen = targetScreen;
+  syncActiveInspectionArea();
   render({ preserveScroll: false });
-  setScreen("welcome", { scroll: true });
+  setScreen(targetScreen, { scroll: true });
 }
 
 async function deleteProject(projectId) {
