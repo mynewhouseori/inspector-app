@@ -216,8 +216,9 @@ select {
 }
 
 .room-pick.active {
-  border-color: rgba(24, 90, 97, 0.6);
-  background: rgba(24, 90, 97, 0.08);
+  border-color: rgba(42, 127, 98, 0.9);
+  background: rgba(42, 127, 98, 0.08);
+  box-shadow: inset 0 0 0 2px rgba(42, 127, 98, 0.32);
 }
 
 .room-pick-name {
