@@ -349,6 +349,11 @@ function resetArea(area) {
   area.dimensions = createDimensions();
 }
 
+function toggleAreaLock(area) {
+  area.locked = !area.locked;
+  render();
+}
+
 function buildPresetAreas() {
   return defaultAreaPreset.map((name) => createArea(name, inferAreaType(name), true));
 }
@@ -813,11 +818,10 @@ function renderAreas() {
     if (area.locked) node.classList.add("is-locked");
 
     node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
-      lockBtn.textContent = area.locked ? "פתח לעריכה" : "סיום ונעילה";
+      lockBtn.textContent = area.locked ? "פתח לעריכה" : "שמירה ונעילה";
       if (area.locked) lockBtn.classList.add("locked");
       lockBtn.addEventListener("click", () => {
-        area.locked = !area.locked;
-        render();
+        toggleAreaLock(area);
       });
     });
 
