@@ -132,7 +132,6 @@ const els = {
   newProjectBtn: document.querySelector("#newProjectBtn"),
   startBtn: document.querySelector("#startBtn"),
   backToWelcomeBtn: document.querySelector("#backToWelcomeBtn"),
-  continueToInspectionBtn: document.querySelector("#continueToInspectionBtn"),
   areaName: document.querySelector("#areaName"),
   areaType: document.querySelector("#areaType"),
   addAreaBtn: document.querySelector("#addAreaBtn"),
@@ -763,11 +762,6 @@ els.newProjectBtn.addEventListener("click", () => {
 
 els.backToWelcomeBtn.addEventListener("click", () => {
   setScreen("welcome", { scroll: true });
-});
-
-els.continueToInspectionBtn.addEventListener("click", () => {
-  syncActiveInspectionArea();
-  setScreen("inspection", { scroll: true });
 });
 
 els.prevAreaBtn.addEventListener("click", () => {
