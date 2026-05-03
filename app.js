@@ -354,7 +354,7 @@ function updateProjectFields() {
 }
 
 function getProjectTitle(project = state) {
-  return project.propertyName || project.propertyAddress || "בדיקת דירה ללא שם";
+  return project.propertyName || "בדיקת דירה ללא שם נכס";
 }
 
 function serializeCurrentProject() {
@@ -375,8 +375,8 @@ function saveProjectsLibrary() {
 
 function saveCurrentProject() {
   updateProjectFields();
-  if (!state.propertyName && !state.propertyAddress) {
-    window.alert("יש להזין לפחות שם נכס או כתובת לפני שמירה.");
+  if (!state.propertyName) {
+    window.alert("יש להזין שם נכס לפני שמירה.");
     return false;
   }
 
@@ -477,12 +477,13 @@ function renderSavedProjects() {
     const updatedAt = project.updatedAt
       ? new Date(project.updatedAt).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })
       : "";
+    const propertyName = project.data?.propertyName || project.title || "בדיקת דירה ללא שם נכס";
     const addressLine = project.propertyAddress ? `<p class="saved-project-meta">${project.propertyAddress}</p>` : "";
     return `
       <article class="saved-project" data-project-id="${project.id}">
         <div class="saved-project-head">
           <div>
-            <p class="saved-project-title">${project.title}</p>
+            <p class="saved-project-title">${propertyName}</p>
             ${addressLine}
             <p class="saved-project-meta">עודכן: ${updatedAt || "ללא תאריך"}</p>
           </div>
