@@ -220,6 +220,48 @@ select {
   margin-top: 12px;
 }
 
+.saved-projects-list {
+  display: grid;
+  gap: 10px;
+}
+
+.saved-project {
+  padding: 14px;
+  border: 1px solid #e4ddd1;
+  border-radius: 18px;
+  background: white;
+}
+
+.saved-project-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.saved-project-title {
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.saved-project-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.saved-project-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.saved-project-actions .ghost-btn,
+.saved-project-actions .delete-btn {
+  flex: 1;
+}
+
 .room-selector-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

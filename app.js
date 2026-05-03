@@ -114,17 +114,22 @@ const state = {
   propertyAddress: "",
   clientName: "",
   inspectorName: "",
+  currentProjectId: null,
   activeInspectionAreaId: null,
-  areas: []
+  areas: [],
+  savedProjects: []
 };
 
 const storageKey = "inspector-mobile-state-v2";
+const projectsKey = "inspector-mobile-projects-v1";
 
 const els = {
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
   clientName: document.querySelector("#clientName"),
   inspectorName: document.querySelector("#inspectorName"),
+  saveProjectBtn: document.querySelector("#saveProjectBtn"),
+  newProjectBtn: document.querySelector("#newProjectBtn"),
   startBtn: document.querySelector("#startBtn"),
   backToWelcomeBtn: document.querySelector("#backToWelcomeBtn"),
   continueToInspectionBtn: document.querySelector("#continueToInspectionBtn"),
@@ -141,6 +146,7 @@ const els = {
   roomsSelection: document.querySelector("#roomsSelection"),
   roomChipTemplate: document.querySelector("#roomChipTemplate"),
   selectedRoomsCount: document.querySelector("#selectedRoomsCount"),
+  savedProjectsList: document.querySelector("#savedProjectsList"),
   areasContainer: document.querySelector("#areasContainer"),
   areaTemplate: document.querySelector("#areaTemplate"),
   checkTemplate: document.querySelector("#checkTemplate"),
@@ -346,6 +352,158 @@ function updateProjectFields() {
   state.inspectorName = els.inspectorName.value.trim();
 }
 
+function getProjectTitle(project = state) {
+  return project.propertyName || project.propertyAddress || "בדיקת דירה ללא שם";
+}
+
+function serializeCurrentProject() {
+  updateProjectFields();
+  return {
+    propertyName: state.propertyName,
+    propertyAddress: state.propertyAddress,
+    clientName: state.clientName,
+    inspectorName: state.inspectorName,
+    activeInspectionAreaId: state.activeInspectionAreaId,
+    areas: JSON.parse(JSON.stringify(state.areas))
+  };
+}
+
+function saveProjectsLibrary() {
+  localStorage.setItem(projectsKey, JSON.stringify(state.savedProjects));
+}
+
+function saveCurrentProject() {
+  updateProjectFields();
+  if (!state.propertyName && !state.propertyAddress) {
+    window.alert("יש להזין לפחות שם נכס או כתובת לפני שמירה.");
+    return false;
+  }
+
+  const now = new Date().toISOString();
+  const id = state.currentProjectId || uid();
+  const record = {
+    id,
+    title: getProjectTitle(),
+    propertyAddress: state.propertyAddress,
+    updatedAt: now,
+    data: serializeCurrentProject()
+  };
+
+  const existingIndex = state.savedProjects.findIndex((project) => project.id === id);
+  if (existingIndex >= 0) {
+    state.savedProjects[existingIndex] = record;
+  } else {
+    state.savedProjects.unshift(record);
+  }
+
+  state.currentProjectId = id;
+  state.savedProjects.sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+  saveProjectsLibrary();
+  saveState();
+  renderSavedProjects();
+  return true;
+}
+
+function loadProject(projectId) {
+  const project = state.savedProjects.find((item) => item.id === projectId);
+  if (!project || !project.data) return;
+
+  state.currentProjectId = project.id;
+  state.currentScreen = "welcome";
+  state.propertyName = project.data.propertyName || "";
+  state.propertyAddress = project.data.propertyAddress || "";
+  state.clientName = project.data.clientName || "";
+  state.inspectorName = project.data.inspectorName || "";
+  state.activeInspectionAreaId = project.data.activeInspectionAreaId || null;
+  state.areas = Array.isArray(project.data.areas) ? JSON.parse(JSON.stringify(project.data.areas)) : buildPresetAreas();
+  state.areas = state.areas.map((area) => ({
+    ...area,
+    selected: area.selected !== false,
+    locked: area.locked === true,
+    checks: sanitizeChecks(Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name)),
+    dimensions: area.dimensions || createDimensions()
+  }));
+  if (!state.areas.length) state.areas = buildPresetAreas();
+  els.propertyName.value = state.propertyName;
+  els.propertyAddress.value = state.propertyAddress;
+  els.clientName.value = state.clientName;
+  els.inspectorName.value = state.inspectorName;
+  render({ preserveScroll: false });
+  setScreen("welcome", { scroll: true });
+}
+
+function deleteProject(projectId) {
+  const project = state.savedProjects.find((item) => item.id === projectId);
+  if (!project) return;
+  const confirmed = window.confirm(`למחוק את "${project.title}" מרשימת הבדיקות השמורות?`);
+  if (!confirmed) return;
+
+  state.savedProjects = state.savedProjects.filter((item) => item.id !== projectId);
+  if (state.currentProjectId === projectId) {
+    state.currentProjectId = null;
+  }
+  saveProjectsLibrary();
+  saveState();
+  renderSavedProjects();
+}
+
+function startNewProject() {
+  state.currentProjectId = null;
+  state.currentScreen = "welcome";
+  state.propertyName = "";
+  state.propertyAddress = "";
+  state.clientName = "";
+  state.inspectorName = "";
+  state.activeInspectionAreaId = null;
+  state.areas = buildPresetAreas();
+  els.propertyName.value = "";
+  els.propertyAddress.value = "";
+  els.clientName.value = "";
+  els.inspectorName.value = "";
+  render({ preserveScroll: false });
+  setScreen("welcome", { scroll: true });
+}
+
+function renderSavedProjects() {
+  if (!els.savedProjectsList) return;
+
+  if (!state.savedProjects.length) {
+    els.savedProjectsList.innerHTML = `<div class="empty-state">עדיין אין בדיקות שמורות. שמור את הדירה הנוכחית כדי לחזור אליה בהמשך.</div>`;
+    return;
+  }
+
+  els.savedProjectsList.innerHTML = state.savedProjects.map((project) => {
+    const updatedAt = project.updatedAt
+      ? new Date(project.updatedAt).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })
+      : "";
+    const addressLine = project.propertyAddress ? `<p class="saved-project-meta">${project.propertyAddress}</p>` : "";
+    return `
+      <article class="saved-project" data-project-id="${project.id}">
+        <div class="saved-project-head">
+          <div>
+            <p class="saved-project-title">${project.title}</p>
+            ${addressLine}
+            <p class="saved-project-meta">עודכן: ${updatedAt || "ללא תאריך"}</p>
+          </div>
+          ${state.currentProjectId === project.id ? '<span class="inline-badge">פתוח עכשיו</span>' : ""}
+        </div>
+        <div class="saved-project-actions">
+          <button class="ghost-btn" type="button" data-action="open-project" data-project-id="${project.id}">פתח</button>
+          <button class="delete-btn" type="button" data-action="delete-project" data-project-id="${project.id}">מחק</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  els.savedProjectsList.querySelectorAll("[data-action='open-project']").forEach((button) => {
+    button.addEventListener("click", () => loadProject(button.dataset.projectId));
+  });
+
+  els.savedProjectsList.querySelectorAll("[data-action='delete-project']").forEach((button) => {
+    button.addEventListener("click", () => deleteProject(button.dataset.projectId));
+  });
+}
+
 function updateHeader() {
   updateProjectFields();
   els.reportTitle.textContent = state.propertyName || "דוח בדיקה הנדסית";
@@ -530,6 +688,8 @@ function renderSummaryReports() {
 }
 
 function loadState() {
+  const projectsRaw = localStorage.getItem(projectsKey);
+  state.savedProjects = projectsRaw ? JSON.parse(projectsRaw) : [];
   const raw = localStorage.getItem(storageKey);
   if (!raw) {
     state.currentScreen = "welcome";
@@ -543,6 +703,7 @@ function loadState() {
   state.propertyAddress = parsed.propertyAddress || "";
   state.clientName = parsed.clientName || "";
   state.inspectorName = parsed.inspectorName || "";
+  state.currentProjectId = parsed.currentProjectId || null;
   state.areas = Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas();
   if (!state.areas.length) {
     state.areas = buildPresetAreas();
@@ -564,6 +725,7 @@ function render(options = {}) {
   const { preserveScroll = true } = options;
   const previousScrollY = preserveScroll ? window.scrollY : 0;
   updateHeader();
+  renderSavedProjects();
   renderRoomSelection();
   renderAreas();
   renderSummaryReports();
@@ -582,6 +744,21 @@ function addArea(name, type) {
 els.startBtn.addEventListener("click", () => {
   updateProjectFields();
   setScreen("rooms", { scroll: true });
+});
+
+els.saveProjectBtn.addEventListener("click", () => {
+  if (saveCurrentProject()) {
+    window.alert("הבדיקה נשמרה ותופיע ברשימת הבדיקות השמורות.");
+  }
+});
+
+els.newProjectBtn.addEventListener("click", () => {
+  const hasContent = state.propertyName || state.propertyAddress || state.clientName || state.inspectorName || selectedAreas().some((area) => area.checks.some((check) => check.status !== "pending" || check.note.trim()));
+  if (hasContent) {
+    const confirmed = window.confirm("לפתוח בדיקה חדשה? הנתונים הנוכחיים יישארו רק אם שמרת אותם.");
+    if (!confirmed) return;
+  }
+  startNewProject();
 });
 
 els.backToWelcomeBtn.addEventListener("click", () => {
@@ -627,6 +804,7 @@ els.navButtons.forEach((button) => {
 els.resetBtn.addEventListener("click", () => {
   localStorage.removeItem(storageKey);
   state.currentScreen = "welcome";
+  state.currentProjectId = null;
   state.propertyName = "";
   state.propertyAddress = "";
   state.clientName = "";
