@@ -161,9 +161,6 @@ const els = {
   addAreaBtn: document.querySelector("#addAreaBtn"),
   resetBtn: document.querySelector("#resetBtn"),
   printBtn: document.querySelector("#printBtn"),
-  prevAreaBtn: document.querySelector("#prevAreaBtn"),
-  nextAreaBtn: document.querySelector("#nextAreaBtn"),
-  currentAreaIndicator: document.querySelector("#currentAreaIndicator"),
   navButtons: [...document.querySelectorAll(".nav-btn")],
   screens: [...document.querySelectorAll(".screen")],
   roomsSelection: document.querySelector("#roomsSelection"),
@@ -746,10 +743,6 @@ function renderAreas() {
   els.areasContainer.innerHTML = "";
   const activeArea = ensureActiveInspectionArea();
   const selected = selectedAreas();
-  const activeIndex = activeArea ? selected.findIndex((area) => area.id === activeArea.id) : -1;
-  els.currentAreaIndicator.textContent = activeArea ? `${activeIndex + 1} / ${selected.length}` : "0 / 0";
-  els.prevAreaBtn.disabled = activeIndex <= 0;
-  els.nextAreaBtn.disabled = activeIndex === -1 || activeIndex >= selected.length - 1;
   if (!activeArea) {
     els.areasContainer.innerHTML = `<div class="empty-state">בחר לפחות חדר אחד במסך החדרים כדי להתחיל בדיקה.</div>`;
     return;
@@ -950,14 +943,6 @@ els.newProjectBtn.addEventListener("click", () => {
 
 els.backToWelcomeBtn.addEventListener("click", () => {
   setScreen("welcome", { scroll: true });
-});
-
-els.prevAreaBtn.addEventListener("click", () => {
-  moveInspectionArea(-1);
-});
-
-els.nextAreaBtn.addEventListener("click", () => {
-  moveInspectionArea(1);
 });
 
 els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
