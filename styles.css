@@ -109,6 +109,17 @@ select {
   margin-bottom: 8px;
 }
 
+.version-tag {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(24, 90, 97, 0.1);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .section-head {
   display: flex;
   align-items: start;
