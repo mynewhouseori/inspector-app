@@ -294,6 +294,26 @@ function setPickerOpen(value) {
   }
 }
 
+function bindPickerStability(select) {
+  const armPicker = () => setPickerOpen(true);
+  const releasePicker = () => {
+    window.setTimeout(() => setPickerOpen(false), 180);
+  };
+
+  select.addEventListener("pointerdown", armPicker);
+  select.addEventListener("mousedown", armPicker);
+  select.addEventListener("touchstart", armPicker, { passive: true });
+  select.addEventListener("focus", armPicker);
+  select.addEventListener("click", armPicker);
+  select.addEventListener("change", releasePicker);
+  select.addEventListener("blur", releasePicker);
+  select.addEventListener("keyup", (event) => {
+    if (event.key === "Escape" || event.key === "Enter" || event.key === "Tab") {
+      releasePicker();
+    }
+  });
+}
+
 function createArea(name, type, selected = true) {
   return {
     id: uid(),
@@ -815,12 +835,7 @@ function renderAreas() {
       statusSelect.disabled = area.locked;
       severitySelect.disabled = area.locked;
       noteInput.disabled = area.locked;
-      [statusSelect, severitySelect].forEach((select) => {
-        select.addEventListener("focus", () => setPickerOpen(true));
-        select.addEventListener("blur", () => {
-          window.setTimeout(() => setPickerOpen(false), 120);
-        });
-      });
+      [statusSelect, severitySelect].forEach((select) => bindPickerStability(select));
       if (area.locked) {
         statusSelect.classList.add("field-locked");
         severitySelect.classList.add("field-locked");
