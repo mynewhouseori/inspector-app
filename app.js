@@ -130,6 +130,8 @@ let lastLocalMutationAt = 0;
 let lastCloudAppliedAt = 0;
 let hasBootstrappedCloud = false;
 let isApplyingCloudProject = false;
+let isPickerOpen = false;
+let pendingCloudSync = false;
 
 const state = {
   currentScreen: "welcome",
@@ -282,6 +284,14 @@ function applyCheckVisualState(checkNode, check) {
 function markLocalMutation() {
   if (isApplyingCloudProject) return;
   lastLocalMutationAt = Date.now();
+}
+
+function setPickerOpen(value) {
+  isPickerOpen = value;
+  if (!isPickerOpen && pendingCloudSync) {
+    pendingCloudSync = false;
+    queueCloudSync();
+  }
 }
 
 function createArea(name, type, selected = true) {
@@ -501,6 +511,10 @@ async function bootstrapCloudProjects(localProjects = []) {
 
 function queueCloudSync() {
   if (!db || !state.currentProjectId) return;
+  if (isPickerOpen) {
+    pendingCloudSync = true;
+    return;
+  }
   clearTimeout(cloudSyncTimer);
   cloudSyncTimer = window.setTimeout(async () => {
     try {
@@ -540,6 +554,7 @@ function subscribeToCloudProjects() {
 
       const activeProject = state.currentProjectId ? projects.find((project) => project.id === state.currentProjectId) : null;
       const remoteIsNewer = activeProject && activeProject.updatedAtMs > lastCloudAppliedAt && Date.now() - lastLocalMutationAt > 1200;
+      if (isPickerOpen) return;
       if (remoteIsNewer) {
         isApplyingCloudProject = true;
         try {
@@ -800,6 +815,12 @@ function renderAreas() {
       statusSelect.disabled = area.locked;
       severitySelect.disabled = area.locked;
       noteInput.disabled = area.locked;
+      [statusSelect, severitySelect].forEach((select) => {
+        select.addEventListener("focus", () => setPickerOpen(true));
+        select.addEventListener("blur", () => {
+          window.setTimeout(() => setPickerOpen(false), 120);
+        });
+      });
       if (area.locked) {
         statusSelect.classList.add("field-locked");
         severitySelect.classList.add("field-locked");

@@ -697,6 +697,15 @@ select {
     backdrop-filter: none;
   }
 
+  .status-select,
+  .severity-select {
+    min-height: 48px;
+    font-size: 16px;
+    -webkit-appearance: menulist;
+    appearance: menulist;
+    touch-action: manipulation;
+  }
+
   .cloud-status {
     display: none;
   }
