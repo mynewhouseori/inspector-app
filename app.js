@@ -343,6 +343,12 @@ function createArea(name, type, selected = true) {
   };
 }
 
+function resetArea(area) {
+  area.locked = false;
+  area.checks = defaultChecks(area.type, area.name);
+  area.dimensions = createDimensions();
+}
+
 function buildPresetAreas() {
   return defaultAreaPreset.map((name) => createArea(name, inferAreaType(name), true));
 }
@@ -1022,18 +1028,14 @@ els.navButtons.forEach((button) => {
 });
 
 els.resetBtn.addEventListener("click", () => {
-  localStorage.removeItem(storageKey);
-  state.currentScreen = "welcome";
-  state.currentProjectId = null;
-  state.propertyName = "";
-  state.propertyAddress = "";
-  state.clientName = "";
-  state.inspectorName = "";
-  state.areas = buildPresetAreas();
-  els.propertyName.value = "";
-  els.propertyAddress.value = "";
-  els.clientName.value = "";
-  els.inspectorName.value = "";
+  const activeArea = ensureActiveInspectionArea();
+  if (!activeArea) {
+    window.alert("אין חדר פעיל לאיפוס כרגע.");
+    return;
+  }
+  const confirmed = window.confirm(`לאפס את "${activeArea.name}" בלבד? כל המידות, הממצאים והנעילה של החדר הזה יימחקו.`);
+  if (!confirmed) return;
+  resetArea(activeArea);
   render();
 });
 
