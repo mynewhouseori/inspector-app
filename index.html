@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Inspector Mobile</title>
-  <link rel="stylesheet" href="styles.css?v=20260503-11">
+  <link rel="stylesheet" href="styles.css?v=20260503-12">
 </head>
 <body>
   <div class="mobile-app">
@@ -13,7 +13,7 @@
       <div>
         <h1>Inspector</h1>
         <p>בדיקות הנדסיות לנכס</p>
-        <p class="top-version">גרסה 2026.05.03.11</p>
+        <p class="top-version">גרסה 2026.05.03.12</p>
       </div>
     </header>
 
@@ -21,7 +21,7 @@
       <section id="screen-welcome" class="screen active">
         <div class="hero-card">
           <p class="eyebrow">גרסת מובייל</p>
-          <p class="version-tag">גרסה 2026.05.03.11</p>
+          <p class="version-tag">גרסה 2026.05.03.12</p>
           <h2>מתחילים בדיקת דירה לפי חדרים</h2>
           <p>
             הזן פרטי נכס, בחר חדרים, מלא מידות וממצאים, וקבל דוח מסכם שנוח לשמור או להדפיס.
@@ -47,6 +47,7 @@
             <span>שם הבודק</span>
             <input id="inspectorName" type="text" placeholder="הזן שם בודק">
           </label>
+          <p id="cloudStatus" class="cloud-status">בודק חיבור לענן...</p>
           <button id="saveProjectBtn" class="ghost-btn full-width" type="button">שמור בדיקת דירה</button>
         </section>
 
@@ -224,6 +225,7 @@
     </div>
   </template>
 
-  <script src="app.js?v=20260503-11"></script>
+  <script src="config.demo.js?v=20260503-12"></script>
+  <script type="module" src="app.js?v=20260503-12"></script>
 </body>
 </html>

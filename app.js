@@ -1,3 +1,14 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  getDocs,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
 const baseChecks = {
   structureEnvelope: [
     { code: "1.1.1", name: "בדיקת סדקים", category: "שלד ומעטפת" },
@@ -107,6 +118,18 @@ const severityLabels = {
 };
 
 const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5"]);
+const SETTINGS = window.APP_CONFIG || window.DEFAULT_APP_CONFIG || {};
+const hasFirebaseConfig = Boolean(SETTINGS?.firebase?.apiKey);
+const firebaseApp = hasFirebaseConfig ? initializeApp(SETTINGS.firebase) : null;
+const db = firebaseApp ? getFirestore(firebaseApp) : null;
+const PROJECTS_COLLECTION = SETTINGS?.firestoreCollections?.projects || "inspector_projects";
+
+let projectsUnsubscribe = null;
+let cloudSyncTimer = null;
+let lastLocalMutationAt = 0;
+let lastCloudAppliedAt = 0;
+let hasBootstrappedCloud = false;
+let isApplyingCloudProject = false;
 
 const state = {
   currentScreen: "welcome",
@@ -128,6 +151,7 @@ const els = {
   propertyAddress: document.querySelector("#propertyAddress"),
   clientName: document.querySelector("#clientName"),
   inspectorName: document.querySelector("#inspectorName"),
+  cloudStatus: document.querySelector("#cloudStatus"),
   saveProjectBtn: document.querySelector("#saveProjectBtn"),
   jumpToSavedProjectsBtn: document.querySelector("#jumpToSavedProjectsBtn"),
   newProjectBtn: document.querySelector("#newProjectBtn"),
@@ -208,6 +232,42 @@ function sanitizeChecks(checks) {
   return (Array.isArray(checks) ? checks : [])
     .filter((check) => !removedCheckCodes.has(check.code))
     .map((check) => (check.code === "3.1.1" ? { ...check, name: "זיגוג" } : check));
+}
+
+function hydrateArea(area) {
+  return {
+    ...area,
+    selected: area.selected !== false,
+    locked: area.locked === true,
+    checks: sanitizeChecks(Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name)),
+    dimensions: area.dimensions || createDimensions()
+  };
+}
+
+function applyProjectData(projectData) {
+  state.propertyName = projectData.propertyName || "";
+  state.propertyAddress = projectData.propertyAddress || "";
+  state.clientName = projectData.clientName || "";
+  state.inspectorName = projectData.inspectorName || "";
+  state.activeInspectionAreaId = projectData.activeInspectionAreaId || null;
+  state.areas = Array.isArray(projectData.areas) ? projectData.areas.map((area) => hydrateArea(area)) : buildPresetAreas();
+  if (!state.areas.length) state.areas = buildPresetAreas();
+  els.propertyName.value = state.propertyName;
+  els.propertyAddress.value = state.propertyAddress;
+  els.clientName.value = state.clientName;
+  els.inspectorName.value = state.inspectorName;
+}
+
+function updateCloudStatus(message, tone = "") {
+  if (!els.cloudStatus) return;
+  els.cloudStatus.textContent = message;
+  els.cloudStatus.classList.remove("status-ok", "status-warn", "status-error");
+  if (tone) els.cloudStatus.classList.add(`status-${tone}`);
+}
+
+function markLocalMutation() {
+  if (isApplyingCloudProject) return;
+  lastLocalMutationAt = Date.now();
 }
 
 function createArea(name, type, selected = true) {
@@ -376,6 +436,114 @@ function saveProjectsLibrary() {
   localStorage.setItem(projectsKey, JSON.stringify(state.savedProjects));
 }
 
+function buildProjectRecord(projectId = state.currentProjectId || uid()) {
+  const now = new Date();
+  return {
+    id: projectId,
+    title: getProjectTitle(),
+    propertyName: state.propertyName,
+    propertyAddress: state.propertyAddress,
+    updatedAt: now.toISOString(),
+    updatedAtMs: now.getTime(),
+    data: serializeCurrentProject()
+  };
+}
+
+async function saveProjectRecordToCloud(record) {
+  if (!db) return;
+  await setDoc(doc(db, PROJECTS_COLLECTION, record.id), record);
+}
+
+function normalizeProjectRecord(project) {
+  if (!project || !project.id || !project.data) return null;
+  return {
+    ...project,
+    title: project.data.propertyName || project.title || "בדיקת דירה ללא שם נכס",
+    propertyAddress: project.data.propertyAddress || project.propertyAddress || "",
+    updatedAt: project.updatedAt || new Date(project.updatedAtMs || Date.now()).toISOString(),
+    updatedAtMs: Number(project.updatedAtMs || 0),
+    data: {
+      ...project.data,
+      areas: Array.isArray(project.data.areas) ? project.data.areas.map((area) => hydrateArea(area)) : buildPresetAreas()
+    }
+  };
+}
+
+async function bootstrapCloudProjects(localProjects = []) {
+  if (!db || hasBootstrappedCloud) return;
+  hasBootstrappedCloud = true;
+  try {
+    const cloudSnapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
+    const cloudIds = new Set(cloudSnapshot.docs.map((item) => item.id));
+    const missingLocalProjects = localProjects.filter((project) => project?.id && !cloudIds.has(project.id));
+    for (const project of missingLocalProjects) {
+      await saveProjectRecordToCloud(normalizeProjectRecord(project) || project);
+    }
+  } catch (error) {
+    updateCloudStatus("הסנכרון לענן זמין חלקית. אפשר להמשיך לעבוד ולשמור ידנית.", "warn");
+    console.error(error);
+  }
+}
+
+function queueCloudSync() {
+  if (!db || !state.currentProjectId) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = window.setTimeout(async () => {
+    try {
+      updateProjectFields();
+      const record = buildProjectRecord(state.currentProjectId);
+      await saveProjectRecordToCloud(record);
+      state.currentProjectId = record.id;
+      lastCloudAppliedAt = record.updatedAtMs;
+      updateCloudStatus("הבדיקה מסונכרנת לענן בין מחשב לנייד.", "ok");
+    } catch (error) {
+      updateCloudStatus("שמירה מקומית פועלת, אבל הסנכרון לענן נכשל כרגע.", "error");
+      console.error(error);
+    }
+  }, 700);
+}
+
+function subscribeToCloudProjects() {
+  if (!db || projectsUnsubscribe) {
+    if (!db) updateCloudStatus("אין חיבור לענן. הנתונים נשמרים מקומית בלבד.", "warn");
+    return;
+  }
+
+  updateCloudStatus("מתחבר לענן ומסנכרן פרויקטים...", "warn");
+  const localProjectsSeed = [...state.savedProjects];
+  bootstrapCloudProjects(localProjectsSeed);
+  projectsUnsubscribe = onSnapshot(
+    collection(db, PROJECTS_COLLECTION),
+    (snapshot) => {
+      const projects = snapshot.docs
+        .map((item) => normalizeProjectRecord({ id: item.id, ...item.data() }))
+        .filter(Boolean)
+        .sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
+      state.savedProjects = projects;
+      saveProjectsLibrary();
+      renderSavedProjects();
+      updateCloudStatus("סנכרון ענן פעיל. אותם פרויקטים זמינים במחשב ובנייד.", "ok");
+
+      const activeProject = state.currentProjectId ? projects.find((project) => project.id === state.currentProjectId) : null;
+      const remoteIsNewer = activeProject && activeProject.updatedAtMs > lastCloudAppliedAt && Date.now() - lastLocalMutationAt > 1200;
+      if (remoteIsNewer) {
+        isApplyingCloudProject = true;
+        try {
+          applyProjectData(activeProject.data);
+          lastCloudAppliedAt = activeProject.updatedAtMs;
+          render({ preserveScroll: false });
+        } finally {
+          isApplyingCloudProject = false;
+        }
+      }
+    },
+    (error) => {
+      updateCloudStatus("החיבור לענן נכשל. אפשר להמשיך לעבוד מקומית.", "error");
+      console.error(error);
+    }
+  );
+}
+
 function exportProjects() {
   if (!state.savedProjects.length) {
     window.alert("אין עדיין פרויקטים שמורים לייצוא.");
@@ -430,22 +598,15 @@ function importProjectsFromFile(file) {
   reader.readAsText(file);
 }
 
-function saveCurrentProject() {
+async function saveCurrentProject() {
   updateProjectFields();
   if (!state.propertyName) {
     window.alert("יש להזין שם נכס לפני שמירה.");
     return false;
   }
 
-  const now = new Date().toISOString();
   const id = state.currentProjectId || uid();
-  const record = {
-    id,
-    title: getProjectTitle(),
-    propertyAddress: state.propertyAddress,
-    updatedAt: now,
-    data: serializeCurrentProject()
-  };
+  const record = buildProjectRecord(id);
 
   const existingIndex = state.savedProjects.findIndex((project) => project.id === id);
   if (existingIndex >= 0) {
@@ -455,9 +616,17 @@ function saveCurrentProject() {
   }
 
   state.currentProjectId = id;
-  state.savedProjects.sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+  state.savedProjects.sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
   saveProjectsLibrary();
   saveState();
+  try {
+    await saveProjectRecordToCloud(record);
+    lastCloudAppliedAt = record.updatedAtMs;
+    updateCloudStatus("הבדיקה נשמרה בענן וזמינה גם במחשב וגם בנייד.", "ok");
+  } catch (error) {
+    updateCloudStatus("הבדיקה נשמרה מקומית, אבל לא הועלתה לענן.", "error");
+    console.error(error);
+  }
   renderSavedProjects();
   return true;
 }
@@ -468,29 +637,15 @@ function loadProject(projectId) {
 
   state.currentProjectId = project.id;
   state.currentScreen = "welcome";
-  state.propertyName = project.data.propertyName || "";
-  state.propertyAddress = project.data.propertyAddress || "";
-  state.clientName = project.data.clientName || "";
-  state.inspectorName = project.data.inspectorName || "";
-  state.activeInspectionAreaId = project.data.activeInspectionAreaId || null;
-  state.areas = Array.isArray(project.data.areas) ? JSON.parse(JSON.stringify(project.data.areas)) : buildPresetAreas();
-  state.areas = state.areas.map((area) => ({
-    ...area,
-    selected: area.selected !== false,
-    locked: area.locked === true,
-    checks: sanitizeChecks(Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name)),
-    dimensions: area.dimensions || createDimensions()
-  }));
-  if (!state.areas.length) state.areas = buildPresetAreas();
-  els.propertyName.value = state.propertyName;
-  els.propertyAddress.value = state.propertyAddress;
-  els.clientName.value = state.clientName;
-  els.inspectorName.value = state.inspectorName;
+  isApplyingCloudProject = true;
+  applyProjectData(project.data);
+  lastCloudAppliedAt = project.updatedAtMs || Date.now();
+  isApplyingCloudProject = false;
   render({ preserveScroll: false });
   setScreen("welcome", { scroll: true });
 }
 
-function deleteProject(projectId) {
+async function deleteProject(projectId) {
   const project = state.savedProjects.find((item) => item.id === projectId);
   if (!project) return;
   const confirmed = window.confirm(`למחוק את "${project.title}" מרשימת הבדיקות השמורות?`);
@@ -502,6 +657,14 @@ function deleteProject(projectId) {
   }
   saveProjectsLibrary();
   saveState();
+  if (db) {
+    try {
+      await deleteDoc(doc(db, PROJECTS_COLLECTION, projectId));
+    } catch (error) {
+      updateCloudStatus("הפרויקט נמחק מקומית, אבל המחיקה בענן נכשלה.", "error");
+      console.error(error);
+    }
+  }
   renderSavedProjects();
 }
 
@@ -579,7 +742,9 @@ function updateHeader() {
 }
 
 function saveState() {
+  markLocalMutation();
   localStorage.setItem(storageKey, JSON.stringify(state));
+  queueCloudSync();
 }
 
 function setScreen(screen, options = {}) {
@@ -757,31 +922,21 @@ function loadState() {
   if (!raw) {
     state.currentScreen = "welcome";
     state.areas = buildPresetAreas();
+    updateCloudStatus("טוען פרויקטים מהענן...", "warn");
     return;
   }
   const parsed = JSON.parse(raw);
   state.currentScreen = "welcome";
-  state.activeInspectionAreaId = parsed.activeInspectionAreaId || null;
-  state.propertyName = parsed.propertyName || "";
-  state.propertyAddress = parsed.propertyAddress || "";
-  state.clientName = parsed.clientName || "";
-  state.inspectorName = parsed.inspectorName || "";
   state.currentProjectId = parsed.currentProjectId || null;
-  state.areas = Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas();
-  if (!state.areas.length) {
-    state.areas = buildPresetAreas();
-  }
-  state.areas = state.areas.map((area) => ({
-    ...area,
-    selected: area.selected !== false,
-    locked: area.locked === true,
-    checks: sanitizeChecks(Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name)),
-    dimensions: area.dimensions || createDimensions()
-  }));
-  els.propertyName.value = state.propertyName;
-  els.propertyAddress.value = state.propertyAddress;
-  els.clientName.value = state.clientName;
-  els.inspectorName.value = state.inspectorName;
+  applyProjectData({
+    propertyName: parsed.propertyName || "",
+    propertyAddress: parsed.propertyAddress || "",
+    clientName: parsed.clientName || "",
+    inspectorName: parsed.inspectorName || "",
+    activeInspectionAreaId: parsed.activeInspectionAreaId || null,
+    areas: Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas()
+  });
+  updateCloudStatus("טוען פרויקטים מהענן...", "warn");
 }
 
 function render(options = {}) {
@@ -804,8 +959,8 @@ function addArea(name, type) {
   render();
 }
 
-els.saveProjectBtn.addEventListener("click", () => {
-  if (saveCurrentProject()) {
+els.saveProjectBtn.addEventListener("click", async () => {
+  if (await saveCurrentProject()) {
     window.alert("הבדיקה נשמרה ותופיע ברשימת הבדיקות השמורות.");
   }
 });
@@ -895,6 +1050,7 @@ loadState();
 state.currentScreen = "welcome";
 if (!state.areas.length) state.areas = buildPresetAreas();
 render();
+subscribeToCloudProjects();
 
 window.addEventListener("pageshow", () => {
   state.currentScreen = "welcome";
