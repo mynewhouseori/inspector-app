@@ -41,7 +41,9 @@ const baseChecks = {
     { code: "5.1.1", name: "שקעים", category: "חשמל ותקשורת" },
     { code: "5.1.2", name: "מפסקים", category: "חשמל ותקשורת" },
     { code: "5.1.3", name: "נקודות תאורה", category: "חשמל ותקשורת" },
-    { code: "5.1.4", name: "התאמה לתוכניות", category: "חשמל ותקשורת" },
+    { code: "5.1.4", name: "התאמה לתוכניות", category: "חשמל ותקשורת" }
+  ],
+  dryRoomSystems: [
     { code: "5.1.5", name: "מזגן", category: "חשמל ותקשורת" }
   ],
   outdoorRoof: [
@@ -65,6 +67,7 @@ const checkSets = {
     ...baseChecks.interiorFinishes.filter((check) => check.code !== "2.1.5"),
     ...baseChecks.openingsDoors.filter((check) => check.code !== "3.1.4"),
     ...baseChecks.electricityCommunication,
+    ...baseChecks.dryRoomSystems,
     ...baseChecks.safetyRegulations.filter((check) => check.code !== "7.1.2")
   ],
   wet: [
