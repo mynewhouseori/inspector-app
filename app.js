@@ -74,10 +74,10 @@ const checkSets = {
     ...baseChecks.structureEnvelope,
     ...baseChecks.interiorFinishes.filter((check) => check.code !== "2.1.5"),
     ...baseChecks.wetRoomFinishes,
-    ...baseChecks.openingsDoors,
+    ...baseChecks.openingsDoors.filter((check) => check.code !== "3.1.4"),
     ...baseChecks.plumbingDrainage,
     ...baseChecks.electricityCommunication,
-    ...baseChecks.safetyRegulations
+    ...baseChecks.safetyRegulations.filter((check) => check.code !== "7.1.2")
   ],
   outdoor: [
     ...baseChecks.structureEnvelope,
