@@ -160,6 +160,7 @@ const els = {
   saveProjectBtn: document.querySelector("#saveProjectBtn"),
   jumpToSavedProjectsBtn: document.querySelector("#jumpToSavedProjectsBtn"),
   newProjectBtn: document.querySelector("#newProjectBtn"),
+  copyBedroomsBtn: document.querySelector("#copyBedroomsBtn"),
   backToWelcomeBtn: document.querySelector("#backToWelcomeBtn"),
   areaName: document.querySelector("#areaName"),
   areaType: document.querySelector("#areaType"),
@@ -349,9 +350,48 @@ function resetArea(area) {
   area.dimensions = createDimensions();
 }
 
+function cloneChecksFromSource(sourceChecks, targetArea) {
+  const expectedChecks = defaultChecks(targetArea.type, targetArea.name);
+  const sourceByCode = new Map(sanitizeChecks(sourceChecks).map((check) => [check.code, check]));
+
+  return expectedChecks.map((check) => {
+    const sourceCheck = sourceByCode.get(check.code);
+    return sourceCheck
+      ? { ...check, status: sourceCheck.status, severity: sourceCheck.severity, note: sourceCheck.note }
+      : check;
+  });
+}
+
 function toggleAreaLock(area) {
   area.locked = !area.locked;
   render();
+}
+
+function copyBedroom01ToOtherBedrooms() {
+  const source = state.areas.find((area) => area.name === "חדר שינה 01");
+  const targets = state.areas.filter((area) => ["חדר שינה 02", "חדר שינה 03", "חדר שינה 04"].includes(area.name));
+
+  if (!source) {
+    window.alert('לא נמצא "חדר שינה 01" בפרויקט הנוכחי.');
+    return;
+  }
+
+  if (!targets.length) {
+    window.alert("לא נמצאו חדרי היעד 02/03/04 בפרויקט הנוכחי.");
+    return;
+  }
+
+  const confirmed = window.confirm('להעתיק את הנתונים של "חדר שינה 01" אל חדרי שינה 02/03/04? הממצאים, המידות והנעילה בחדרי היעד יוחלפו.');
+  if (!confirmed) return;
+
+  targets.forEach((target) => {
+    target.locked = source.locked;
+    target.dimensions = { ...source.dimensions };
+    target.checks = cloneChecksFromSource(source.checks, target);
+  });
+
+  render();
+  window.alert("הנתונים הועתקו מחדר שינה 01 אל 02/03/04.");
 }
 
 function buildPresetAreas() {
@@ -1002,6 +1042,10 @@ els.newProjectBtn.addEventListener("click", () => {
     if (!confirmed) return;
   }
   startNewProject();
+});
+
+els.copyBedroomsBtn.addEventListener("click", () => {
+  copyBedroom01ToOtherBedrooms();
 });
 
 els.backToWelcomeBtn.addEventListener("click", () => {
