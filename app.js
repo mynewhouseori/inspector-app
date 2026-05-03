@@ -1,9 +1,6 @@
 const baseChecks = {
   structureEnvelope: [
     { code: "1.1.1", name: "בדיקת סדקים", category: "שלד ומעטפת" },
-    { code: "1.1.2", name: "סטיות", category: "שלד ומעטפת" },
-    { code: "1.1.3", name: "טיח", category: "שלד ומעטפת" },
-    { code: "1.1.4", name: "חיפויי חוץ", category: "שלד ומעטפת" },
     { code: "1.1.5", name: "איטומים", category: "שלד ומעטפת" },
     { code: "1.1.6", name: "איתור סימני חדירת מים", category: "שלד ומעטפת" }
   ],
@@ -21,8 +18,7 @@ const baseChecks = {
     { code: "3.1.1", name: "בדיקת חלונות", category: "פתחים ודלתות" },
     { code: "3.1.2", name: "דלתות", category: "פתחים ודלתות" },
     { code: "3.1.3", name: "אלומיניום", category: "פתחים ודלתות" },
-    { code: "3.1.4", name: "איטומים", category: "פתחים ודלתות" },
-    { code: "3.1.5", name: "מנגנונים ותפקוד כללי", category: "פתחים ודלתות" }
+    { code: "3.1.4", name: "איטומים", category: "פתחים ודלתות" }
   ],
   plumbingDrainage: [
     { code: "4.1.1", name: "בדיקת לחץ מים", category: "אינסטלציה וניקוז" },
@@ -61,7 +57,7 @@ const checkSets = {
     ...baseChecks.safetyRegulations.filter((check) => check.code !== "7.1.2")
   ],
   wet: [
-    ...baseChecks.structureEnvelope.filter((check) => check.code !== "1.1.4"),
+    ...baseChecks.structureEnvelope,
     ...baseChecks.interiorFinishes.filter((check) => check.code !== "2.1.5"),
     ...baseChecks.wetRoomFinishes,
     ...baseChecks.openingsDoors,
