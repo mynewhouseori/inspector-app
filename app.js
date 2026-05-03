@@ -54,7 +54,7 @@ const baseChecks = {
   safetyRegulations: [
     { code: "7.1.1", name: "איתור ליקויים בטיחותיים", category: "בטיחות ותקנות" },
     { code: "7.1.2", name: "מעקות", category: "בטיחות ותקנות" },
-    { code: "7.1.3", name: "זכוכיות", category: "בטיחות ותקנות" },
+    { code: "7.1.3", name: "זיגוג", category: "בטיחות ותקנות" },
     { code: "7.1.4", name: "הפרשי מפלסים ומפגעים", category: "בטיחות ותקנות" }
   ]
 };
@@ -228,7 +228,7 @@ function defaultChecks(type, areaName = "") {
 function sanitizeChecks(checks) {
   return (Array.isArray(checks) ? checks : [])
     .filter((check) => !removedCheckCodes.has(check.code))
-    .map((check) => (check.code === "3.1.1" ? { ...check, name: "זיגוג" } : check));
+    .map((check) => (["3.1.1", "7.1.3"].includes(check.code) ? { ...check, name: "זיגוג" } : check));
 }
 
 function hydrateArea(area) {
