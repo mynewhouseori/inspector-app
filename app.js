@@ -257,9 +257,29 @@ function applyProjectData(projectData) {
 
 function updateCloudStatus(message, tone = "") {
   if (!els.cloudStatus) return;
-  els.cloudStatus.textContent = message;
+  const compactMessage = tone === "ok"
+    ? "הענן מחובר"
+    : tone === "warn"
+      ? "הענן בתהליך"
+      : tone === "error"
+        ? "שגיאת סנכרון"
+        : "סנכרון ענן";
+  els.cloudStatus.textContent = compactMessage;
   els.cloudStatus.classList.remove("status-ok", "status-warn", "status-error");
   if (tone) els.cloudStatus.classList.add(`status-${tone}`);
+}
+
+function applyCheckVisualState(checkNode, check) {
+  const statusSelect = checkNode.querySelector(".status-select");
+  const severitySelect = checkNode.querySelector(".severity-select");
+  const noteInput = checkNode.querySelector(".note-input");
+
+  statusSelect.classList.remove("status-pending", "status-ok", "status-issue", "status-na");
+  severitySelect.classList.remove("severity-low", "severity-medium", "severity-high");
+  noteInput.classList.toggle("has-note", Boolean(check.note.trim()));
+
+  statusSelect.classList.add(`status-${check.status}`);
+  severitySelect.classList.add(`severity-${check.severity}`);
 }
 
 function markLocalMutation() {
@@ -780,6 +800,7 @@ function renderAreas() {
       statusSelect.value = check.status;
       severitySelect.value = check.severity;
       noteInput.value = check.note;
+      applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
       severitySelect.disabled = area.locked;
       noteInput.disabled = area.locked;
@@ -790,14 +811,17 @@ function renderAreas() {
       }
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
+        applyCheckVisualState(checkNode, check);
         refreshProgressAndSummary();
       });
       severitySelect.addEventListener("change", (event) => {
         check.severity = event.target.value;
+        applyCheckVisualState(checkNode, check);
         refreshProgressAndSummary();
       });
       noteInput.addEventListener("input", (event) => {
         check.note = event.target.value;
+        applyCheckVisualState(checkNode, check);
         refreshProgressAndSummary();
       });
       checksList.appendChild(checkNode);
