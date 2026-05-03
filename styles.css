@@ -453,6 +453,10 @@ select {
   align-items: center;
 }
 
+.area-footer-actions {
+  margin-top: 14px;
+}
+
 .area-head {
   margin-bottom: 14px;
 }
@@ -466,6 +470,10 @@ select {
 .lock-btn.locked {
   background: rgba(42, 127, 98, 0.14);
   color: var(--ok);
+}
+
+.lock-btn-bottom {
+  width: 100%;
 }
 
 .area-card.is-locked {
@@ -587,21 +595,21 @@ select {
 }
 
 .severity-select.severity-low {
-  border-color: rgba(42, 127, 98, 0.45);
-  background: rgba(42, 127, 98, 0.08);
-  color: #145541;
+  border-color: rgba(42, 127, 98, 0.7);
+  background: rgba(42, 127, 98, 0.16);
+  color: #0f4a38;
 }
 
 .severity-select.severity-medium {
-  border-color: rgba(209, 124, 34, 0.45);
-  background: rgba(209, 124, 34, 0.1);
+  border-color: rgba(209, 124, 34, 0.78);
+  background: rgba(209, 124, 34, 0.18);
   color: #8a4e00;
 }
 
 .severity-select.severity-high {
-  border-color: rgba(180, 63, 63, 0.45);
-  background: rgba(180, 63, 63, 0.1);
-  color: #922c2c;
+  border-color: rgba(180, 63, 63, 0.78);
+  background: rgba(180, 63, 63, 0.18);
+  color: #8a1f1f;
 }
 
 .note-input.has-note {
@@ -683,6 +691,12 @@ select {
 }
 
 @media (max-width: 760px) {
+  .compact-panel {
+    position: static;
+    top: auto;
+    backdrop-filter: none;
+  }
+
   .cloud-status {
     display: none;
   }

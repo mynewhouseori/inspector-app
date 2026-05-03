@@ -369,7 +369,7 @@ function getDimensionStatus(area) {
   const widthStatus = classifyDelta(normalizeNumber(dims.planWidth), normalizeNumber(dims.actualWidth));
   const lengthStatus = classifyDelta(normalizeNumber(dims.planLength), normalizeNumber(dims.actualLength));
   if (widthStatus === "empty" || lengthStatus === "empty") return { label: "ממתין להזנה", badgeClass: "", widthStatus, lengthStatus };
-  if (widthStatus === "issue" || lengthStatus === "issue") return { label: "פער חריג במידות", badgeClass: "status-issue", widthStatus, lengthStatus };
+  if (widthStatus === "issue" || lengthStatus === "issue") return { label: "פער במידות", badgeClass: "status-issue", widthStatus, lengthStatus };
   if (widthStatus === "warn" || lengthStatus === "warn") return { label: "סטייה קלה במידות", badgeClass: "status-warn", widthStatus, lengthStatus };
   return { label: "תואם לתכנית", badgeClass: "status-ok", widthStatus, lengthStatus };
 }
@@ -761,12 +761,13 @@ function renderAreas() {
     node.querySelector(".area-type").textContent = areaTypeLabels[area.type];
     if (area.locked) node.classList.add("is-locked");
 
-    const lockBtn = node.querySelector(".lock-btn");
-    lockBtn.textContent = area.locked ? "פתח לעריכה" : "סיום ונעילה";
-    if (area.locked) lockBtn.classList.add("locked");
-    lockBtn.addEventListener("click", () => {
-      area.locked = !area.locked;
-      render();
+    node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
+      lockBtn.textContent = area.locked ? "פתח לעריכה" : "סיום ונעילה";
+      if (area.locked) lockBtn.classList.add("locked");
+      lockBtn.addEventListener("click", () => {
+        area.locked = !area.locked;
+        render();
+      });
     });
 
     node.querySelectorAll(".dimension-input").forEach((input) => {
