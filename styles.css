@@ -682,11 +682,12 @@ select {
   }
 
   .check-controls {
-    grid-template-columns: 140px 120px 1fr;
+    grid-template-columns: 140px 120px;
   }
 
   .note-input {
-    grid-column: auto;
+    grid-column: 1 / -1;
+    width: 100%;
   }
 }
 

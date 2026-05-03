@@ -54,7 +54,6 @@ const baseChecks = {
   safetyRegulations: [
     { code: "7.1.1", name: "איתור ליקויים בטיחותיים", category: "בטיחות ותקנות" },
     { code: "7.1.2", name: "מעקות", category: "בטיחות ותקנות" },
-    { code: "7.1.3", name: "זיגוג", category: "בטיחות ותקנות" },
     { code: "7.1.4", name: "הפרשי מפלסים ומפגעים", category: "בטיחות ותקנות" }
   ]
 };
@@ -117,7 +116,7 @@ const severityLabels = {
   high: "גבוהה"
 };
 
-const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5"]);
+const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5", "7.1.3"]);
 const SETTINGS = window.APP_CONFIG || window.DEFAULT_APP_CONFIG || {};
 const hasFirebaseConfig = Boolean(SETTINGS?.firebase?.apiKey);
 const firebaseApp = hasFirebaseConfig ? initializeApp(SETTINGS.firebase) : null;
@@ -227,7 +226,7 @@ function defaultChecks(type, areaName = "") {
 function sanitizeChecks(checks) {
   return (Array.isArray(checks) ? checks : [])
     .filter((check) => !removedCheckCodes.has(check.code))
-    .map((check) => (["3.1.1", "7.1.3"].includes(check.code) ? { ...check, name: "זיגוג" } : check));
+    .map((check) => (check.code === "3.1.1" ? { ...check, name: "זיגוג" } : check));
 }
 
 function hydrateArea(area) {
