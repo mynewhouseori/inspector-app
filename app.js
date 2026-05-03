@@ -41,7 +41,8 @@ const baseChecks = {
     { code: "5.1.1", name: "שקעים", category: "חשמל ותקשורת" },
     { code: "5.1.2", name: "מפסקים", category: "חשמל ותקשורת" },
     { code: "5.1.3", name: "נקודות תאורה", category: "חשמל ותקשורת" },
-    { code: "5.1.4", name: "התאמה לתוכניות", category: "חשמל ותקשורת" }
+    { code: "5.1.4", name: "התאמה לתוכניות", category: "חשמל ותקשורת" },
+    { code: "5.1.5", name: "מזגן", category: "חשמל ותקשורת" }
   ],
   outdoorRoof: [
     { code: "6.1.1", name: "בדיקות איטום", category: "גג, מרפסות ופיתוח חוץ" },
@@ -229,12 +230,26 @@ function sanitizeChecks(checks) {
     .map((check) => (check.code === "3.1.1" ? { ...check, name: "זיגוג" } : check));
 }
 
+function mergeChecksWithDefaults(existingChecks, expectedChecks) {
+  const existingByCode = new Map(
+    sanitizeChecks(existingChecks).map((check) => [check.code, check])
+  );
+
+  return expectedChecks.map((check) => {
+    const existing = existingByCode.get(check.code);
+    return existing ? { ...check, ...existing, id: existing.id || check.id } : check;
+  });
+}
+
 function hydrateArea(area) {
+  const expectedChecks = defaultChecks(area.type, area.name);
+  const areaChecks = Array.isArray(area.checks) ? area.checks : expectedChecks;
+
   return {
     ...area,
     selected: area.selected !== false,
     locked: area.locked === true,
-    checks: sanitizeChecks(Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name)),
+    checks: mergeChecksWithDefaults(areaChecks, expectedChecks),
     dimensions: area.dimensions || createDimensions()
   };
 }
