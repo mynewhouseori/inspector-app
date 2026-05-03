@@ -15,7 +15,7 @@ const baseChecks = {
     { code: "2.1.4W", name: "חיפוי", category: "גמר פנים" }
   ],
   openingsDoors: [
-    { code: "3.1.1", name: "בדיקת חלונות", category: "פתחים ודלתות" },
+    { code: "3.1.1", name: "זיגוג", category: "פתחים ודלתות" },
     { code: "3.1.2", name: "דלתות", category: "פתחים ודלתות" },
     { code: "3.1.3", name: "אלומיניום", category: "פתחים ודלתות" },
     { code: "3.1.4", name: "איטומים", category: "פתחים ודלתות" }
@@ -202,7 +202,9 @@ function defaultChecks(type, areaName = "") {
 }
 
 function sanitizeChecks(checks) {
-  return (Array.isArray(checks) ? checks : []).filter((check) => !removedCheckCodes.has(check.code));
+  return (Array.isArray(checks) ? checks : [])
+    .filter((check) => !removedCheckCodes.has(check.code))
+    .map((check) => (check.code === "3.1.1" ? { ...check, name: "זיגוג" } : check));
 }
 
 function createArea(name, type, selected = true) {
