@@ -155,9 +155,6 @@ const els = {
   saveProjectBtn: document.querySelector("#saveProjectBtn"),
   jumpToSavedProjectsBtn: document.querySelector("#jumpToSavedProjectsBtn"),
   newProjectBtn: document.querySelector("#newProjectBtn"),
-  exportProjectsBtn: document.querySelector("#exportProjectsBtn"),
-  importProjectsBtn: document.querySelector("#importProjectsBtn"),
-  importProjectsInput: document.querySelector("#importProjectsInput"),
   backToWelcomeBtn: document.querySelector("#backToWelcomeBtn"),
   areaName: document.querySelector("#areaName"),
   areaType: document.querySelector("#areaType"),
@@ -544,60 +541,6 @@ function subscribeToCloudProjects() {
   );
 }
 
-function exportProjects() {
-  if (!state.savedProjects.length) {
-    window.alert("אין עדיין פרויקטים שמורים לייצוא.");
-    return;
-  }
-
-  const payload = {
-    exportedAt: new Date().toISOString(),
-    version: 1,
-    projects: state.savedProjects
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  const stamp = new Date().toISOString().slice(0, 10);
-  link.href = url;
-  link.download = `inspector-projects-${stamp}.json`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-function importProjectsFromFile(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(String(reader.result || "{}"));
-      const incomingProjects = Array.isArray(parsed.projects) ? parsed.projects : (Array.isArray(parsed) ? parsed : null);
-      if (!incomingProjects) {
-        window.alert("קובץ הייבוא לא בפורמט תקין.");
-        return;
-      }
-
-      const merged = new Map(state.savedProjects.map((project) => [project.id, project]));
-      incomingProjects.forEach((project) => {
-        if (project?.id && project?.data) {
-          merged.set(project.id, project);
-        }
-      });
-      state.savedProjects = [...merged.values()].sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
-      saveProjectsLibrary();
-      renderSavedProjects();
-      window.alert("הפרויקטים יובאו בהצלחה.");
-    } catch (error) {
-      window.alert("לא הצלחתי לקרוא את קובץ הייבוא.");
-    } finally {
-      els.importProjectsInput.value = "";
-    }
-  };
-  reader.readAsText(file);
-}
-
 async function saveCurrentProject() {
   updateProjectFields();
   if (!state.propertyName) {
@@ -976,18 +919,6 @@ els.newProjectBtn.addEventListener("click", () => {
     if (!confirmed) return;
   }
   startNewProject();
-});
-
-els.exportProjectsBtn.addEventListener("click", () => {
-  exportProjects();
-});
-
-els.importProjectsBtn.addEventListener("click", () => {
-  els.importProjectsInput.click();
-});
-
-els.importProjectsInput.addEventListener("change", (event) => {
-  importProjectsFromFile(event.target.files?.[0]);
 });
 
 els.backToWelcomeBtn.addEventListener("click", () => {
