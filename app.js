@@ -106,6 +106,8 @@ const severityLabels = {
   high: "גבוהה"
 };
 
+const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5"]);
+
 const state = {
   currentScreen: "welcome",
   propertyName: "",
@@ -192,6 +194,10 @@ function defaultChecks(type, areaName = "") {
     checks = uniqueChecks([...checks, ...baseChecks.plumbingDrainage]);
   }
   return checks.map((check) => ({ id: uid(), ...check, status: "pending", severity: "medium", note: "" }));
+}
+
+function sanitizeChecks(checks) {
+  return (Array.isArray(checks) ? checks : []).filter((check) => !removedCheckCodes.has(check.code));
 }
 
 function createArea(name, type, selected = true) {
@@ -545,7 +551,7 @@ function loadState() {
     ...area,
     selected: area.selected !== false,
     locked: area.locked === true,
-    checks: Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name),
+    checks: sanitizeChecks(Array.isArray(area.checks) ? area.checks : defaultChecks(area.type, area.name)),
     dimensions: area.dimensions || createDimensions()
   }));
   els.propertyName.value = state.propertyName;
