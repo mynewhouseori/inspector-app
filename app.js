@@ -328,12 +328,21 @@ function isUserEditingField() {
   return isEditableElement(document.activeElement);
 }
 
+function flushPendingCloudSync() {
+  if (!pendingCloudSync || isPickerOpen || isUserEditingField()) return;
+  pendingCloudSync = false;
+  queueCloudSync();
+}
+
+function schedulePendingCloudSyncFlush() {
+  window.setTimeout(() => {
+    flushPendingCloudSync();
+  }, 120);
+}
+
 function setPickerOpen(value) {
   isPickerOpen = value;
-  if (!isPickerOpen && pendingCloudSync) {
-    pendingCloudSync = false;
-    queueCloudSync();
-  }
+  if (!isPickerOpen) flushPendingCloudSync();
 }
 
 function bindPickerStability(select) {
@@ -1365,4 +1374,8 @@ subscribeToCloudProjects();
 window.addEventListener("pageshow", () => {
   state.currentScreen = "welcome";
   setScreen("welcome", { scroll: false });
+});
+
+document.addEventListener("focusout", () => {
+  schedulePendingCloudSyncFlush();
 });
