@@ -515,79 +515,6 @@ select {
   background: linear-gradient(180deg, #fffefa, #faf6ef);
 }
 
-.photos-box {
-  padding: 14px;
-  margin-bottom: 14px;
-  border: 1px solid #e8dfd2;
-  border-radius: 18px;
-  background: linear-gradient(180deg, #fffefa, #f8f4ed);
-}
-
-.photos-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.photo-count {
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-  color: var(--accent);
-  background: rgba(24, 90, 97, 0.08);
-}
-
-.photo-upload-btn {
-  margin-bottom: 12px;
-}
-
-.photo-upload-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
-}
-
-.photo-gallery {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.photo-thumb {
-  margin: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.photo-thumb img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 16px;
-  border: 1px solid #e1d7ca;
-  background: #f3ede5;
-}
-
-.photo-delete-btn {
-  padding: 9px 10px;
-  border: 0;
-  border-radius: 14px;
-  background: rgba(180, 63, 63, 0.12);
-  color: var(--issue);
-  cursor: pointer;
-}
-
-.photo-delete-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.photo-empty-state {
-  grid-column: 1 / -1;
-}
-
 .dimension-badge {
   padding: 7px 12px;
   border-radius: 999px;
@@ -901,25 +828,6 @@ select {
   background: #faf6ef;
 }
 
-.report-area-photos {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.report-photo-item {
-  margin: 0;
-}
-
-.report-photo-item img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 16px;
-  border: 1px solid #e4ddd1;
-  background: #f5f0e7;
-}
-
 .report-dimensions-row {
   display: flex;
   flex-wrap: wrap;
@@ -1025,11 +933,6 @@ select {
     display: none;
   }
 
-  .photo-gallery,
-  .report-area-photos {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .report-overview,
   .report-summary-stats,
   .report-area-details {
@@ -1063,8 +966,6 @@ select {
   #startBtn,
   #addAreaBtn,
   .delete-btn,
-  .photo-upload-btn,
-  .photo-delete-btn,
   #screen-welcome,
   #screen-rooms,
   #screen-inspection,
