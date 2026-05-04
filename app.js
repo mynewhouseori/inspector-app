@@ -448,6 +448,11 @@ function normalizeNumber(value) {
   return Number.isFinite(num) ? num : null;
 }
 
+function formatDimensionValue(value) {
+  const num = normalizeNumber(value);
+  return num === null ? "" : num.toFixed(2);
+}
+
 function classifyDelta(planValue, actualValue) {
   if (planValue === null || actualValue === null) return "empty";
   const delta = Math.abs(planValue - actualValue);
@@ -715,7 +720,9 @@ function renderReportDocument(summary, issues) {
     </div>
   `).join("");
 
-  els.reportExecutiveSummary.innerHTML = `<p>${escapeHtml(buildExecutiveSummary(reportSummary))}</p>`;
+  if (els.reportExecutiveSummary) {
+    els.reportExecutiveSummary.innerHTML = `<p>${escapeHtml(buildExecutiveSummary(reportSummary))}</p>`;
+  }
 
   const statItems = [
     ["אזורים שנבדקו", reportSummary.inspectedAreas],
@@ -786,10 +793,10 @@ function renderReportDocument(summary, issues) {
         <div class="report-area-dimensions">
           <strong>נתוני שטח</strong>
           <div class="report-dimensions-row">
-            <span>תכנית רוחב: ${escapeHtml(dims.planWidth || "-")}</span>
-            <span>תכנית אורך: ${escapeHtml(dims.planLength || "-")}</span>
-            <span>בפועל רוחב: ${escapeHtml(dims.actualWidth || "-")}</span>
-            <span>בפועל אורך: ${escapeHtml(dims.actualLength || "-")}</span>
+            <span>תכנית רוחב: ${escapeHtml(formatDimensionValue(dims.planWidth) || "-")}</span>
+            <span>תכנית אורך: ${escapeHtml(formatDimensionValue(dims.planLength) || "-")}</span>
+            <span>בפועל רוחב: ${escapeHtml(formatDimensionValue(dims.actualWidth) || "-")}</span>
+            <span>בפועל אורך: ${escapeHtml(formatDimensionValue(dims.actualLength) || "-")}</span>
           </div>
         </div>
         <div class="report-area-meta">סטטוס מידות: ${escapeHtml(dimensionStatus.label)} | תקין: ${escapeHtml(okCount)} | ליקויים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
@@ -1194,11 +1201,17 @@ function renderAreas() {
       const group = input.dataset.dimensionGroup;
       const field = input.dataset.dimensionField;
       const key = group === "plan" ? (field === "width" ? "planWidth" : "planLength") : (field === "width" ? "actualWidth" : "actualLength");
-      input.value = area.dimensions[key];
+      input.value = formatDimensionValue(area.dimensions[key]);
       input.disabled = area.locked;
       if (area.locked) input.classList.add("field-locked");
       input.addEventListener("input", (event) => {
         area.dimensions[key] = event.target.value.replace(",", ".");
+        applyDimensionStateToCard(node, area);
+        refreshProgressAndSummary();
+      });
+      input.addEventListener("blur", (event) => {
+        area.dimensions[key] = formatDimensionValue(event.target.value);
+        event.target.value = area.dimensions[key];
         applyDimensionStateToCard(node, area);
         refreshProgressAndSummary();
       });
