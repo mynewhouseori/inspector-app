@@ -135,6 +135,7 @@ let hasBootstrappedCloud = false;
 let isApplyingCloudProject = false;
 let isPickerOpen = false;
 let pendingCloudSync = false;
+let pendingFocusAreaId = null;
 
 const state = {
   currentScreen: "welcome",
@@ -384,7 +385,9 @@ function resetArea(area) {
 }
 
 function toggleAreaLock(area) {
+  const shouldFocusAfterUnlock = area.locked === true;
   area.locked = !area.locked;
+  pendingFocusAreaId = shouldFocusAfterUnlock && !area.locked ? area.id : null;
   persistAndRender({}, { immediateCloud: true });
 }
 
@@ -1179,7 +1182,7 @@ function renderAreas() {
     if (area.locked) node.classList.add("is-locked");
 
     node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
-      lockBtn.textContent = area.locked ? "פתח לעריכה" : "שמירה ונעילה";
+      lockBtn.textContent = area.locked ? "לחץ לפתיחה לעריכה" : "לחץ לשמירה ונעילה";
       if (area.locked) lockBtn.classList.add("locked");
       lockBtn.addEventListener("click", () => {
         toggleAreaLock(area);
@@ -1248,6 +1251,16 @@ function renderAreas() {
     });
 
     els.areasContainer.appendChild(node);
+
+    if (!area.locked && pendingFocusAreaId === area.id) {
+      const firstEditableField = node.querySelector(".dimension-input, .status-select, .severity-select, .note-input");
+      if (firstEditableField) {
+        window.setTimeout(() => {
+          firstEditableField.focus();
+        }, 40);
+      }
+      pendingFocusAreaId = null;
+    }
   });
 }
 
