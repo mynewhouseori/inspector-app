@@ -801,6 +801,40 @@ function getProjectTitle(project = state) {
   return project.propertyName || "בדיקת דירה ללא שם נכס";
 }
 
+function projectDataSignature(projectData = {}) {
+  const normalized = {
+    propertyName: projectData.propertyName || "",
+    propertyAddress: projectData.propertyAddress || "",
+    clientName: projectData.clientName || "",
+    inspectorName: projectData.inspectorName || "",
+    activeInspectionAreaId: projectData.activeInspectionAreaId || null,
+    areas: Array.isArray(projectData.areas)
+      ? projectData.areas.map((area) => ({
+          id: area.id || "",
+          name: area.name || "",
+          type: area.type || "",
+          selected: area.selected !== false,
+          locked: area.locked === true,
+          dimensions: {
+            planWidth: area.dimensions?.planWidth || "",
+            planLength: area.dimensions?.planLength || "",
+            actualWidth: area.dimensions?.actualWidth || "",
+            actualLength: area.dimensions?.actualLength || ""
+          },
+          checks: Array.isArray(area.checks)
+            ? area.checks.map((check) => ({
+                code: check.code || "",
+                status: check.status || "pending",
+                note: check.note || ""
+              }))
+            : []
+        }))
+      : []
+  };
+
+  return JSON.stringify(normalized);
+}
+
 function serializeCurrentProject() {
   updateProjectFields();
   return {
@@ -928,9 +962,11 @@ function subscribeToCloudProjects() {
       updateCloudStatus("סנכרון ענן פעיל. אותם פרויקטים זמינים במחשב ובנייד.", "ok");
 
       const activeProject = state.currentProjectId ? projects.find((project) => project.id === state.currentProjectId) : null;
-      const remoteIsNewer = activeProject && activeProject.updatedAtMs > lastCloudAppliedAt && Date.now() - lastLocalMutationAt > 1200;
       if (isPickerOpen || isUserEditingField()) return;
-      if (remoteIsNewer) {
+      const localIsIdle = Date.now() - lastLocalMutationAt > 1200;
+      const remoteDiffersFromLocal = activeProject
+        && projectDataSignature(activeProject.data) !== projectDataSignature(serializeCurrentProject());
+      if (activeProject && localIsIdle && remoteDiffersFromLocal) {
         isApplyingCloudProject = true;
         try {
           applyProjectData(activeProject.data);
@@ -1200,6 +1236,9 @@ function renderAreas() {
       const confirmed = window.confirm(`למחוק את "${area.name}" מהבדיקה?`);
       if (!confirmed) return;
       state.areas = state.areas.filter((item) => item.id !== area.id);
+      if (state.activeInspectionAreaId === area.id) {
+        state.activeInspectionAreaId = null;
+      }
       persistAndRender({}, { immediateCloud: true });
     });
 
