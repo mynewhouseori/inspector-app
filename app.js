@@ -318,6 +318,16 @@ function markLocalMutation() {
   lastLocalMutationAt = Date.now();
 }
 
+function isEditableElement(element) {
+  if (!element) return false;
+  const tagName = element.tagName;
+  return tagName === "INPUT" || tagName === "SELECT" || tagName === "TEXTAREA" || element.isContentEditable;
+}
+
+function isUserEditingField() {
+  return isEditableElement(document.activeElement);
+}
+
 function setPickerOpen(value) {
   isPickerOpen = value;
   if (!isPickerOpen && pendingCloudSync) {
@@ -860,7 +870,7 @@ async function bootstrapCloudProjects(localProjects = []) {
 
 function queueCloudSync() {
   if (!db || !state.currentProjectId) return;
-  if (isPickerOpen) {
+  if (isPickerOpen || isUserEditingField()) {
     pendingCloudSync = true;
     return;
   }
@@ -903,7 +913,7 @@ function subscribeToCloudProjects() {
 
       const activeProject = state.currentProjectId ? projects.find((project) => project.id === state.currentProjectId) : null;
       const remoteIsNewer = activeProject && activeProject.updatedAtMs > lastCloudAppliedAt && Date.now() - lastLocalMutationAt > 1200;
-      if (isPickerOpen) return;
+      if (isPickerOpen || isUserEditingField()) return;
       if (remoteIsNewer) {
         isApplyingCloudProject = true;
         try {
@@ -1073,11 +1083,15 @@ function saveState() {
   queueCloudSync();
 }
 
+function applyScreenState(screen) {
+  els.screens.forEach((section) => section.classList.toggle("active", section.id === `screen-${screen}`));
+  els.navButtons.forEach((button) => button.classList.toggle("active", button.dataset.screen === screen));
+}
+
 function setScreen(screen, options = {}) {
   const { scroll = true } = options;
   state.currentScreen = screen;
-  els.screens.forEach((section) => section.classList.toggle("active", section.id === `screen-${screen}`));
-  els.navButtons.forEach((button) => button.classList.toggle("active", button.dataset.screen === screen));
+  applyScreenState(screen);
   saveState();
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1267,7 +1281,7 @@ function render(options = {}) {
   renderRoomSelection();
   renderAreas();
   renderSummaryReports();
-  setScreen(state.currentScreen, { scroll: false });
+  applyScreenState(state.currentScreen);
   if (preserveScroll) window.scrollTo(0, previousScrollY);
 }
 
