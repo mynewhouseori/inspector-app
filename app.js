@@ -385,7 +385,7 @@ function resetArea(area) {
 
 function toggleAreaLock(area) {
   area.locked = !area.locked;
-  render();
+  persistAndRender();
 }
 
 function buildPresetAreas() {
@@ -828,6 +828,16 @@ function saveProjectsLibrary() {
   localStorage.setItem(projectsKey, JSON.stringify(state.savedProjects));
 }
 
+function upsertSavedProjectRecord(record) {
+  const existingIndex = state.savedProjects.findIndex((project) => project.id === record.id);
+  if (existingIndex >= 0) {
+    state.savedProjects[existingIndex] = record;
+  } else {
+    state.savedProjects.unshift(record);
+  }
+  state.savedProjects.sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
+}
+
 function buildProjectRecord(projectId = state.currentProjectId || uid()) {
   const now = new Date();
   return {
@@ -839,6 +849,14 @@ function buildProjectRecord(projectId = state.currentProjectId || uid()) {
     updatedAtMs: now.getTime(),
     data: serializeCurrentProject()
   };
+}
+
+function syncCurrentProjectDraft() {
+  if (!state.currentProjectId) return null;
+  const record = buildProjectRecord(state.currentProjectId);
+  upsertSavedProjectRecord(record);
+  saveProjectsLibrary();
+  return record;
 }
 
 async function saveProjectRecordToCloud(record) {
@@ -951,15 +969,8 @@ async function saveCurrentProject() {
   const id = state.currentProjectId || uid();
   const record = buildProjectRecord(id);
 
-  const existingIndex = state.savedProjects.findIndex((project) => project.id === id);
-  if (existingIndex >= 0) {
-    state.savedProjects[existingIndex] = record;
-  } else {
-    state.savedProjects.unshift(record);
-  }
-
   state.currentProjectId = id;
-  state.savedProjects.sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
+  upsertSavedProjectRecord(record);
   saveProjectsLibrary();
   saveState();
   try {
@@ -1088,8 +1099,14 @@ function updateHeader() {
 
 function saveState() {
   markLocalMutation();
+  syncCurrentProjectDraft();
   localStorage.setItem(storageKey, JSON.stringify(state));
   queueCloudSync();
+}
+
+function persistAndRender(options = {}) {
+  saveState();
+  render(options);
 }
 
 function applyScreenState(screen) {
@@ -1119,7 +1136,7 @@ function renderRoomSelection() {
     button.addEventListener("click", () => {
       area.selected = true;
       state.activeInspectionAreaId = area.id;
-      render();
+      persistAndRender();
     });
     els.roomsSelection.appendChild(button);
   });
@@ -1168,7 +1185,7 @@ function renderAreas() {
       const confirmed = window.confirm(`למחוק את "${area.name}" מהבדיקה?`);
       if (!confirmed) return;
       state.areas = state.areas.filter((item) => item.id !== area.id);
-      render();
+      persistAndRender();
     });
 
     const checksList = node.querySelector(".checks-list");
@@ -1299,7 +1316,7 @@ function addArea(name, type) {
   if (!cleanName) return;
   state.areas.push(createArea(cleanName, type, true));
   els.areaName.value = "";
-  render();
+  persistAndRender();
 }
 
 els.saveProjectBtn.addEventListener("click", async () => {
@@ -1357,7 +1374,7 @@ els.resetBtn.addEventListener("click", () => {
   const confirmed = window.confirm(`לאפס את "${activeArea.name}" בלבד? כל המידות, הממצאים והנעילה של החדר הזה יימחקו.`);
   if (!confirmed) return;
   resetArea(activeArea);
-  render();
+  persistAndRender();
 });
 
 els.printBtn.addEventListener("click", () => {
