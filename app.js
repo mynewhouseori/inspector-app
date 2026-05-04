@@ -1350,7 +1350,7 @@ function addArea(name, type) {
   if (!cleanName) return;
   state.areas.push(createArea(cleanName, type, true));
   els.areaName.value = "";
-  persistAndRender();
+  persistAndRender({}, { immediateCloud: true });
 }
 
 els.saveProjectBtn.addEventListener("click", async () => {
@@ -1410,7 +1410,7 @@ els.resetBtn.addEventListener("click", () => {
   const confirmed = window.confirm(`לאפס את "${activeArea.name}" בלבד? כל המידות, הממצאים והנעילה של החדר הזה יימחקו.`);
   if (!confirmed) return;
   resetArea(activeArea);
-  persistAndRender();
+  persistAndRender({}, { immediateCloud: true });
 });
 
 els.printBtn.addEventListener("click", () => {
