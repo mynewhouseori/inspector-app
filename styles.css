@@ -588,7 +588,6 @@ select {
 }
 
 .status-select,
-.severity-select,
 .note-input {
   transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -615,24 +614,6 @@ select {
   border-color: rgba(111, 120, 128, 0.45);
   background: rgba(111, 120, 128, 0.08);
   color: #5b636b;
-}
-
-.severity-select.severity-low {
-  border-color: rgba(42, 127, 98, 0.7);
-  background: rgba(42, 127, 98, 0.16);
-  color: #0f4a38;
-}
-
-.severity-select.severity-medium {
-  border-color: rgba(209, 124, 34, 0.78);
-  background: rgba(209, 124, 34, 0.18);
-  color: #8a4e00;
-}
-
-.severity-select.severity-high {
-  border-color: rgba(180, 63, 63, 0.78);
-  background: rgba(180, 63, 63, 0.18);
-  color: #8a1f1f;
 }
 
 .note-input.has-note {
@@ -857,21 +838,6 @@ select {
   grid-template-columns: 1fr;
 }
 
-.report-finding-item.severity-high,
-.report-check-item.severity-high {
-  border-inline-start: 4px solid var(--issue);
-}
-
-.report-finding-item.severity-medium,
-.report-check-item.severity-medium {
-  border-inline-start: 4px solid var(--warn);
-}
-
-.report-finding-item.severity-low,
-.report-check-item.severity-low {
-  border-inline-start: 4px solid var(--ok);
-}
-
 .report-finding-meta,
 .report-check-meta {
   margin-bottom: 8px;
@@ -888,6 +854,15 @@ select {
 
 .report-text-block p {
   margin: 0;
+}
+
+.report-intro-block {
+  display: grid;
+  gap: 10px;
+}
+
+.report-intro-block p {
+  color: var(--ink);
 }
 
 .report-area-card {
@@ -1009,8 +984,7 @@ select {
     backdrop-filter: none;
   }
 
-  .status-select,
-  .severity-select {
+  .status-select {
     min-height: 48px;
     font-size: 16px;
     -webkit-appearance: menulist;

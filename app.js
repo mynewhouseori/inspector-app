@@ -114,12 +114,6 @@ const defaultAreaPreset = [
   "גג"
 ];
 
-const severityLabels = {
-  low: "נמוכה",
-  medium: "בינונית",
-  high: "גבוהה"
-};
-
 const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5", "7.1.3"]);
 const SETTINGS = window.APP_CONFIG || window.DEFAULT_APP_CONFIG || {};
 const hasFirebaseConfig = Boolean(SETTINGS?.firebase?.apiKey);
@@ -303,15 +297,12 @@ function updateCloudStatus(message, tone = "") {
 
 function applyCheckVisualState(checkNode, check) {
   const statusSelect = checkNode.querySelector(".status-select");
-  const severitySelect = checkNode.querySelector(".severity-select");
   const noteInput = checkNode.querySelector(".note-input");
 
   statusSelect.classList.remove("status-pending", "status-ok", "status-issue", "status-na");
-  severitySelect.classList.remove("severity-low", "severity-medium", "severity-high");
   noteInput.classList.toggle("has-note", Boolean(check.note.trim()));
 
   statusSelect.classList.add(`status-${check.status}`);
-  severitySelect.classList.add(`severity-${check.severity}`);
 }
 
 function markLocalMutation() {
@@ -519,7 +510,7 @@ function computeSummary() {
     ok: checks.filter((check) => check.status === "ok").length,
     pending: checks.filter((check) => check.status === "pending").length,
     issues: issueChecks.length,
-    highIssues: issueChecks.filter((check) => check.severity === "high").length
+    highIssues: 0
   };
 }
 
@@ -560,7 +551,7 @@ function computeReportSummary(areas = getInspectedAreas()) {
     ok: checks.filter((check) => check.status === "ok").length,
     pending: checks.filter((check) => check.status === "pending").length,
     issues: issueChecks.length,
-    highIssues: issueChecks.filter((check) => check.severity === "high").length,
+    highIssues: 0,
     completionRate: checks.length ? Math.round((completedChecks / checks.length) * 100) : 0
   };
 }
@@ -599,7 +590,6 @@ function getAllIssues() {
         code: check.code,
         category: check.category,
         name: check.name,
-        severity: check.severity,
         note: check.note.trim()
       }))
   );
@@ -615,7 +605,6 @@ function getReportIssues(areas = getInspectedAreas()) {
         code: check.code,
         category: check.category,
         name: check.name,
-        severity: check.severity,
         note: check.note.trim()
       }))
   );
@@ -629,9 +618,6 @@ function getReportStatus(summary) {
 
 function buildIssueRecommendation(issue) {
   const noteText = issue.note || issue.name;
-  if (issue.severity === "high") {
-    return `נדרש טיפול מיידי ב-${noteText} וביצוע בדיקה חוזרת לאחר התיקון.`;
-  }
   if (issue.category.includes("בטיחות")) {
     return `מומלץ להסיר את המפגע הבטיחותי, לאמת את העמידה בדרישות התקן ולתעד תיקון.`;
   }
@@ -653,7 +639,7 @@ function buildExecutiveSummary(summary) {
   }
 
   const issueTone = summary.issues
-    ? `במהלך הבדיקה זוהו ${summary.issues} ליקויים, מתוכם ${summary.highIssues} בדרגת חומרה גבוהה.`
+    ? `במהלך הבדיקה זוהו ${summary.issues} ליקויים הדורשים טיפול או בדיקה חוזרת.`
     : "במהלך הבדיקה לא זוהו ליקויים שסומנו לטיפול.";
   const scopeTone = summary.notStartedAreas
     ? `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל, בעוד ${summary.notStartedAreas} אזורים נוספים טרם הושלמו ולכן אינם מפורטים במסמך זה.`
@@ -665,10 +651,6 @@ function buildExecutiveSummary(summary) {
 function buildClosingNote(summary) {
   if (!summary.inspectedAreas) {
     return "מומלץ להשלים את הבדיקה בשטח ולהזין ממצאים לפני הפקת דוח לקוח.";
-  }
-
-  if (summary.highIssues > 0) {
-    return "מומלץ לטפל תחילה בליקויים בדרגת חומרה גבוהה, להשלים בדיקה חוזרת באזורים הרלוונטיים, ורק לאחר מכן לאשר מסירה או סגירת פרויקט.";
   }
 
   if (summary.issues > 0) {
@@ -729,8 +711,7 @@ function renderReportDocument(summary, issues) {
     ["סעיפים שנבדקו", reportSummary.completedChecks],
     ["תקין", reportSummary.ok],
     ["ליקויים", reportSummary.issues],
-    ["השלמה", `${reportSummary.completionRate}%`],
-    ["חומרה גבוהה", reportSummary.highIssues]
+    ["השלמה", `${reportSummary.completionRate}%`]
   ];
 
   els.reportSummaryStats.innerHTML = statItems.map(([label, value]) => `
@@ -743,13 +724,11 @@ function renderReportDocument(summary, issues) {
   if (!reportIssues.length) {
     els.reportCriticalFindings.innerHTML = `<div class="report-empty">לא זוהו ליקויים באזורים שנבדקו בפועל. ניתן להשתמש במסמך זה כדוח ביניים או להמשיך להשלמת יתר האזורים.</div>`;
   } else {
-    const order = { high: 0, medium: 1, low: 2 };
     els.reportCriticalFindings.innerHTML = reportIssues
-      .sort((a, b) => order[a.severity] - order[b.severity])
       .map((issue) => `
-        <article class="report-finding-item severity-${escapeHtml(issue.severity)}">
+        <article class="report-finding-item">
           <strong>${escapeHtml(issue.area)} | ${escapeHtml(issue.name)}</strong>
-          <div class="report-finding-meta">קוד סעיף: ${escapeHtml(issue.code)} | ${escapeHtml(issue.category)} | חומרה: ${escapeHtml(severityLabels[issue.severity])}</div>
+          <div class="report-finding-meta">קוד סעיף: ${escapeHtml(issue.code)} | ${escapeHtml(issue.category)}</div>
           <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(issue.note || "נדרש פירוט נוסף מצד הבודק.")}</p>
           <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation(issue))}</p>
         </article>
@@ -767,13 +746,12 @@ function renderReportDocument(summary, issues) {
     const completion = computeAreaCompletion(area);
     const areaIssuesMarkup = issuesInArea.length
       ? issuesInArea.map((check) => `
-          <div class="report-check-item severity-${escapeHtml(check.severity)}">
+          <div class="report-check-item">
             <strong>${escapeHtml(check.name)}</strong>
-            <div class="report-check-meta">${escapeHtml(check.category)} | חומרה: ${escapeHtml(severityLabels[check.severity])}</div>
+            <div class="report-check-meta">${escapeHtml(check.category)}</div>
             <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(check.note || "נדרש פירוט נוסף מצד הבודק.")}</p>
             <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
               category: check.category,
-              severity: check.severity,
               note: check.note.trim(),
               name: check.name
             }))}</p>
@@ -1231,28 +1209,19 @@ function renderAreas() {
       checkNode.querySelector(".check-name").textContent = check.name;
       checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
       const statusSelect = checkNode.querySelector(".status-select");
-      const severitySelect = checkNode.querySelector(".severity-select");
       const noteInput = checkNode.querySelector(".note-input");
       statusSelect.value = check.status;
-      severitySelect.value = check.severity;
       noteInput.value = check.note;
       applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
-      severitySelect.disabled = area.locked;
       noteInput.disabled = area.locked;
-      [statusSelect, severitySelect].forEach((select) => bindPickerStability(select));
+      [statusSelect].forEach((select) => bindPickerStability(select));
       if (area.locked) {
         statusSelect.classList.add("field-locked");
-        severitySelect.classList.add("field-locked");
         noteInput.classList.add("field-locked");
       }
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
-        applyCheckVisualState(checkNode, check);
-        refreshProgressAndSummary();
-      });
-      severitySelect.addEventListener("change", (event) => {
-        check.severity = event.target.value;
         applyCheckVisualState(checkNode, check);
         refreshProgressAndSummary();
       });
@@ -1267,7 +1236,7 @@ function renderAreas() {
     els.areasContainer.appendChild(node);
 
     if (!area.locked && pendingFocusAreaId === area.id) {
-      const firstEditableField = node.querySelector(".dimension-input, .status-select, .severity-select, .note-input");
+      const firstEditableField = node.querySelector(".dimension-input, .status-select, .note-input");
       if (firstEditableField) {
         window.setTimeout(() => {
           firstEditableField.focus();
@@ -1294,11 +1263,10 @@ function renderSummaryReports() {
   if (!issues.length) {
     els.issueSummary.innerHTML = `<div class="empty-state">עדיין לא סומנו ליקויים. ברגע שתעדכן ממצא כליקוי, הוא יופיע כאן.</div>`;
   } else {
-    const order = { high: 0, medium: 1, low: 2 };
-    els.issueSummary.innerHTML = issues.sort((a, b) => order[a.severity] - order[b.severity]).map((issue) => `
+    els.issueSummary.innerHTML = issues.map((issue) => `
       <div class="issue-item">
         <strong>${issue.area} • ${issue.code} • ${issue.name}</strong>
-        <div class="issue-meta">${issue.category} | חומרה: ${severityLabels[issue.severity]}</div>
+        <div class="issue-meta">${issue.category}</div>
         <div>${issue.note || "לא הוזנה הערה."}</div>
       </div>
     `).join("");
