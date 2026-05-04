@@ -181,6 +181,12 @@ const els = {
   reportDocument: document.querySelector("#reportDocument"),
   reportDocTitle: document.querySelector("#reportDocTitle"),
   reportDocSubtitle: document.querySelector("#reportDocSubtitle"),
+  reportCoverBadge: document.querySelector("#reportCoverBadge"),
+  reportCoverMeta: document.querySelector("#reportCoverMeta"),
+  reportPageHeaderTitle: document.querySelector("#reportPageHeaderTitle"),
+  reportPageHeaderInspector: document.querySelector("#reportPageHeaderInspector"),
+  reportPageHeaderStatus: document.querySelector("#reportPageHeaderStatus"),
+  reportPageHeaderDate: document.querySelector("#reportPageHeaderDate"),
   reportOverview: document.querySelector("#reportOverview"),
   reportExecutiveSummary: document.querySelector("#reportExecutiveSummary"),
   reportSummaryStats: document.querySelector("#reportSummaryStats"),
@@ -548,6 +554,14 @@ function formatGeneratedAt() {
   });
 }
 
+function formatGeneratedDateOnly() {
+  return new Date().toLocaleDateString("he-IL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+}
+
 function getAllIssues() {
   return selectedAreas().flatMap((area) =>
     area.checks
@@ -643,22 +657,32 @@ function renderReportDocument(summary, issues) {
   const reportIssues = getReportIssues(reportAreas);
   const reportStatus = getReportStatus(reportSummary);
   const projectTitle = state.propertyName || "דוח בדיקה הנדסית";
+  const inspectorLabel = state.inspectorName ? `עורך הבדיקה: ${state.inspectorName}` : "עורך הבדיקה: לא הוזן";
   const subtitle = state.propertyAddress
     ? `${reportStatus} עבור ${state.propertyAddress}.`
     : `${reportStatus} מוכן לשיתוף ולהפקה כ-PDF.`;
 
   els.reportDocTitle.textContent = projectTitle;
   els.reportDocSubtitle.textContent = subtitle;
+  els.reportCoverBadge.textContent = reportStatus;
+  els.reportPageHeaderTitle.textContent = projectTitle;
+  els.reportPageHeaderInspector.textContent = inspectorLabel;
+  els.reportPageHeaderStatus.textContent = reportStatus;
+  els.reportPageHeaderDate.textContent = formatGeneratedDateOnly();
+
+  const coverMetaItems = [
+    state.clientName && `לקוח: ${state.clientName}`,
+    state.inspectorName && `בודק: ${state.inspectorName}`,
+    state.propertyAddress && `מיקום: ${state.propertyAddress}`,
+    `תאריך הפקה: ${formatGeneratedAt()}`
+  ].filter(Boolean);
+  els.reportCoverMeta.innerHTML = coverMetaItems.map((item) => `<span>${escapeHtml(item)}</span>`).join("");
 
   const overviewItems = [
-    ["נכס", state.propertyName || "לא הוזן"],
-    ["כתובת", state.propertyAddress || "לא הוזנה"],
-    ["לקוח", state.clientName || "לא הוזן"],
+    ["סטטוס", reportStatus],
     ["בודק", state.inspectorName || "לא הוזן"],
-    ["תאריך הפקה", formatGeneratedAt()],
-    ["סטטוס דוח", reportStatus],
-    ["אזורים שנבדקו", String(reportSummary.inspectedAreas)],
-    ["אזורים שלא נכללו", String(reportSummary.notStartedAreas)]
+    ["לקוח", state.clientName || "לא הוזן"],
+    ["אזורים", `${reportSummary.inspectedAreas} נבדקו${reportSummary.notStartedAreas ? `, ${reportSummary.notStartedAreas} לא נכללו` : ""}`]
   ];
 
   els.reportOverview.innerHTML = overviewItems.map(([label, value]) => `
