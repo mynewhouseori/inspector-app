@@ -143,6 +143,13 @@ select {
   margin-bottom: 16px;
 }
 
+.welcome-title {
+  margin: 0 0 16px;
+  font-size: 32px;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
 .hero-card {
   background: linear-gradient(160deg, rgba(255,255,255,0.96), rgba(250, 243, 233, 0.98));
 }
@@ -1110,6 +1117,7 @@ select {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    min-height: 18mm;
     padding: 0 0 10px;
     border-bottom: 1px solid #d8d0c4;
     background: white;
@@ -1156,7 +1164,7 @@ select {
 
   .report-document {
     margin: 0;
-    padding: 26mm 0 0;
+    padding: 42mm 0 0;
     border: 0;
     background: white;
   }

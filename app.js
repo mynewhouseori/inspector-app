@@ -385,7 +385,7 @@ function resetArea(area) {
 
 function toggleAreaLock(area) {
   area.locked = !area.locked;
-  persistAndRender();
+  persistAndRender({}, { immediateCloud: true });
 }
 
 function buildPresetAreas() {
@@ -1097,16 +1097,36 @@ function updateHeader() {
   els.reportMeta.textContent = parts.length ? parts.join(" | ") : "בחר חדרים ומלא את הבדיקות בשטח.";
 }
 
-function saveState() {
+function persistProjectRecordImmediately(record) {
+  if (!db || !record) return;
+  clearTimeout(cloudSyncTimer);
+  pendingCloudSync = false;
+  lastCloudAppliedAt = record.updatedAtMs;
+  saveProjectRecordToCloud(record)
+    .then(() => {
+      updateCloudStatus("הבדיקה מסונכרנת לענן בין מחשב לנייד.", "ok");
+    })
+    .catch((error) => {
+      updateCloudStatus("שמירה מקומית פועלת, אבל הסנכרון לענן נכשל כרגע.", "error");
+      console.error(error);
+    });
+}
+
+function saveState(options = {}) {
+  const { immediateCloud = false } = options;
   markLocalMutation();
-  syncCurrentProjectDraft();
+  const record = syncCurrentProjectDraft();
   localStorage.setItem(storageKey, JSON.stringify(state));
+  if (immediateCloud) {
+    persistProjectRecordImmediately(record);
+    return;
+  }
   queueCloudSync();
 }
 
-function persistAndRender(options = {}) {
-  saveState();
-  render(options);
+function persistAndRender(renderOptions = {}, stateOptions = {}) {
+  saveState(stateOptions);
+  render(renderOptions);
 }
 
 function applyScreenState(screen) {
@@ -1325,9 +1345,11 @@ els.saveProjectBtn.addEventListener("click", async () => {
   }
 });
 
-els.jumpToSavedProjectsBtn.addEventListener("click", () => {
-  els.savedProjectsList.scrollIntoView({ behavior: "smooth", block: "start" });
-});
+if (els.jumpToSavedProjectsBtn) {
+  els.jumpToSavedProjectsBtn.addEventListener("click", () => {
+    els.savedProjectsList.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
 
 els.newProjectBtn.addEventListener("click", () => {
   const hasContent = state.propertyName || state.propertyAddress || state.clientName || state.inspectorName || selectedAreas().some((area) => area.checks.some((check) => check.status !== "pending" || check.note.trim()));
