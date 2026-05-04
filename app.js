@@ -679,7 +679,8 @@ function renderReportDocument(summary, issues) {
   const reportIssues = getReportIssues(reportAreas);
   const reportStatus = getReportStatus(reportSummary);
   const projectTitle = state.propertyName || "דוח בדיקה הנדסית";
-  const inspectorLabel = state.inspectorName ? `עורך הבדיקה: ${state.inspectorName}` : "עורך הבדיקה: לא הוזן";
+  const headerBrandTitle = "אורי לוין";
+  const headerBrandSubtitle = "ביצוע ופיקוח בבנייה";
   const subtitle = state.propertyAddress
     ? `${reportStatus} עבור ${state.propertyAddress}.`
     : `${reportStatus} מוכן לשיתוף ולהפקה כ-PDF.`;
@@ -687,8 +688,8 @@ function renderReportDocument(summary, issues) {
   els.reportDocTitle.textContent = projectTitle;
   els.reportDocSubtitle.textContent = subtitle;
   els.reportCoverBadge.textContent = reportStatus;
-  els.reportPageHeaderTitle.textContent = projectTitle;
-  els.reportPageHeaderInspector.textContent = inspectorLabel;
+  els.reportPageHeaderTitle.textContent = headerBrandTitle;
+  els.reportPageHeaderInspector.textContent = headerBrandSubtitle;
   els.reportPageHeaderStatus.textContent = reportStatus;
   els.reportPageHeaderDate.textContent = formatGeneratedDateOnly();
 
@@ -1208,7 +1209,7 @@ function renderAreas() {
       const confirmed = window.confirm(`למחוק את "${area.name}" מהבדיקה?`);
       if (!confirmed) return;
       state.areas = state.areas.filter((item) => item.id !== area.id);
-      persistAndRender();
+      persistAndRender({}, { immediateCloud: true });
     });
 
     const checksList = node.querySelector(".checks-list");
