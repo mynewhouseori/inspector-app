@@ -1159,7 +1159,7 @@ function renderRoomSelection() {
     button.addEventListener("click", () => {
       area.selected = true;
       state.activeInspectionAreaId = area.id;
-      persistAndRender();
+      persistAndRender({}, { immediateCloud: true });
     });
     els.roomsSelection.appendChild(button);
   });
