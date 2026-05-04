@@ -178,6 +178,15 @@ const els = {
   summaryStats: document.querySelector("#summaryStats"),
   issueSummary: document.querySelector("#issueSummary"),
   reportAreasSummary: document.querySelector("#reportAreasSummary"),
+  reportDocument: document.querySelector("#reportDocument"),
+  reportDocTitle: document.querySelector("#reportDocTitle"),
+  reportDocSubtitle: document.querySelector("#reportDocSubtitle"),
+  reportOverview: document.querySelector("#reportOverview"),
+  reportExecutiveSummary: document.querySelector("#reportExecutiveSummary"),
+  reportSummaryStats: document.querySelector("#reportSummaryStats"),
+  reportCriticalFindings: document.querySelector("#reportCriticalFindings"),
+  reportAreaDetails: document.querySelector("#reportAreaDetails"),
+  reportClosingNote: document.querySelector("#reportClosingNote"),
   reportTitle: document.querySelector("#reportTitle"),
   reportMeta: document.querySelector("#reportMeta")
 };
@@ -479,6 +488,274 @@ function computeSummary() {
     issues: issueChecks.length,
     highIssues: issueChecks.filter((check) => check.severity === "high").length
   };
+}
+
+function getTouchedChecksCount(area) {
+  return area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
+}
+
+function hasDimensionInput(area) {
+  return Object.values(area.dimensions || {}).some(Boolean);
+}
+
+function isAreaInspected(area) {
+  return getTouchedChecksCount(area) > 0 || hasDimensionInput(area) || area.locked;
+}
+
+function getInspectedAreas() {
+  return selectedAreas().filter(isAreaInspected);
+}
+
+function computeAreaCompletion(area) {
+  const total = area.checks.length;
+  if (!total) return 0;
+  const completedChecks = area.checks.filter((check) => check.status !== "pending").length;
+  return Math.round((completedChecks / total) * 100);
+}
+
+function computeReportSummary(areas = getInspectedAreas()) {
+  const checks = areas.flatMap((area) => area.checks);
+  const issueChecks = checks.filter((check) => check.status === "issue");
+  const completedChecks = checks.filter((check) => check.status !== "pending").length;
+
+  return {
+    inspectedAreas: areas.length,
+    selectedAreas: selectedAreas().length,
+    notStartedAreas: Math.max(selectedAreas().length - areas.length, 0),
+    totalChecks: checks.length,
+    completedChecks,
+    ok: checks.filter((check) => check.status === "ok").length,
+    pending: checks.filter((check) => check.status === "pending").length,
+    issues: issueChecks.length,
+    highIssues: issueChecks.filter((check) => check.severity === "high").length,
+    completionRate: checks.length ? Math.round((completedChecks / checks.length) * 100) : 0
+  };
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function formatGeneratedAt() {
+  return new Date().toLocaleString("he-IL", {
+    dateStyle: "short",
+    timeStyle: "short"
+  });
+}
+
+function getAllIssues() {
+  return selectedAreas().flatMap((area) =>
+    area.checks
+      .filter((check) => check.status === "issue")
+      .map((check) => ({
+        area: area.name,
+        type: area.type,
+        code: check.code,
+        category: check.category,
+        name: check.name,
+        severity: check.severity,
+        note: check.note.trim()
+      }))
+  );
+}
+
+function getReportIssues(areas = getInspectedAreas()) {
+  return areas.flatMap((area) =>
+    area.checks
+      .filter((check) => check.status === "issue")
+      .map((check) => ({
+        area: area.name,
+        type: area.type,
+        code: check.code,
+        category: check.category,
+        name: check.name,
+        severity: check.severity,
+        note: check.note.trim()
+      }))
+  );
+}
+
+function getReportStatus(summary) {
+  if (!summary.inspectedAreas) return "טרם הושלמה בדיקה";
+  if (summary.pending > 0 || summary.notStartedAreas > 0) return "דוח ביניים";
+  return "דוח מסכם";
+}
+
+function buildIssueRecommendation(issue) {
+  const noteText = issue.note || issue.name;
+  if (issue.severity === "high") {
+    return `נדרש טיפול מיידי ב-${noteText} וביצוע בדיקה חוזרת לאחר התיקון.`;
+  }
+  if (issue.category.includes("בטיחות")) {
+    return `מומלץ להסיר את המפגע הבטיחותי, לאמת את העמידה בדרישות התקן ולתעד תיקון.`;
+  }
+  if (issue.category.includes("חשמל")) {
+    return `מומלץ להזמין בדיקה ותיקון של נקודת החשמל ולבצע אימות תפקודי לאחר הטיפול.`;
+  }
+  if (issue.category.includes("פתחים")) {
+    return `מומלץ לבצע כיוון, חיזוק או החלפה לפי הצורך ולאשר תקינות פתיחה, סגירה ואיטום.`;
+  }
+  if (issue.category.includes("גמר")) {
+    return `מומלץ להשלים תיקון גמר מקומי ולבצע ביקורת איכות לאחר ביצוע.`;
+  }
+  return `מומלץ לבדוק את הממצא בשטח, לבצע תיקון מתאים ולאשר השלמה בבדיקה חוזרת.`;
+}
+
+function buildExecutiveSummary(summary) {
+  if (!summary.inspectedAreas) {
+    return "טרם הושלמו נתוני בדיקה להצגה בדוח לקוח. לאחר הזנת ממצאים באזורים שנבדקו, יופיע כאן תקציר מקצועי ומוכן למשלוח.";
+  }
+
+  const issueTone = summary.issues
+    ? `במהלך הבדיקה זוהו ${summary.issues} ליקויים, מתוכם ${summary.highIssues} בדרגת חומרה גבוהה.`
+    : "במהלך הבדיקה לא זוהו ליקויים שסומנו לטיפול.";
+  const scopeTone = summary.notStartedAreas
+    ? `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל, בעוד ${summary.notStartedAreas} אזורים נוספים טרם הושלמו ולכן אינם מפורטים במסמך זה.`
+    : `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל ומציג את עיקרי הממצאים והמלצות ההמשך.`;
+
+  return `${scopeTone} ${issueTone} שיעור ההשלמה באזורים הנכללים בדוח עומד על ${summary.completionRate}%.`;
+}
+
+function buildClosingNote(summary) {
+  if (!summary.inspectedAreas) {
+    return "מומלץ להשלים את הבדיקה בשטח ולהזין ממצאים לפני הפקת דוח לקוח.";
+  }
+
+  if (summary.highIssues > 0) {
+    return "מומלץ לטפל תחילה בליקויים בדרגת חומרה גבוהה, להשלים בדיקה חוזרת באזורים הרלוונטיים, ורק לאחר מכן לאשר מסירה או סגירת פרויקט.";
+  }
+
+  if (summary.issues > 0) {
+    return "המסמך מרכז את הליקויים שדורשים טיפול בשלב זה. מומלץ להעבירו לגורם המבצע, לעקוב אחר תיקון הליקויים, ולהפיק דוח מעודכן לאחר ביקורת חוזרת.";
+  }
+
+  return "לא סומנו ליקויים לטיפול באזורים שנבדקו. לאחר השלמת יתר האזורים, ניתן להפיק דוח מסכם סופי למסירה.";
+}
+
+function renderReportDocument(summary, issues) {
+  const reportAreas = getInspectedAreas();
+  const reportSummary = computeReportSummary(reportAreas);
+  const reportIssues = getReportIssues(reportAreas);
+  const reportStatus = getReportStatus(reportSummary);
+  const projectTitle = state.propertyName || "דוח בדיקה הנדסית";
+  const subtitle = state.propertyAddress
+    ? `${reportStatus} עבור ${state.propertyAddress}.`
+    : `${reportStatus} מוכן לשיתוף ולהפקה כ-PDF.`;
+
+  els.reportDocTitle.textContent = projectTitle;
+  els.reportDocSubtitle.textContent = subtitle;
+
+  const overviewItems = [
+    ["נכס", state.propertyName || "לא הוזן"],
+    ["כתובת", state.propertyAddress || "לא הוזנה"],
+    ["לקוח", state.clientName || "לא הוזן"],
+    ["בודק", state.inspectorName || "לא הוזן"],
+    ["תאריך הפקה", formatGeneratedAt()],
+    ["סטטוס דוח", reportStatus],
+    ["אזורים שנבדקו", String(reportSummary.inspectedAreas)],
+    ["אזורים שלא נכללו", String(reportSummary.notStartedAreas)]
+  ];
+
+  els.reportOverview.innerHTML = overviewItems.map(([label, value]) => `
+    <div class="report-overview-item">
+      <strong>${escapeHtml(label)}</strong>
+      <span>${escapeHtml(value)}</span>
+    </div>
+  `).join("");
+
+  els.reportExecutiveSummary.innerHTML = `<p>${escapeHtml(buildExecutiveSummary(reportSummary))}</p>`;
+
+  const statItems = [
+    ["אזורים שנבדקו", reportSummary.inspectedAreas],
+    ["סעיפים שנבדקו", reportSummary.completedChecks],
+    ["תקין", reportSummary.ok],
+    ["ליקויים", reportSummary.issues],
+    ["השלמה", `${reportSummary.completionRate}%`],
+    ["חומרה גבוהה", reportSummary.highIssues]
+  ];
+
+  els.reportSummaryStats.innerHTML = statItems.map(([label, value]) => `
+    <div class="report-stat-card">
+      <strong>${escapeHtml(value)}</strong>
+      <span>${escapeHtml(label)}</span>
+    </div>
+  `).join("");
+
+  if (!reportIssues.length) {
+    els.reportCriticalFindings.innerHTML = `<div class="report-empty">לא זוהו ליקויים באזורים שנבדקו בפועל. ניתן להשתמש במסמך זה כדוח ביניים או להמשיך להשלמת יתר האזורים.</div>`;
+  } else {
+    const order = { high: 0, medium: 1, low: 2 };
+    els.reportCriticalFindings.innerHTML = reportIssues
+      .sort((a, b) => order[a.severity] - order[b.severity])
+      .map((issue) => `
+        <article class="report-finding-item severity-${escapeHtml(issue.severity)}">
+          <strong>${escapeHtml(issue.area)} | ${escapeHtml(issue.name)}</strong>
+          <div class="report-finding-meta">קוד סעיף: ${escapeHtml(issue.code)} | ${escapeHtml(issue.category)} | חומרה: ${escapeHtml(severityLabels[issue.severity])}</div>
+          <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(issue.note || "נדרש פירוט נוסף מצד הבודק.")}</p>
+          <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation(issue))}</p>
+        </article>
+      `).join("");
+  }
+
+  const areaCards = reportAreas.map((area) => {
+    const total = area.checks.length;
+    const issuesInArea = area.checks.filter((check) => check.status === "issue");
+    const okCount = area.checks.filter((check) => check.status === "ok").length;
+    const pendingCount = area.checks.filter((check) => check.status === "pending").length;
+    const dimensionStatus = getDimensionStatus(area);
+    const progress = getAreaProgress(area);
+    const dims = area.dimensions || createDimensions();
+    const completion = computeAreaCompletion(area);
+    const areaIssuesMarkup = issuesInArea.length
+      ? issuesInArea.map((check) => `
+          <div class="report-check-item severity-${escapeHtml(check.severity)}">
+            <strong>${escapeHtml(check.name)}</strong>
+            <div class="report-check-meta">${escapeHtml(check.category)} | חומרה: ${escapeHtml(severityLabels[check.severity])}</div>
+            <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(check.note || "נדרש פירוט נוסף מצד הבודק.")}</p>
+            <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
+              category: check.category,
+              severity: check.severity,
+              note: check.note.trim(),
+              name: check.name
+            }))}</p>
+          </div>
+        `).join("")
+      : `<div class="report-empty">לא זוהו ליקויים באזור זה.</div>`;
+
+    return `
+      <article class="report-area-card">
+        <div class="report-area-head">
+          <div>
+            <strong>${escapeHtml(area.name)}</strong>
+            <div class="report-area-meta">${escapeHtml(areaTypeLabels[area.type])} | ${escapeHtml(total)} סעיפי בדיקה | ${escapeHtml(progress.label)}</div>
+          </div>
+          <span class="report-area-status">${escapeHtml(completion)}% הושלם</span>
+        </div>
+        <div class="report-area-dimensions">
+          <strong>נתוני שטח</strong>
+          <div class="report-dimensions-row">
+            <span>תכנית רוחב: ${escapeHtml(dims.planWidth || "-")}</span>
+            <span>תכנית אורך: ${escapeHtml(dims.planLength || "-")}</span>
+            <span>בפועל רוחב: ${escapeHtml(dims.actualWidth || "-")}</span>
+            <span>בפועל אורך: ${escapeHtml(dims.actualLength || "-")}</span>
+          </div>
+        </div>
+        <div class="report-area-meta">סטטוס מידות: ${escapeHtml(dimensionStatus.label)} | תקין: ${escapeHtml(okCount)} | ליקויים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
+        <div class="report-area-checks">${areaIssuesMarkup}</div>
+      </article>
+    `;
+  });
+
+  els.reportAreaDetails.innerHTML = areaCards.length
+    ? areaCards.join("")
+    : `<div class="report-empty">אין אזורים עם נתוני בדיקה להצגה במסמך זה.</div>`;
+
+  els.reportClosingNote.innerHTML = `<p>${escapeHtml(buildClosingNote(reportSummary))}</p>`;
 }
 
 function updateProjectFields() {
@@ -892,6 +1169,7 @@ function renderAreas() {
 
 function renderSummaryReports() {
   const summary = computeSummary();
+  const issues = getAllIssues();
   const stats = [
     { label: "אזורים", value: summary.totalAreas },
     { label: "בדיקות", value: summary.totalChecks },
@@ -902,16 +1180,6 @@ function renderSummaryReports() {
   ];
   els.summaryStats.innerHTML = stats.map((item) => `<div class="summary-card"><p>${item.label}</p><strong>${item.value}</strong></div>`).join("");
 
-  const issues = selectedAreas().flatMap((area) =>
-    area.checks.filter((check) => check.status === "issue").map((check) => ({
-      area: area.name,
-      code: check.code,
-      category: check.category,
-      name: check.name,
-      severity: check.severity,
-      note: check.note
-    }))
-  );
   if (!issues.length) {
     els.issueSummary.innerHTML = `<div class="empty-state">עדיין לא סומנו ליקויים. ברגע שתעדכן ממצא כליקוי, הוא יופיע כאן.</div>`;
   } else {
@@ -939,6 +1207,8 @@ function renderSummaryReports() {
       </div>
     `;
   }).join("");
+
+  renderReportDocument(summary, issues);
 }
 
 function loadState() {
