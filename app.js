@@ -18,6 +18,7 @@ const baseChecks = {
   interiorFinishes: [
     { code: "2.1.1", name: "בדיקות ריצוף (שיפועים, חללים, הפרשי גובה)", category: "גמר פנים" },
     { code: "2.1.2", name: "צבע", category: "גמר פנים" },
+    { code: "2.1.2R", name: "רשתות", category: "גמר פנים" },
     { code: "2.1.3", name: "טיח", category: "גמר פנים" },
     { code: "2.1.4", name: "גבס", category: "גמר פנים" },
     { code: "2.1.5", name: "מדרגות וגמרים", category: "גמר פנים" }
