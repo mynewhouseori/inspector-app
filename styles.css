@@ -843,22 +843,44 @@ select {
   padding-top: 14px;
 }
 
-.print-measure-sandbox {
-  position: absolute;
-  inset-inline-start: -99999px;
-  top: 0;
-  width: 182mm;
-  visibility: hidden;
+.compact-print-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.compact-print-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.compact-print-card {
+  padding: 12px;
+  border: 1px solid #e4ddd1;
+  border-radius: 16px;
+  background: #fffdfa;
+}
+
+.compact-print-card strong,
+.compact-print-card span {
   display: block;
 }
 
-.print-measure-sandbox .print-page {
-  width: 182mm;
-  min-height: 257mm;
+.compact-print-card strong {
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--accent);
 }
 
-.print-measure-sandbox .print-page-body {
-  min-height: 235mm;
+.compact-print-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.compact-print-list {
+  margin: 0;
+  padding-inline-start: 18px;
+  line-height: 1.7;
 }
 
 .report-cover {
@@ -1264,17 +1286,21 @@ select {
   }
 
   .print-page {
-    min-height: 257mm;
-    break-after: page;
+    min-height: auto;
+    break-after: auto;
     display: grid;
     grid-template-rows: auto 1fr;
   }
 
-  .print-page:last-child {
-    break-after: auto;
-  }
-
   .print-page .report-cover {
     min-height: auto;
+  }
+
+  .compact-print-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .compact-print-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

@@ -845,100 +845,105 @@ function createPrintPage(pageNumber) {
   return page;
 }
 
-function createPrintableBlocks() {
-  const blocks = [];
-  const cover = els.reportDocument.querySelector(".report-cover");
-  if (cover) {
-    blocks.push(cover.cloneNode(true));
-  }
-
-  const sections = [...els.reportDocument.querySelectorAll(".report-section")];
-  sections.forEach((section) => {
-    const title = section.querySelector("h3");
-    const contentNodes = [...section.children].filter((child) => child !== title);
-    const splitContainer = contentNodes.find((node) =>
-      node.classList?.contains("report-summary-stats")
-      || node.classList?.contains("report-findings")
-      || node.classList?.contains("report-area-details")
-    );
-
-    if (!splitContainer) {
-      blocks.push(section.cloneNode(true));
-      return;
-    }
-
-    const unitNodes = [...splitContainer.children];
-    if (!unitNodes.length) {
-      blocks.push(section.cloneNode(true));
-      return;
-    }
-
-    unitNodes.forEach((unit, index) => {
-      const sectionFragment = document.createElement("section");
-      sectionFragment.className = section.className;
-      if (title && index === 0) {
-        sectionFragment.appendChild(title.cloneNode(true));
-      } else if (title) {
-        const continuedTitle = title.cloneNode(true);
-        continuedTitle.textContent = `${title.textContent} (המשך)`;
-        sectionFragment.appendChild(continuedTitle);
-      }
-      const wrapper = document.createElement("div");
-      wrapper.className = splitContainer.className;
-      wrapper.appendChild(unit.cloneNode(true));
-      sectionFragment.appendChild(wrapper);
-      blocks.push(sectionFragment);
-    });
+function buildCompactPrintBody() {
+  const reportAreas = getInspectedAreas();
+  const reportSummary = computeReportSummary(reportAreas);
+  const reportIssues = getReportIssues(reportAreas).slice(0, 5);
+  const topAreaLines = reportAreas.slice(0, 4).map((area) => {
+    const issuesCount = area.checks.filter((check) => check.status === "issue").length;
+    const completion = computeAreaCompletion(area);
+    return `${area.name} | ${completion}% הושלם | ליקויים: ${issuesCount}`;
   });
 
-  return blocks;
+  const issueMarkup = reportIssues.length
+    ? reportIssues.map((issue) => `
+        <li>
+          <strong>${escapeHtml(issue.area)}:</strong>
+          ${escapeHtml(issue.note || issue.name)}
+        </li>
+      `).join("")
+    : `<li>לא זוהו ליקויים באזורים שנבדקו.</li>`;
+
+  const areaMarkup = topAreaLines.length
+    ? topAreaLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")
+    : `<li>אין אזורים שנבדקו בפועל.</li>`;
+
+  return `
+    <section class="report-section compact-print-intro">
+      <h3>מהות המסמך</h3>
+      <div class="report-text-block">
+        <p>דוח זה מרכז ממצאים עיקריים, תמונת מצב תמציתית והמלצות פעולה להמשך טיפול, לצורך מסירה ללקוח ותיעוד מקצועי מסודר.</p>
+      </div>
+    </section>
+    <section class="report-section compact-print-grid">
+      <div class="compact-print-card">
+        <strong>נכס</strong>
+        <span>${escapeHtml(state.propertyName || "לא הוזן")}</span>
+      </div>
+      <div class="compact-print-card">
+        <strong>כתובת</strong>
+        <span>${escapeHtml(state.propertyAddress || "לא הוזנה")}</span>
+      </div>
+      <div class="compact-print-card">
+        <strong>לקוח</strong>
+        <span>${escapeHtml(state.clientName || "לא הוזן")}</span>
+      </div>
+      <div class="compact-print-card">
+        <strong>בודק</strong>
+        <span>${escapeHtml(state.inspectorName || "לא הוזן")}</span>
+      </div>
+      <div class="compact-print-card">
+        <strong>אזורים שנבדקו</strong>
+        <span>${escapeHtml(reportSummary.inspectedAreas)}</span>
+      </div>
+      <div class="compact-print-card">
+        <strong>ליקויים</strong>
+        <span>${escapeHtml(reportSummary.issues)}</span>
+      </div>
+    </section>
+    <section class="report-section compact-print-grid compact-print-stats">
+      <div class="compact-print-card">
+        <strong>סעיפים שנבדקו</strong>
+        <span>${escapeHtml(reportSummary.completedChecks)}</span>
+      </div>
+      <div class="compact-print-card">
+        <strong>תקין</strong>
+        <span>${escapeHtml(reportSummary.ok)}</span>
+      </div>
+      <div class="compact-print-card">
+        <strong>השלמה</strong>
+        <span>${escapeHtml(`${reportSummary.completionRate}%`)}</span>
+      </div>
+      <div class="compact-print-card">
+        <strong>סטטוס</strong>
+        <span>${escapeHtml(getReportStatus(reportSummary))}</span>
+      </div>
+    </section>
+    <section class="report-section compact-print-columns">
+      <div>
+        <h3>ממצאים מרכזיים</h3>
+        <ul class="compact-print-list">${issueMarkup}</ul>
+      </div>
+      <div>
+        <h3>תמונת מצב אזורים</h3>
+        <ul class="compact-print-list">${areaMarkup}</ul>
+      </div>
+    </section>
+    <section class="report-section">
+      <h3>סיכום והמלצות</h3>
+      <div class="report-text-block">
+        <p>${escapeHtml(buildClosingNote(reportSummary))}</p>
+      </div>
+    </section>
+  `;
 }
 
 function buildPrintPages() {
   if (!els.printPages || !els.reportDocument) return;
   els.printPages.innerHTML = "";
-
-  const sandbox = document.createElement("div");
-  sandbox.className = "print-measure-sandbox";
-  document.body.appendChild(sandbox);
-
-  const measurementPage = createPrintPage(1);
-  sandbox.appendChild(measurementPage);
-  const measurementBody = measurementPage.querySelector(".print-page-body");
-  const safetyBuffer = 32;
-  const maxHeight = (measurementBody.clientHeight || 980) - safetyBuffer;
-
-  const blocks = createPrintableBlocks();
-  let pageNumber = 1;
-  let currentPage = createPrintPage(pageNumber);
-  let currentBody = currentPage.querySelector(".print-page-body");
-  sandbox.innerHTML = "";
-  sandbox.appendChild(currentPage);
-
-  const finalizedPages = [];
-
-  blocks.forEach((block) => {
-    const candidate = block.cloneNode(true);
-    currentBody.appendChild(candidate);
-    if (currentBody.scrollHeight > maxHeight && currentBody.children.length > 1) {
-      currentBody.removeChild(candidate);
-      finalizedPages.push(currentPage.cloneNode(true));
-      pageNumber += 1;
-      currentPage = createPrintPage(pageNumber);
-      currentBody = currentPage.querySelector(".print-page-body");
-      sandbox.innerHTML = "";
-      sandbox.appendChild(currentPage);
-      currentBody.appendChild(candidate);
-    }
-  });
-
-  finalizedPages.push(currentPage.cloneNode(true));
-  document.body.removeChild(sandbox);
-
-  els.printPages.innerHTML = "";
-  finalizedPages.forEach((page) => {
-    els.printPages.appendChild(page);
-  });
+  const page = createPrintPage(1);
+  page.querySelector(".print-page-body").innerHTML = buildCompactPrintBody();
+  els.printPages.appendChild(page);
 }
 
 function updateProjectFields() {
