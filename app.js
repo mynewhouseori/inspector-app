@@ -142,6 +142,8 @@ const state = {
   propertyName: "",
   propertyAddress: "",
   clientName: "",
+  clientPhone: "",
+  clientEmail: "",
   inspectorName: "",
   currentProjectId: null,
   activeInspectionAreaId: null,
@@ -159,6 +161,8 @@ const els = {
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
   clientName: document.querySelector("#clientName"),
+  clientPhone: document.querySelector("#clientPhone"),
+  clientEmail: document.querySelector("#clientEmail"),
   inspectorName: document.querySelector("#inspectorName"),
   cloudStatus: document.querySelector("#cloudStatus"),
   saveProjectBtn: document.querySelector("#saveProjectBtn"),
@@ -282,6 +286,8 @@ function applyProjectData(projectData) {
   state.propertyName = projectData.propertyName || "";
   state.propertyAddress = projectData.propertyAddress || "";
   state.clientName = projectData.clientName || "";
+  state.clientPhone = projectData.clientPhone || "";
+  state.clientEmail = projectData.clientEmail || "";
   state.inspectorName = projectData.inspectorName || "";
   state.activeInspectionAreaId = projectData.activeInspectionAreaId || null;
   state.areas = Array.isArray(projectData.areas) ? projectData.areas.map((area) => hydrateArea(area)) : buildPresetAreas();
@@ -289,6 +295,8 @@ function applyProjectData(projectData) {
   els.propertyName.value = state.propertyName;
   els.propertyAddress.value = state.propertyAddress;
   els.clientName.value = state.clientName;
+  els.clientPhone.value = state.clientPhone;
+  els.clientEmail.value = state.clientEmail;
   els.inspectorName.value = state.inspectorName;
 }
 
@@ -698,6 +706,8 @@ function renderReportDocument(summary, issues) {
 
   const coverMetaItems = [
     state.clientName && `לקוח: ${state.clientName}`,
+    state.clientPhone && `נייד: ${state.clientPhone}`,
+    state.clientEmail && `Email: ${state.clientEmail}`,
     state.inspectorName && `בודק: ${state.inspectorName}`,
     state.propertyAddress && `מיקום: ${state.propertyAddress}`,
     `תאריך הפקה: ${formatGeneratedAt()}`
@@ -708,6 +718,8 @@ function renderReportDocument(summary, issues) {
     ["סטטוס", reportStatus],
     ["בודק", state.inspectorName || "לא הוזן"],
     ["לקוח", state.clientName || "לא הוזן"],
+    ["נייד", state.clientPhone || "לא הוזן"],
+    ["Email", state.clientEmail || "לא הוזן"],
     ["אזורים", `${reportSummary.inspectedAreas} נבדקו${reportSummary.notStartedAreas ? `, ${reportSummary.notStartedAreas} לא נכללו` : ""}`]
   ];
 
@@ -933,6 +945,8 @@ function updateProjectFields() {
   state.propertyName = els.propertyName.value.trim();
   state.propertyAddress = els.propertyAddress.value.trim();
   state.clientName = els.clientName.value.trim();
+  state.clientPhone = els.clientPhone.value.trim();
+  state.clientEmail = els.clientEmail.value.trim();
   state.inspectorName = els.inspectorName.value.trim();
 }
 
@@ -946,6 +960,8 @@ function projectDataSignature(projectData = {}) {
     propertyName: projectData.propertyName || "",
     propertyAddress: projectData.propertyAddress || "",
     clientName: projectData.clientName || "",
+    clientPhone: projectData.clientPhone || "",
+    clientEmail: projectData.clientEmail || "",
     inspectorName: projectData.inspectorName || "",
     activeInspectionAreaId: projectData.activeInspectionAreaId || null,
     areas: Array.isArray(projectData.areas)
@@ -982,6 +998,8 @@ function serializeCurrentProject() {
     propertyName: state.propertyName,
     propertyAddress: state.propertyAddress,
     clientName: state.clientName,
+    clientPhone: state.clientPhone,
+    clientEmail: state.clientEmail,
     inspectorName: state.inspectorName,
     activeInspectionAreaId: state.activeInspectionAreaId,
     areas: JSON.parse(JSON.stringify(state.areas))
@@ -1196,12 +1214,16 @@ function startNewProject() {
   state.propertyName = "";
   state.propertyAddress = "";
   state.clientName = "";
+  state.clientPhone = "";
+  state.clientEmail = "";
   state.inspectorName = "";
   state.activeInspectionAreaId = null;
   state.areas = buildPresetAreas();
   els.propertyName.value = "";
   els.propertyAddress.value = "";
   els.clientName.value = "";
+  els.clientPhone.value = "";
+  els.clientEmail.value = "";
   els.inspectorName.value = "";
   render({ preserveScroll: false });
   setScreen("welcome", { scroll: true });
@@ -1265,6 +1287,8 @@ function updateHeader() {
   const parts = [
     state.propertyAddress && `כתובת: ${state.propertyAddress}`,
     state.clientName && `לקוח: ${state.clientName}`,
+    state.clientPhone && `נייד: ${state.clientPhone}`,
+    state.clientEmail && `Email: ${state.clientEmail}`,
     state.inspectorName && `בודק: ${state.inspectorName}`
   ].filter(Boolean);
   els.reportMeta.textContent = parts.length ? parts.join(" | ") : "בחר חדרים ומלא את הבדיקות בשטח.";
@@ -1497,6 +1521,8 @@ function loadState() {
     propertyName: parsed.propertyName || "",
     propertyAddress: parsed.propertyAddress || "",
     clientName: parsed.clientName || "",
+    clientPhone: parsed.clientPhone || "",
+    clientEmail: parsed.clientEmail || "",
     inspectorName: parsed.inspectorName || "",
     activeInspectionAreaId: parsed.activeInspectionAreaId || null,
     areas: Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas()
@@ -1550,7 +1576,13 @@ if (els.selectOwnerReportBtn) {
 }
 
 els.newProjectBtn.addEventListener("click", () => {
-  const hasContent = state.propertyName || state.propertyAddress || state.clientName || state.inspectorName || selectedAreas().some((area) => area.checks.some((check) => check.status !== "pending" || check.note.trim()));
+  const hasContent = state.propertyName
+    || state.propertyAddress
+    || state.clientName
+    || state.clientPhone
+    || state.clientEmail
+    || state.inspectorName
+    || selectedAreas().some((area) => area.checks.some((check) => check.status !== "pending" || check.note.trim()));
   if (hasContent) {
     const confirmed = window.confirm("לפתוח בדיקה חדשה? הנתונים הנוכחיים יישארו רק אם שמרת אותם.");
     if (!confirmed) return;
@@ -1564,7 +1596,7 @@ els.backToWelcomeBtn.addEventListener("click", () => {
 
 els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
 
-[els.propertyName, els.propertyAddress, els.clientName, els.inspectorName].forEach((input) => {
+[els.propertyName, els.propertyAddress, els.clientName, els.clientPhone, els.clientEmail, els.inspectorName].forEach((input) => {
   input.addEventListener("input", () => {
     updateProjectFields();
     saveState();

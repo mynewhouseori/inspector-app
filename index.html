@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Inspector Mobile</title>
-  <link rel="stylesheet" href="styles.css?v=20260506-57">
+  <link rel="stylesheet" href="styles.css?v=20260506-58">
 </head>
 <body>
   <div class="mobile-app">
@@ -15,7 +15,7 @@
       <img class="brand-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
       <div>
         <h1>Inspector</h1>
-        <p class="top-version">גרסה 2026.05.06.57</p>
+        <p class="top-version">גרסה 2026.05.06.58</p>
       </div>
     </header>
 
@@ -47,8 +47,7 @@
       <section id="screen-welcome" class="screen">
         <h2 id="welcomeTitle" class="welcome-title">בדיקת נכס חדש</h2>
 
-        <section class="panel">
-          <h3>פתיחת פרויקט</h3>
+        <section class="panel intro-panel">
           <label>
             <span>שם הנכס</span>
             <input id="propertyName" type="text" placeholder="למשל: דירה 7">
@@ -64,6 +63,14 @@
           <label>
             <span>שם הבודק</span>
             <input id="inspectorName" type="text" placeholder="הזן שם בודק">
+          </label>
+          <label>
+            <span>טלפון נייד</span>
+            <input id="clientPhone" type="tel" inputmode="tel" placeholder="05X-XXXXXXX">
+          </label>
+          <label>
+            <span>Email</span>
+            <input id="clientEmail" type="email" inputmode="email" placeholder="name@example.com">
           </label>
           <p id="cloudStatus" class="cloud-status">סנכרון ענן</p>
           <button id="saveProjectBtn" class="ghost-btn full-width" type="button">שמור בדיקת דירה</button>
@@ -307,7 +314,7 @@
     </div>
   </template>
 
-  <script src="config.demo.js?v=20260506-57"></script>
-  <script type="module" src="app.js?v=20260506-57"></script>
+  <script src="config.demo.js?v=20260506-58"></script>
+  <script type="module" src="app.js?v=20260506-58"></script>
 </body>
 </html>
