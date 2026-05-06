@@ -210,6 +210,7 @@ const els = {
   roomsSelection: document.querySelector("#roomsSelection"),
   roomChipTemplate: document.querySelector("#roomChipTemplate"),
   selectedRoomsCount: document.querySelector("#selectedRoomsCount"),
+  roomsPropertyName: document.querySelector("#roomsPropertyName"),
   savedProjectsList: document.querySelector("#savedProjectsList"),
   areasContainer: document.querySelector("#areasContainer"),
   areaTemplate: document.querySelector("#areaTemplate"),
@@ -1430,6 +1431,9 @@ function setScreen(screen, options = {}) {
 
 function renderRoomSelection() {
   els.roomsSelection.innerHTML = "";
+  if (els.roomsPropertyName) {
+    els.roomsPropertyName.textContent = state.propertyName || "";
+  }
   state.areas.forEach((area) => {
     const button = els.roomChipTemplate.content.firstElementChild.cloneNode(true);
     const progress = getAreaProgress(area);
