@@ -1508,7 +1508,7 @@ function renderAreas() {
 function renderOwnerApartments() {
   if (!els.ownerApartmentsGrid) return;
   els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => `
-    <button class="owner-apartment-card" type="button" data-owner-apartment="${apartmentName}">
+    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-20") ? "owner-apartment-card-alt" : ""}" type="button" data-owner-apartment="${apartmentName}">
       <strong>${apartmentName}</strong>
       <span>פתיחת תסקיר עבור הדירה שנבחרה</span>
     </button>
