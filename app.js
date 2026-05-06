@@ -136,7 +136,7 @@ const inspectionModeLabels = {
   owner: "תסקיר בדיקת בעלים"
 };
 
-const ownerApartmentLabels = Array.from({ length: 10 }, (_, index) => `דירה ${String(index + 1).padStart(2, "0")}`);
+const ownerApartmentLabels = Array.from({ length: 16 }, (_, index) => `דירה ${String(index + 1).padStart(2, "0")}`);
 
 const state = {
   currentScreen: "home",
