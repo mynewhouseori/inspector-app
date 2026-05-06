@@ -178,6 +178,7 @@ const els = {
   reportDocSubtitle: document.querySelector("#reportDocSubtitle"),
   reportCoverBadge: document.querySelector("#reportCoverBadge"),
   reportCoverMeta: document.querySelector("#reportCoverMeta"),
+  printPages: document.querySelector("#printPages"),
   reportPageHeaderTitle: document.querySelector("#reportPageHeaderTitle"),
   reportPageHeaderInspector: document.querySelector("#reportPageHeaderInspector"),
   reportPageHeaderStatus: document.querySelector("#reportPageHeaderStatus"),
@@ -788,6 +789,130 @@ function renderReportDocument(summary, issues) {
     : `<div class="report-empty">אין אזורים עם נתוני בדיקה להצגה במסמך זה.</div>`;
 
   els.reportClosingNote.innerHTML = `<p>${escapeHtml(buildClosingNote(reportSummary))}</p>`;
+}
+
+function padPageNumber(value) {
+  return String(value).padStart(2, "0");
+}
+
+function createPrintPage(pageNumber) {
+  const page = document.createElement("section");
+  page.className = "print-page";
+  page.innerHTML = `
+    <div class="print-page-header">
+      <div class="print-page-brand">
+        <img class="print-page-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
+        <div>
+          <strong>אורי לוין</strong>
+          <span>ביצוע ופיקוח בבנייה</span>
+        </div>
+      </div>
+      <div class="print-page-meta">
+        <span>${escapeHtml(els.reportPageHeaderStatus.textContent)}</span>
+        <span>${escapeHtml(els.reportPageHeaderDate.textContent)}</span>
+        <span>עמוד ${padPageNumber(pageNumber)}</span>
+      </div>
+    </div>
+    <div class="print-page-body"></div>
+  `;
+  return page;
+}
+
+function createPrintableBlocks() {
+  const blocks = [];
+  const cover = els.reportDocument.querySelector(".report-cover");
+  if (cover) {
+    blocks.push(cover.cloneNode(true));
+  }
+
+  const sections = [...els.reportDocument.querySelectorAll(".report-section")];
+  sections.forEach((section) => {
+    const title = section.querySelector("h3");
+    const contentNodes = [...section.children].filter((child) => child !== title);
+    const splitContainer = contentNodes.find((node) =>
+      node.classList?.contains("report-intro-block")
+      || node.classList?.contains("report-summary-stats")
+      || node.classList?.contains("report-findings")
+      || node.classList?.contains("report-area-details")
+      || node.classList?.contains("report-text-block")
+    );
+
+    if (!splitContainer) {
+      blocks.push(section.cloneNode(true));
+      return;
+    }
+
+    const unitNodes = [...splitContainer.children];
+    if (!unitNodes.length) {
+      blocks.push(section.cloneNode(true));
+      return;
+    }
+
+    unitNodes.forEach((unit, index) => {
+      const sectionFragment = document.createElement("section");
+      sectionFragment.className = section.className;
+      if (title && index === 0) {
+        sectionFragment.appendChild(title.cloneNode(true));
+      } else if (title) {
+        const continuedTitle = title.cloneNode(true);
+        continuedTitle.textContent = `${title.textContent} (המשך)`;
+        sectionFragment.appendChild(continuedTitle);
+      }
+      const wrapper = document.createElement("div");
+      wrapper.className = splitContainer.className;
+      wrapper.appendChild(unit.cloneNode(true));
+      sectionFragment.appendChild(wrapper);
+      blocks.push(sectionFragment);
+    });
+  });
+
+  return blocks;
+}
+
+function buildPrintPages() {
+  if (!els.printPages || !els.reportDocument) return;
+  els.printPages.innerHTML = "";
+
+  const sandbox = document.createElement("div");
+  sandbox.className = "print-measure-sandbox";
+  document.body.appendChild(sandbox);
+
+  const measurementPage = createPrintPage(1);
+  sandbox.appendChild(measurementPage);
+  const measurementBody = measurementPage.querySelector(".print-page-body");
+  const maxHeight = measurementBody.clientHeight || 980;
+
+  const blocks = createPrintableBlocks();
+  let pageNumber = 1;
+  let currentPage = createPrintPage(pageNumber);
+  let currentBody = currentPage.querySelector(".print-page-body");
+  sandbox.innerHTML = "";
+  sandbox.appendChild(currentPage);
+
+  const finalizedPages = [];
+
+  blocks.forEach((block) => {
+    const candidate = block.cloneNode(true);
+    currentBody.appendChild(candidate);
+    if (currentBody.scrollHeight > maxHeight && currentBody.children.length > 1) {
+      currentBody.removeChild(candidate);
+      finalizedPages.push(currentPage.cloneNode(true));
+      pageNumber += 1;
+      currentPage = createPrintPage(pageNumber);
+      currentBody = currentPage.querySelector(".print-page-body");
+      sandbox.innerHTML = "";
+      sandbox.appendChild(currentPage);
+      currentBody.appendChild(candidate);
+    }
+  });
+
+  finalizedPages.push(currentPage.cloneNode(true));
+  document.body.removeChild(sandbox);
+
+  els.printPages.innerHTML = "";
+  finalizedPages.forEach((page) => {
+    els.printPages.appendChild(page);
+  });
 }
 
 function updateProjectFields() {
@@ -1435,6 +1560,7 @@ els.resetBtn.addEventListener("click", () => {
 
 els.printBtn.addEventListener("click", () => {
   setScreen("summary", { scroll: true });
+  buildPrintPages();
   setTimeout(() => window.print(), 80);
 });
 
@@ -1451,4 +1577,8 @@ window.addEventListener("pageshow", () => {
 
 document.addEventListener("focusout", () => {
   schedulePendingCloudSyncFlush();
+});
+
+window.addEventListener("beforeprint", () => {
+  buildPrintPages();
 });
