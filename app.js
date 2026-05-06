@@ -182,6 +182,7 @@ const els = {
   propertyAddressField: document.querySelector("#propertyAddressField"),
   clientNameLabel: document.querySelector("#clientNameLabel"),
   inspectorNameField: document.querySelector("#inspectorNameField"),
+  welcomeNavBtn: document.querySelector("#welcomeNavBtn"),
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
   clientName: document.querySelector("#clientName"),
@@ -339,6 +340,9 @@ function updateWelcomeFormMode() {
   }
   if (els.clientName) {
     els.clientName.placeholder = isOwnerMode ? "הזן שם דייר" : "הזן שם לקוח";
+  }
+  if (els.welcomeNavBtn) {
+    els.welcomeNavBtn.hidden = isOwnerMode;
   }
 }
 
