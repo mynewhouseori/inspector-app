@@ -830,11 +830,9 @@ function createPrintableBlocks() {
     const title = section.querySelector("h3");
     const contentNodes = [...section.children].filter((child) => child !== title);
     const splitContainer = contentNodes.find((node) =>
-      node.classList?.contains("report-intro-block")
-      || node.classList?.contains("report-summary-stats")
+      node.classList?.contains("report-summary-stats")
       || node.classList?.contains("report-findings")
       || node.classList?.contains("report-area-details")
-      || node.classList?.contains("report-text-block")
     );
 
     if (!splitContainer) {
@@ -880,7 +878,8 @@ function buildPrintPages() {
   const measurementPage = createPrintPage(1);
   sandbox.appendChild(measurementPage);
   const measurementBody = measurementPage.querySelector(".print-page-body");
-  const maxHeight = measurementBody.clientHeight || 980;
+  const safetyBuffer = 32;
+  const maxHeight = (measurementBody.clientHeight || 980) - safetyBuffer;
 
   const blocks = createPrintableBlocks();
   let pageNumber = 1;
