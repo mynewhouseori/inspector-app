@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Inspector Mobile</title>
-  <link rel="stylesheet" href="styles.css?v=20260506-55">
+  <link rel="stylesheet" href="styles.css?v=20260506-57">
 </head>
 <body>
   <div class="mobile-app">
@@ -15,13 +15,37 @@
       <img class="brand-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
       <div>
         <h1>Inspector</h1>
-        <p class="top-version">גרסה 2026.05.06.55</p>
+        <p class="top-version">גרסה 2026.05.06.57</p>
       </div>
     </header>
 
     <main class="screen-stack">
-      <section id="screen-welcome" class="screen active">
-        <h2 class="welcome-title">בדיקת נכס חדש</h2>
+      <section id="screen-home" class="screen active">
+        <section class="panel home-panel">
+          <div class="home-brand">
+            <img class="home-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
+            <div>
+              <p class="eyebrow">INSPECTOR</p>
+              <h2 class="home-title">בחירת מסלול בדיקה</h2>
+              <p class="section-text">בחר את סוג הבדיקה הרצוי כדי לפתוח את מסלול העבודה המתאים.</p>
+            </div>
+          </div>
+
+          <div class="mode-selection">
+            <button id="selectNewPropertyBtn" class="mode-card mode-card-new" type="button">
+              <strong>בדיקת נכס חדש</strong>
+              <span>בדיקות מסירה, ליקויי ביצוע והתאמה לתכנון ולרמת הגמר.</span>
+            </button>
+            <button id="selectOwnerReportBtn" class="mode-card mode-card-owner" type="button">
+              <strong>תסקיר דירת בעלים</strong>
+              <span>סקירת נכס קיים לפני שיפוץ, תיעוד מצב קיים והמלצות מקצועיות להמשך.</span>
+            </button>
+          </div>
+        </section>
+      </section>
+
+      <section id="screen-welcome" class="screen">
+        <h2 id="welcomeTitle" class="welcome-title">בדיקת נכס חדש</h2>
 
         <section class="panel">
           <h3>פתיחת פרויקט</h3>
@@ -205,7 +229,8 @@
     </main>
 
     <nav class="bottom-nav">
-      <button class="nav-btn active" data-screen="welcome" type="button">פתיחה</button>
+      <button class="nav-btn active" data-screen="home" type="button">ראשי</button>
+      <button class="nav-btn" data-screen="welcome" type="button">פתיחה</button>
       <button class="nav-btn" data-screen="rooms" type="button">חדרים</button>
       <button class="nav-btn" data-screen="inspection" type="button">בדיקה</button>
       <button class="nav-btn" data-screen="summary" type="button">דוחות</button>
@@ -282,7 +307,7 @@
     </div>
   </template>
 
-  <script src="config.demo.js?v=20260506-55"></script>
-  <script type="module" src="app.js?v=20260506-55"></script>
+  <script src="config.demo.js?v=20260506-57"></script>
+  <script type="module" src="app.js?v=20260506-57"></script>
 </body>
 </html>

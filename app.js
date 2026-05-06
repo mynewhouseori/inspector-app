@@ -131,8 +131,14 @@ let isPickerOpen = false;
 let pendingCloudSync = false;
 let pendingFocusAreaId = null;
 
+const inspectionModeLabels = {
+  new: "בדיקת נכס חדש",
+  owner: "תסקיר דירת בעלים"
+};
+
 const state = {
-  currentScreen: "welcome",
+  currentScreen: "home",
+  inspectionMode: "new",
   propertyName: "",
   propertyAddress: "",
   clientName: "",
@@ -147,6 +153,9 @@ const storageKey = "inspector-mobile-state-v2";
 const projectsKey = "inspector-mobile-projects-v1";
 
 const els = {
+  welcomeTitle: document.querySelector("#welcomeTitle"),
+  selectNewPropertyBtn: document.querySelector("#selectNewPropertyBtn"),
+  selectOwnerReportBtn: document.querySelector("#selectOwnerReportBtn"),
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
   clientName: document.querySelector("#clientName"),
@@ -269,6 +278,7 @@ function hydrateArea(area) {
 }
 
 function applyProjectData(projectData) {
+  state.inspectionMode = projectData.inspectionMode || state.inspectionMode || "new";
   state.propertyName = projectData.propertyName || "";
   state.propertyAddress = projectData.propertyAddress || "";
   state.clientName = projectData.clientName || "";
@@ -280,6 +290,11 @@ function applyProjectData(projectData) {
   els.propertyAddress.value = state.propertyAddress;
   els.clientName.value = state.clientName;
   els.inspectorName.value = state.inspectorName;
+}
+
+function updateWelcomeTitle() {
+  if (!els.welcomeTitle) return;
+  els.welcomeTitle.textContent = inspectionModeLabels[state.inspectionMode] || inspectionModeLabels.new;
 }
 
 function updateCloudStatus(message, tone = "") {
@@ -927,6 +942,7 @@ function getProjectTitle(project = state) {
 
 function projectDataSignature(projectData = {}) {
   const normalized = {
+    inspectionMode: projectData.inspectionMode || "new",
     propertyName: projectData.propertyName || "",
     propertyAddress: projectData.propertyAddress || "",
     clientName: projectData.clientName || "",
@@ -962,6 +978,7 @@ function projectDataSignature(projectData = {}) {
 function serializeCurrentProject() {
   updateProjectFields();
   return {
+    inspectionMode: state.inspectionMode,
     propertyName: state.propertyName,
     propertyAddress: state.propertyAddress,
     clientName: state.clientName,
@@ -1190,6 +1207,12 @@ function startNewProject() {
   setScreen("welcome", { scroll: true });
 }
 
+function selectInspectionMode(mode) {
+  state.inspectionMode = mode === "owner" ? "owner" : "new";
+  updateWelcomeTitle();
+  setScreen("welcome", { scroll: true });
+}
+
 function renderSavedProjects() {
   if (!els.savedProjectsList) return;
 
@@ -1237,7 +1260,8 @@ function renderSavedProjects() {
 
 function updateHeader() {
   updateProjectFields();
-  els.reportTitle.textContent = state.propertyName || "דוח בדיקה הנדסית";
+  const defaultReportTitle = state.inspectionMode === "owner" ? "תסקיר דירת בעלים" : "דוח בדיקה הנדסית";
+  els.reportTitle.textContent = state.propertyName || defaultReportTitle;
   const parts = [
     state.propertyAddress && `כתובת: ${state.propertyAddress}`,
     state.clientName && `לקוח: ${state.clientName}`,
@@ -1458,15 +1482,18 @@ function loadState() {
   state.savedProjects = projectsRaw ? JSON.parse(projectsRaw) : [];
   const raw = localStorage.getItem(storageKey);
   if (!raw) {
-    state.currentScreen = "welcome";
+    state.currentScreen = "home";
+    state.inspectionMode = "new";
     state.areas = buildPresetAreas();
     updateCloudStatus("טוען פרויקטים מהענן...", "warn");
     return;
   }
   const parsed = JSON.parse(raw);
-  state.currentScreen = "welcome";
+  state.currentScreen = parsed.currentScreen || "home";
+  state.inspectionMode = parsed.inspectionMode || "new";
   state.currentProjectId = parsed.currentProjectId || null;
   applyProjectData({
+    inspectionMode: parsed.inspectionMode || "new",
     propertyName: parsed.propertyName || "",
     propertyAddress: parsed.propertyAddress || "",
     clientName: parsed.clientName || "",
@@ -1480,6 +1507,7 @@ function loadState() {
 function render(options = {}) {
   const { preserveScroll = true } = options;
   const previousScrollY = preserveScroll ? window.scrollY : 0;
+  updateWelcomeTitle();
   updateHeader();
   renderSavedProjects();
   renderRoomSelection();
@@ -1506,6 +1534,18 @@ els.saveProjectBtn.addEventListener("click", async () => {
 if (els.jumpToSavedProjectsBtn) {
   els.jumpToSavedProjectsBtn.addEventListener("click", () => {
     els.savedProjectsList.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
+if (els.selectNewPropertyBtn) {
+  els.selectNewPropertyBtn.addEventListener("click", () => {
+    selectInspectionMode("new");
+  });
+}
+
+if (els.selectOwnerReportBtn) {
+  els.selectOwnerReportBtn.addEventListener("click", () => {
+    selectInspectionMode("owner");
   });
 }
 
@@ -1564,14 +1604,14 @@ els.printBtn.addEventListener("click", () => {
 });
 
 loadState();
-state.currentScreen = "welcome";
+state.currentScreen = state.currentScreen || "home";
 if (!state.areas.length) state.areas = buildPresetAreas();
 render();
 subscribeToCloudProjects();
 
 window.addEventListener("pageshow", () => {
-  state.currentScreen = "welcome";
-  setScreen("welcome", { scroll: false });
+  state.currentScreen = state.currentScreen || "home";
+  setScreen(state.currentScreen, { scroll: false });
 });
 
 document.addEventListener("focusout", () => {

@@ -150,6 +150,80 @@ select {
   color: var(--ink);
 }
 
+.home-panel {
+  padding: 24px;
+}
+
+.home-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.home-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border-radius: 22px;
+  background: white;
+  padding: 6px;
+  box-shadow: var(--shadow);
+}
+
+.home-title {
+  margin: 0 0 8px;
+  font-size: 34px;
+  line-height: 1.05;
+}
+
+.mode-selection {
+  display: grid;
+  gap: 14px;
+}
+
+.mode-card {
+  width: 100%;
+  text-align: right;
+  padding: 20px 18px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.mode-card strong,
+.mode-card span {
+  display: block;
+}
+
+.mode-card strong {
+  margin-bottom: 8px;
+  font-size: 22px;
+}
+
+.mode-card span {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.mode-card-new {
+  background: linear-gradient(160deg, rgba(255,255,255,0.98), rgba(232, 244, 242, 0.98));
+  border-color: rgba(24, 90, 97, 0.28);
+}
+
+.mode-card-owner {
+  background: linear-gradient(160deg, rgba(255,255,255,0.98), rgba(248, 239, 230, 0.98));
+  border-color: rgba(194, 120, 79, 0.32);
+}
+
 .hero-card {
   background: linear-gradient(160deg, rgba(255,255,255,0.96), rgba(250, 243, 233, 0.98));
 }
@@ -1004,7 +1078,7 @@ select {
   max-width: 760px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 8px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
   background: rgba(248, 241, 231, 0.92);
@@ -1057,6 +1131,18 @@ select {
 }
 
 @media (max-width: 760px) {
+  .home-brand {
+    align-items: start;
+  }
+
+  .home-title {
+    font-size: 28px;
+  }
+
+  .mode-card strong {
+    font-size: 20px;
+  }
+
   .compact-panel {
     position: static;
     top: auto;
@@ -1112,6 +1198,7 @@ select {
   #startBtn,
   #addAreaBtn,
   .delete-btn,
+  #screen-home,
   #screen-welcome,
   #screen-rooms,
   #screen-inspection,
