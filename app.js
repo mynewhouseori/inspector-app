@@ -155,6 +155,12 @@ const ownerApartmentLabels = [
   "כניסה-20 דירה-08"
 ];
 
+function getOwnerApartmentProjectId(apartmentName) {
+  const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
+  const suffix = apartmentIndex >= 0 ? String(apartmentIndex + 1).padStart(2, "0") : "00";
+  return `owner-apartment-${suffix}`;
+}
+
 const state = {
   currentScreen: "home",
   inspectionMode: "new",
@@ -1282,22 +1288,38 @@ function selectInspectionMode(mode) {
 }
 
 function openOwnerApartment(apartmentName) {
-  state.currentProjectId = null;
+  const existingProject = state.savedProjects.find((project) => (
+    project?.data?.inspectionMode === "owner"
+    && project?.data?.propertyName === apartmentName
+  ));
+
   state.inspectionMode = "owner";
-  state.propertyName = apartmentName;
-  state.propertyAddress = "";
-  state.clientName = "";
-  state.clientPhone = "";
-  state.clientEmail = "";
-  state.inspectorName = "";
-  state.activeInspectionAreaId = null;
-  state.areas = buildPresetAreas();
-  els.propertyName.value = apartmentName;
-  els.propertyAddress.value = "";
-  els.clientName.value = "";
-  els.clientPhone.value = "";
-  els.clientEmail.value = "";
-  els.inspectorName.value = "";
+
+  if (existingProject?.data) {
+    state.currentProjectId = existingProject.id;
+    isApplyingCloudProject = true;
+    applyProjectData(existingProject.data);
+    lastCloudAppliedAt = existingProject.updatedAtMs || Date.now();
+    isApplyingCloudProject = false;
+  } else {
+    state.currentProjectId = getOwnerApartmentProjectId(apartmentName);
+    state.propertyName = apartmentName;
+    state.propertyAddress = "";
+    state.clientName = "";
+    state.clientPhone = "";
+    state.clientEmail = "";
+    state.inspectorName = "";
+    state.activeInspectionAreaId = null;
+    state.areas = buildPresetAreas();
+    els.propertyName.value = apartmentName;
+    els.propertyAddress.value = "";
+    els.clientName.value = "";
+    els.clientPhone.value = "";
+    els.clientEmail.value = "";
+    els.inspectorName.value = "";
+    saveState({ immediateCloud: true });
+  }
+
   render({ preserveScroll: false });
   setScreen("welcome", { scroll: true });
 }
