@@ -1518,7 +1518,7 @@ function loadState() {
     return;
   }
   const parsed = JSON.parse(raw);
-  state.currentScreen = parsed.currentScreen || "home";
+  state.currentScreen = "home";
   state.inspectionMode = parsed.inspectionMode || "new";
   state.currentProjectId = parsed.currentProjectId || null;
   applyProjectData({
@@ -1641,14 +1641,14 @@ els.printBtn.addEventListener("click", () => {
 });
 
 loadState();
-state.currentScreen = state.currentScreen || "home";
+state.currentScreen = "home";
 if (!state.areas.length) state.areas = buildPresetAreas();
 render();
 subscribeToCloudProjects();
 
 window.addEventListener("pageshow", () => {
-  state.currentScreen = state.currentScreen || "home";
-  setScreen(state.currentScreen, { scroll: false });
+  state.currentScreen = "home";
+  setScreen("home", { scroll: false });
 });
 
 document.addEventListener("focusout", () => {
