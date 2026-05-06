@@ -32,7 +32,6 @@ const baseChecks = {
     { code: "3.1.4", name: "איטומים", category: "פתחים ודלתות" }
   ],
   plumbingDrainage: [
-    { code: "4.1.1", name: "בדיקת לחץ מים", category: "אינסטלציה וניקוז" },
     { code: "4.1.2", name: "נזילות", category: "אינסטלציה וניקוז" },
     { code: "4.1.3", name: "שיפועים", category: "אינסטלציה וניקוז" },
     { code: "4.1.4", name: "ניקוזים ותפקוד מערכות", category: "אינסטלציה וניקוז" }
