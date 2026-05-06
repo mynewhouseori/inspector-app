@@ -114,6 +114,21 @@ const defaultAreaPreset = [
   "גג"
 ];
 
+const ownerAreaPreset = [
+  "חדר שינה 01",
+  "חדר שינה 02",
+  "חדר שינה 03",
+  "רחצה הורים",
+  "רחצה כללי",
+  "מבואה 01",
+  "מטבח",
+  "סלון",
+  "מרפסת שרות",
+  "מרפסת",
+  "ממד",
+  "ש.אורחים"
+];
+
 const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5", "7.1.3"]);
 const SETTINGS = window.APP_CONFIG || window.DEFAULT_APP_CONFIG || {};
 const hasFirebaseConfig = Boolean(SETTINGS?.firebase?.apiKey);
@@ -313,6 +328,18 @@ function hydrateArea(area) {
   };
 }
 
+function normalizeAreasForMode(areas = [], mode = state.inspectionMode) {
+  if (mode !== "owner") {
+    return Array.isArray(areas) ? areas.map((area) => hydrateArea(area)) : buildPresetAreas(mode);
+  }
+
+  const existingByName = new Map(
+    (Array.isArray(areas) ? areas : []).map((area) => [area.name, hydrateArea(area)])
+  );
+
+  return ownerAreaPreset.map((name) => existingByName.get(name) || createArea(name, inferAreaType(name), true));
+}
+
 function applyProjectData(projectData) {
   state.inspectionMode = projectData.inspectionMode || state.inspectionMode || "new";
   state.propertyName = projectData.propertyName || "";
@@ -322,7 +349,9 @@ function applyProjectData(projectData) {
   state.clientEmail = projectData.clientEmail || "";
   state.inspectorName = projectData.inspectorName || "";
   state.activeInspectionAreaId = projectData.activeInspectionAreaId || null;
-  state.areas = Array.isArray(projectData.areas) ? projectData.areas.map((area) => hydrateArea(area)) : buildPresetAreas();
+  state.areas = Array.isArray(projectData.areas)
+    ? normalizeAreasForMode(projectData.areas, state.inspectionMode)
+    : buildPresetAreas(state.inspectionMode);
   if (!state.areas.length) state.areas = buildPresetAreas();
   els.propertyName.value = state.propertyName;
   els.propertyAddress.value = state.propertyAddress;
@@ -454,8 +483,9 @@ function toggleAreaLock(area) {
   persistAndRender({}, { immediateCloud: true });
 }
 
-function buildPresetAreas() {
-  return defaultAreaPreset.map((name) => createArea(name, inferAreaType(name), true));
+function buildPresetAreas(mode = state.inspectionMode) {
+  const preset = mode === "owner" ? ownerAreaPreset : defaultAreaPreset;
+  return preset.map((name) => createArea(name, inferAreaType(name), true));
 }
 
 function selectedAreas() {
