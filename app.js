@@ -179,6 +179,9 @@ const els = {
   selectOwnerReportBtn: document.querySelector("#selectOwnerReportBtn"),
   backToHomeFromOwnerBtn: document.querySelector("#backToHomeFromOwnerBtn"),
   ownerApartmentsGrid: document.querySelector("#ownerApartmentsGrid"),
+  propertyAddressField: document.querySelector("#propertyAddressField"),
+  clientNameLabel: document.querySelector("#clientNameLabel"),
+  inspectorNameField: document.querySelector("#inspectorNameField"),
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
   clientName: document.querySelector("#clientName"),
@@ -324,6 +327,19 @@ function applyProjectData(projectData) {
 function updateWelcomeTitle() {
   if (!els.welcomeTitle) return;
   els.welcomeTitle.textContent = inspectionModeLabels[state.inspectionMode] || inspectionModeLabels.new;
+}
+
+function updateWelcomeFormMode() {
+  const isOwnerMode = state.inspectionMode === "owner";
+  if (els.propertyAddressField) {
+    els.propertyAddressField.hidden = isOwnerMode;
+  }
+  if (els.clientNameLabel) {
+    els.clientNameLabel.textContent = isOwnerMode ? "שם הדייר" : "שם הלקוח";
+  }
+  if (els.clientName) {
+    els.clientName.placeholder = isOwnerMode ? "הזן שם דייר" : "הזן שם לקוח";
+  }
 }
 
 function updateCloudStatus(message, tone = "") {
@@ -1595,6 +1611,7 @@ function render(options = {}) {
   const { preserveScroll = true } = options;
   const previousScrollY = preserveScroll ? window.scrollY : 0;
   updateWelcomeTitle();
+  updateWelcomeFormMode();
   updateHeader();
   renderSavedProjects();
   renderOwnerApartments();

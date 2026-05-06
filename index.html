@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Inspector Mobile</title>
-  <link rel="stylesheet" href="styles.css?v=20260506-63">
+  <link rel="stylesheet" href="styles.css?v=20260506-64">
 </head>
 <body>
   <div class="mobile-app">
@@ -15,7 +15,7 @@
       <img class="brand-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
       <div>
         <h1>Inspector</h1>
-        <p class="top-version">גרסה 2026.05.06.63</p>
+        <p class="top-version">גרסה 2026.05.06.64</p>
       </div>
     </header>
 
@@ -66,17 +66,13 @@
             <span>שם הנכס</span>
             <input id="propertyName" type="text" placeholder="למשל: דירה 7">
           </label>
-          <label>
+          <label id="propertyAddressField">
             <span>כתובת</span>
             <input id="propertyAddress" type="text" placeholder="רחוב, עיר">
           </label>
           <label>
-            <span>שם הלקוח</span>
+            <span id="clientNameLabel">שם הלקוח</span>
             <input id="clientName" type="text" placeholder="הזן שם לקוח">
-          </label>
-          <label>
-            <span>שם הבודק</span>
-            <input id="inspectorName" type="text" placeholder="הזן שם בודק">
           </label>
           <label>
             <span>טלפון נייד דיירים</span>
@@ -85,6 +81,10 @@
           <label>
             <span>Email דיירים</span>
             <input id="clientEmail" type="email" inputmode="email" placeholder="name@example.com">
+          </label>
+          <label id="inspectorNameField">
+            <span>שם הבודק</span>
+            <input id="inspectorName" type="text" placeholder="הזן שם בודק">
           </label>
           <p id="cloudStatus" class="cloud-status">סנכרון ענן</p>
           <button id="saveProjectBtn" class="ghost-btn full-width" type="button">שמור בדיקת דירה</button>
@@ -329,7 +329,7 @@
     </div>
   </template>
 
-  <script src="config.demo.js?v=20260506-63"></script>
-  <script type="module" src="app.js?v=20260506-63"></script>
+  <script src="config.demo.js?v=20260506-64"></script>
+  <script type="module" src="app.js?v=20260506-64"></script>
 </body>
 </html>
