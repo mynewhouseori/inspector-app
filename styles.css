@@ -224,6 +224,47 @@ select {
   border-color: rgba(194, 120, 79, 0.32);
 }
 
+.owner-apartments-panel {
+  padding: 22px;
+}
+
+.owner-apartments-head {
+  align-items: center;
+}
+
+.owner-apartments-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.owner-apartment-card {
+  min-height: 108px;
+  padding: 16px;
+  border: 1px solid rgba(194, 120, 79, 0.28);
+  border-radius: 22px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.98), rgba(248, 239, 230, 0.98));
+  color: var(--ink);
+  text-align: right;
+}
+
+.owner-apartment-card strong,
+.owner-apartment-card span {
+  display: block;
+}
+
+.owner-apartment-card strong {
+  margin-bottom: 8px;
+  font-size: 21px;
+}
+
+.owner-apartment-card span {
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 13px;
+}
+
 .intro-panel {
   display: grid;
   gap: 10px;

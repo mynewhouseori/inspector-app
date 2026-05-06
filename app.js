@@ -133,8 +133,10 @@ let pendingFocusAreaId = null;
 
 const inspectionModeLabels = {
   new: "בדיקת נכס חדש",
-  owner: "תסקיר דירת בעלים"
+  owner: "תסקיר בדיקת בעלים"
 };
+
+const ownerApartmentLabels = Array.from({ length: 10 }, (_, index) => `דירה ${String(index + 1).padStart(2, "0")}`);
 
 const state = {
   currentScreen: "home",
@@ -158,6 +160,8 @@ const els = {
   welcomeTitle: document.querySelector("#welcomeTitle"),
   selectNewPropertyBtn: document.querySelector("#selectNewPropertyBtn"),
   selectOwnerReportBtn: document.querySelector("#selectOwnerReportBtn"),
+  backToHomeFromOwnerBtn: document.querySelector("#backToHomeFromOwnerBtn"),
+  ownerApartmentsGrid: document.querySelector("#ownerApartmentsGrid"),
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
   clientName: document.querySelector("#clientName"),
@@ -1237,6 +1241,27 @@ function startNewProject() {
 function selectInspectionMode(mode) {
   state.inspectionMode = mode === "owner" ? "owner" : "new";
   updateWelcomeTitle();
+  setScreen(state.inspectionMode === "owner" ? "owner-apartments" : "welcome", { scroll: true });
+}
+
+function openOwnerApartment(apartmentName) {
+  state.currentProjectId = null;
+  state.inspectionMode = "owner";
+  state.propertyName = apartmentName;
+  state.propertyAddress = "";
+  state.clientName = "";
+  state.clientPhone = "";
+  state.clientEmail = "";
+  state.inspectorName = "";
+  state.activeInspectionAreaId = null;
+  state.areas = buildPresetAreas();
+  els.propertyName.value = apartmentName;
+  els.propertyAddress.value = "";
+  els.clientName.value = "";
+  els.clientPhone.value = "";
+  els.clientEmail.value = "";
+  els.inspectorName.value = "";
+  render({ preserveScroll: false });
   setScreen("welcome", { scroll: true });
 }
 
@@ -1287,7 +1312,7 @@ function renderSavedProjects() {
 
 function updateHeader() {
   updateProjectFields();
-  const defaultReportTitle = state.inspectionMode === "owner" ? "תסקיר דירת בעלים" : "דוח בדיקה הנדסית";
+  const defaultReportTitle = state.inspectionMode === "owner" ? "תסקיר בדיקת בעלים" : "דוח בדיקה הנדסית";
   els.reportTitle.textContent = state.propertyName || defaultReportTitle;
   const parts = [
     state.propertyAddress && `כתובת: ${state.propertyAddress}`,
@@ -1463,6 +1488,20 @@ function renderAreas() {
   });
 }
 
+function renderOwnerApartments() {
+  if (!els.ownerApartmentsGrid) return;
+  els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => `
+    <button class="owner-apartment-card" type="button" data-owner-apartment="${apartmentName}">
+      <strong>${apartmentName}</strong>
+      <span>פתיחת תסקיר עבור הדירה שנבחרה</span>
+    </button>
+  `).join("");
+
+  els.ownerApartmentsGrid.querySelectorAll("[data-owner-apartment]").forEach((button) => {
+    button.addEventListener("click", () => openOwnerApartment(button.dataset.ownerApartment));
+  });
+}
+
 function renderSummaryReports() {
   const summary = computeSummary();
   const issues = getAllIssues();
@@ -1541,6 +1580,7 @@ function render(options = {}) {
   updateWelcomeTitle();
   updateHeader();
   renderSavedProjects();
+  renderOwnerApartments();
   renderRoomSelection();
   renderAreas();
   renderSummaryReports();
@@ -1577,6 +1617,12 @@ if (els.selectNewPropertyBtn) {
 if (els.selectOwnerReportBtn) {
   els.selectOwnerReportBtn.addEventListener("click", () => {
     selectInspectionMode("owner");
+  });
+}
+
+if (els.backToHomeFromOwnerBtn) {
+  els.backToHomeFromOwnerBtn.addEventListener("click", () => {
+    setScreen("home", { scroll: true });
   });
 }
 
