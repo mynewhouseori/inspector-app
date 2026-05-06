@@ -292,11 +292,12 @@ select {
 }
 
 .rooms-property-name {
-  margin: 0 0 8px;
-  color: var(--accent);
-  font-size: 16px;
+  margin: 0 0 6px;
+  color: var(--ink);
+  font-size: 24px;
   font-weight: 800;
-  line-height: 1.4;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 
 .version-tag {
