@@ -40,8 +40,7 @@ const baseChecks = {
   electricityCommunication: [
     { code: "5.1.1", name: "שקעים", category: "חשמל ותקשורת" },
     { code: "5.1.2", name: "מפסקים", category: "חשמל ותקשורת" },
-    { code: "5.1.3", name: "נקודות תאורה", category: "חשמל ותקשורת" },
-    { code: "5.1.4", name: "התאמה לתוכניות", category: "חשמל ותקשורת" }
+    { code: "5.1.3", name: "נקודות תאורה", category: "חשמל ותקשורת" }
   ],
   dryRoomSystems: [
     { code: "5.1.5", name: "מזגן", category: "חשמל ותקשורת" }
@@ -55,9 +54,7 @@ const baseChecks = {
     { code: "6.1.6", name: "גדרות ומעקות", category: "גג, מרפסות ופיתוח חוץ" }
   ],
   safetyRegulations: [
-    { code: "7.1.1", name: "איתור ליקויים בטיחותיים", category: "בטיחות ותקנות" },
-    { code: "7.1.2", name: "מעקות", category: "בטיחות ותקנות" },
-    { code: "7.1.4", name: "הפרשי מפלסים ומפגעים", category: "בטיחות ותקנות" }
+    { code: "7.1.2", name: "מעקות", category: "בטיחות ותקנות" }
   ]
 };
 
@@ -568,7 +565,7 @@ function getAreaProgress(area) {
   if (area.locked) return { key: "locked", label: "הושלם וננעל" };
   const total = area.checks.length;
   const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
-  const touchedDimensions = Object.values(area.dimensions || {}).filter(Boolean).length;
+  const touchedDimensions = 0;
   const touched = touchedChecks + touchedDimensions;
   if (touched === 0) return { key: "pending", label: "לא התחיל" };
   if (touchedChecks >= total && total > 0) return { key: "complete", label: "הושלם" };
@@ -576,6 +573,7 @@ function getAreaProgress(area) {
 }
 
 function applyDimensionStateToCard(cardNode, area) {
+  if (!cardNode.querySelector(".dimension-badge")) return;
   const dimensionState = getDimensionStatus(area);
   const badge = cardNode.querySelector(".dimension-badge");
   badge.textContent = dimensionState.label;
@@ -621,7 +619,7 @@ function getTouchedChecksCount(area) {
 }
 
 function hasDimensionInput(area) {
-  return Object.values(area.dimensions || {}).some(Boolean);
+  return false;
 }
 
 function isAreaInspected(area) {
@@ -1506,27 +1504,6 @@ function renderAreas() {
       });
     });
 
-    node.querySelectorAll(".dimension-input").forEach((input) => {
-      const group = input.dataset.dimensionGroup;
-      const field = input.dataset.dimensionField;
-      const key = group === "plan" ? (field === "width" ? "planWidth" : "planLength") : (field === "width" ? "actualWidth" : "actualLength");
-      input.value = formatDimensionValue(area.dimensions[key]);
-      input.disabled = area.locked;
-      if (area.locked) input.classList.add("field-locked");
-      input.addEventListener("input", (event) => {
-        area.dimensions[key] = event.target.value.replace(",", ".");
-        applyDimensionStateToCard(node, area);
-        refreshProgressAndSummary();
-      });
-      input.addEventListener("blur", (event) => {
-        area.dimensions[key] = formatDimensionValue(event.target.value);
-        event.target.value = area.dimensions[key];
-        applyDimensionStateToCard(node, area);
-        refreshProgressAndSummary();
-      });
-    });
-    applyDimensionStateToCard(node, area);
-
     node.querySelector(".delete-btn").addEventListener("click", () => {
       const confirmed = window.confirm(`למחוק את "${area.name}" מהבדיקה?`);
       if (!confirmed) return;
@@ -1570,7 +1547,7 @@ function renderAreas() {
     els.areasContainer.appendChild(node);
 
     if (!area.locked && pendingFocusAreaId === area.id) {
-      const firstEditableField = node.querySelector(".dimension-input, .status-select, .note-input");
+      const firstEditableField = node.querySelector(".status-select, .note-input");
       if (firstEditableField) {
         window.setTimeout(() => {
           firstEditableField.focus();
