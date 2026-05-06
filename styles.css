@@ -775,7 +775,7 @@ select {
 }
 
 .print-measure-sandbox .print-page-body {
-  min-height: 225mm;
+  min-height: 235mm;
 }
 
 .report-cover {
@@ -1179,9 +1179,6 @@ select {
   }
 
   .print-page .report-cover {
-    min-height: 225mm;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    min-height: auto;
   }
 }
