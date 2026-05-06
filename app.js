@@ -1432,7 +1432,7 @@ function setScreen(screen, options = {}) {
 function renderRoomSelection() {
   els.roomsSelection.innerHTML = "";
   if (els.roomsPropertyName) {
-    els.roomsPropertyName.textContent = state.propertyName || "";
+    els.roomsPropertyName.textContent = state.propertyName ? `דירה פעילה: ${state.propertyName}` : "";
   }
   state.areas.forEach((area) => {
     const button = els.roomChipTemplate.content.firstElementChild.cloneNode(true);

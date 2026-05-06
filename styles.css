@@ -291,6 +291,14 @@ select {
   margin-bottom: 8px;
 }
 
+.rooms-property-name {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .version-tag {
   display: inline-block;
   margin-bottom: 10px;
