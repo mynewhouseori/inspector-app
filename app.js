@@ -1660,20 +1660,22 @@ if (els.backToHomeFromOwnerBtn) {
   });
 }
 
-els.newProjectBtn.addEventListener("click", () => {
-  const hasContent = state.propertyName
-    || state.propertyAddress
-    || state.clientName
-    || state.clientPhone
-    || state.clientEmail
-    || state.inspectorName
-    || selectedAreas().some((area) => area.checks.some((check) => check.status !== "pending" || check.note.trim()));
-  if (hasContent) {
-    const confirmed = window.confirm("לפתוח בדיקה חדשה? הנתונים הנוכחיים יישארו רק אם שמרת אותם.");
-    if (!confirmed) return;
-  }
-  startNewProject();
-});
+if (els.newProjectBtn) {
+  els.newProjectBtn.addEventListener("click", () => {
+    const hasContent = state.propertyName
+      || state.propertyAddress
+      || state.clientName
+      || state.clientPhone
+      || state.clientEmail
+      || state.inspectorName
+      || selectedAreas().some((area) => area.checks.some((check) => check.status !== "pending" || check.note.trim()));
+    if (hasContent) {
+      const confirmed = window.confirm("לפתוח בדיקה חדשה? הנתונים הנוכחיים יישארו רק אם שמרת אותם.");
+      if (!confirmed) return;
+    }
+    startNewProject();
+  });
+}
 
 els.backToWelcomeBtn.addEventListener("click", () => {
   setScreen("welcome", { scroll: true });
