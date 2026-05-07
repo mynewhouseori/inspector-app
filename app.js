@@ -175,10 +175,11 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.93";
+const APP_VERSION = "2026.05.07.94";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
+const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם -יפו";
 
 function getOwnerApartmentProjectId(apartmentName) {
   const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
@@ -190,7 +191,7 @@ const state = {
   currentScreen: "home",
   inspectionMode: "new",
   propertyName: "",
-  propertyAddress: "",
+  propertyAddress: DEFAULT_PROPERTY_ADDRESS,
   clientName: "",
   clientPhone: "",
   clientEmail: "",
@@ -356,7 +357,7 @@ function normalizeAreasForMode(areas = [], mode = state.inspectionMode) {
 function applyProjectData(projectData) {
   state.inspectionMode = projectData.inspectionMode || state.inspectionMode || "new";
   state.propertyName = projectData.propertyName || "";
-  state.propertyAddress = projectData.propertyAddress || "";
+  state.propertyAddress = projectData.propertyAddress || DEFAULT_PROPERTY_ADDRESS;
   state.clientName = projectData.clientName || "";
   state.clientPhone = projectData.clientPhone || "";
   state.clientEmail = projectData.clientEmail || "";
@@ -1275,7 +1276,7 @@ function projectDataSignature(projectData = {}) {
   const normalized = {
     inspectionMode: projectData.inspectionMode || "new",
     propertyName: projectData.propertyName || "",
-    propertyAddress: projectData.propertyAddress || "",
+    propertyAddress: projectData.propertyAddress || DEFAULT_PROPERTY_ADDRESS,
     clientName: projectData.clientName || "",
     clientPhone: projectData.clientPhone || "",
     clientEmail: projectData.clientEmail || "",
@@ -1379,7 +1380,7 @@ function normalizeProjectRecord(project) {
   return {
     ...project,
     title: project.data.propertyName || project.title || "בדיקת דירה ללא שם נכס",
-    propertyAddress: project.data.propertyAddress || project.propertyAddress || "",
+    propertyAddress: project.data.propertyAddress || project.propertyAddress || DEFAULT_PROPERTY_ADDRESS,
     updatedAt: project.updatedAt || new Date(project.updatedAtMs || Date.now()).toISOString(),
     updatedAtMs: Number(project.updatedAtMs || 0),
     data: {
@@ -1540,7 +1541,7 @@ function startNewProject() {
   state.currentProjectId = null;
   state.currentScreen = "welcome";
   state.propertyName = "";
-  state.propertyAddress = "";
+  state.propertyAddress = DEFAULT_PROPERTY_ADDRESS;
   state.clientName = "";
   state.clientPhone = "";
   state.clientEmail = "";
@@ -1548,7 +1549,7 @@ function startNewProject() {
   state.activeInspectionAreaId = null;
   state.areas = buildPresetAreas();
   els.propertyName.value = "";
-  els.propertyAddress.value = "";
+  els.propertyAddress.value = DEFAULT_PROPERTY_ADDRESS;
   els.clientName.value = "";
   els.clientPhone.value = "";
   els.clientEmail.value = "";
@@ -1580,7 +1581,7 @@ function openOwnerApartment(apartmentName) {
   } else {
     state.currentProjectId = getOwnerApartmentProjectId(apartmentName);
     state.propertyName = apartmentName;
-    state.propertyAddress = "";
+    state.propertyAddress = DEFAULT_PROPERTY_ADDRESS;
     state.clientName = "";
     state.clientPhone = "";
     state.clientEmail = "";
@@ -1588,7 +1589,7 @@ function openOwnerApartment(apartmentName) {
     state.activeInspectionAreaId = null;
     state.areas = buildPresetAreas();
     els.propertyName.value = apartmentName;
-    els.propertyAddress.value = "";
+    els.propertyAddress.value = DEFAULT_PROPERTY_ADDRESS;
     els.clientName.value = "";
     els.clientPhone.value = "";
     els.clientEmail.value = "";
@@ -1905,7 +1906,7 @@ function loadState() {
   applyProjectData({
     inspectionMode: parsed.inspectionMode || "new",
     propertyName: parsed.propertyName || "",
-    propertyAddress: parsed.propertyAddress || "",
+    propertyAddress: parsed.propertyAddress || DEFAULT_PROPERTY_ADDRESS,
     clientName: parsed.clientName || "",
     clientPhone: parsed.clientPhone || "",
     clientEmail: parsed.clientEmail || "",
