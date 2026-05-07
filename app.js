@@ -175,6 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
+const APP_VERSION = "2026.05.07.81";
 
 function getOwnerApartmentProjectId(apartmentName) {
   const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
@@ -366,6 +367,21 @@ function applyProjectData(projectData) {
   els.clientPhone.value = state.clientPhone;
   els.clientEmail.value = state.clientEmail;
   els.inspectorName.value = state.inspectorName;
+}
+
+function updateAppVersionLabel() {
+  const topVersion = document.querySelector(".top-version");
+  if (topVersion) {
+    topVersion.textContent = `גרסה ${APP_VERSION}`;
+  }
+}
+
+function removeEmptyReportSections() {
+  document.querySelectorAll("#reportDocument .report-section").forEach((section) => {
+    if (section.children.length === 1 && section.firstElementChild?.tagName === "H3") {
+      section.remove();
+    }
+  });
 }
 
 function updateWelcomeTitle() {
@@ -896,12 +912,14 @@ function renderReportDocument(summary, issues) {
     ["אזורים", `${reportSummary.inspectedAreas} נבדקו${reportSummary.notStartedAreas ? `, ${reportSummary.notStartedAreas} לא נכללו` : ""}`]
   ];
 
-  els.reportOverview.innerHTML = overviewItems.map(([label, value]) => `
-    <div class="report-overview-item">
-      <strong>${escapeHtml(label)}</strong>
-      <span>${escapeHtml(value)}</span>
-    </div>
-  `).join("");
+  if (els.reportOverview) {
+    els.reportOverview.innerHTML = overviewItems.map(([label, value]) => `
+      <div class="report-overview-item">
+        <strong>${escapeHtml(label)}</strong>
+        <span>${escapeHtml(value)}</span>
+      </div>
+    `).join("");
+  }
 
   if (els.reportExecutiveSummary) {
     els.reportExecutiveSummary.innerHTML = `<p>${escapeHtml(buildExecutiveSummary(reportSummary))}</p>`;
@@ -915,12 +933,14 @@ function renderReportDocument(summary, issues) {
     ["השלמה", `${reportSummary.completionRate}%`]
   ];
 
-  els.reportSummaryStats.innerHTML = statItems.map(([label, value]) => `
-    <div class="report-stat-card">
-      <strong>${escapeHtml(value)}</strong>
-      <span>${escapeHtml(label)}</span>
-    </div>
-  `).join("");
+  if (els.reportSummaryStats) {
+    els.reportSummaryStats.innerHTML = statItems.map(([label, value]) => `
+      <div class="report-stat-card">
+        <strong>${escapeHtml(value)}</strong>
+        <span>${escapeHtml(label)}</span>
+      </div>
+    `).join("");
+  }
 
   if (!reportIssues.length) {
     els.reportCriticalFindings.innerHTML = `<div class="report-empty">לא זוהו ליקויים באזורים שנבדקו בפועל. ניתן להשתמש במסמך זה כדוח ביניים או להמשיך להשלמת יתר האזורים.</div>`;
@@ -1709,7 +1729,9 @@ function renderSummaryReports() {
     { label: "לבדיקה", value: summary.pending },
     { label: "ליקוי גבוה", value: summary.highIssues }
   ];
-  els.summaryStats.innerHTML = stats.map((item) => `<div class="summary-card"><p>${item.label}</p><strong>${item.value}</strong></div>`).join("");
+  if (els.summaryStats) {
+    els.summaryStats.innerHTML = stats.map((item) => `<div class="summary-card"><p>${item.label}</p><strong>${item.value}</strong></div>`).join("");
+  }
 
   if (!issues.length) {
     els.issueSummary.innerHTML = `<div class="empty-state">עדיין לא סומנו ליקויים. ברגע שתעדכן ממצא כליקוי, הוא יופיע כאן.</div>`;
@@ -1888,7 +1910,9 @@ els.printBtn.addEventListener("click", () => {
 loadState();
 state.currentScreen = "home";
 if (!state.areas.length) state.areas = buildPresetAreas();
+updateAppVersionLabel();
 render();
+removeEmptyReportSections();
 subscribeToCloudProjects();
 
 window.addEventListener("pageshow", () => {
