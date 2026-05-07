@@ -157,14 +157,14 @@ const ownerApartmentLabels = [
   "כניסה-19 דירה-06",
   "כניסה-19 דירה-07",
   "כניסה-19 דירה-08",
-  "כניסה-20 דירה-01",
-  "כניסה-20 דירה-02",
-  "כניסה-20 דירה-03",
-  "כניסה-20 דירה-04",
-  "כניסה-20 דירה-05",
-  "כניסה-20 דירה-06",
-  "כניסה-20 דירה-07",
-  "כניסה-20 דירה-08"
+  "כניסה-17 דירה-01",
+  "כניסה-17 דירה-02",
+  "כניסה-17 דירה-03",
+  "כניסה-17 דירה-04",
+  "כניסה-17 דירה-05",
+  "כניסה-17 דירה-06",
+  "כניסה-17 דירה-07",
+  "כניסה-17 דירה-08"
 ];
 
 function getOwnerApartmentProjectId(apartmentName) {
@@ -1561,7 +1561,7 @@ function renderAreas() {
 function renderOwnerApartments() {
   if (!els.ownerApartmentsGrid) return;
   els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => `
-    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-20") ? "owner-apartment-card-alt" : ""}" type="button" data-owner-apartment="${apartmentName}">
+    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-alt" : ""}" type="button" data-owner-apartment="${apartmentName}">
       <strong>${apartmentName}</strong>
       <span>פתיחת תסקיר עבור הדירה שנבחרה</span>
     </button>
