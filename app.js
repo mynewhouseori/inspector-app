@@ -175,8 +175,8 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.90";
-const pendingPhotoUploads = new Set();
+const APP_VERSION = "2026.05.07.91";
+const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
 
@@ -454,7 +454,22 @@ function getPhotoUploadKey(areaId, checkCode) {
 }
 
 function isPhotoUploadPending(areaId, checkCode) {
-  return pendingPhotoUploads.has(getPhotoUploadKey(areaId, checkCode));
+  return (pendingPhotoUploads.get(getPhotoUploadKey(areaId, checkCode)) || 0) > 0;
+}
+
+function startPhotoUpload(areaId, checkCode) {
+  const key = getPhotoUploadKey(areaId, checkCode);
+  pendingPhotoUploads.set(key, (pendingPhotoUploads.get(key) || 0) + 1);
+}
+
+function finishPhotoUpload(areaId, checkCode) {
+  const key = getPhotoUploadKey(areaId, checkCode);
+  const nextCount = (pendingPhotoUploads.get(key) || 0) - 1;
+  if (nextCount > 0) {
+    pendingPhotoUploads.set(key, nextCount);
+  } else {
+    pendingPhotoUploads.delete(key);
+  }
 }
 
 function applyCameraButtonState(button, count) {
@@ -566,7 +581,6 @@ async function handleCheckCameraCapture(area, check, fileInput) {
 
   const preparedFile = await compressImageForUpload(file);
   const fileName = buildCapturedPhotoName(area, check, preparedFile);
-  const uploadKey = getPhotoUploadKey(area.id, check.code);
   const pendingPhotoId = uid();
   const pendingPhotoRecord = {
     id: pendingPhotoId,
@@ -581,7 +595,7 @@ async function handleCheckCameraCapture(area, check, fileInput) {
     ...(Array.isArray(area.photoCaptures) ? area.photoCaptures : []),
     pendingPhotoRecord
   ].slice(0, MAX_AREA_PHOTOS);
-  pendingPhotoUploads.add(uploadKey);
+  startPhotoUpload(area.id, check.code);
   render({ preserveScroll: true });
   let uploadedPhoto;
   try {
@@ -590,7 +604,7 @@ async function handleCheckCameraCapture(area, check, fileInput) {
     window.alert("שמירת התמונה לענן נכשלה כרגע. נסה שוב.");
     area.photoCaptures = (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
       .filter((photo) => photo.id !== pendingPhotoId);
-    pendingPhotoUploads.delete(uploadKey);
+    finishPhotoUpload(area.id, check.code);
     render({ preserveScroll: true });
     console.error(error);
     return;
@@ -606,7 +620,7 @@ async function handleCheckCameraCapture(area, check, fileInput) {
       : photo
   ));
 
-  pendingPhotoUploads.delete(uploadKey);
+  finishPhotoUpload(area.id, check.code);
   saveState({ immediateCloud: true });
   render({ preserveScroll: true });
 }
@@ -1793,7 +1807,7 @@ function renderAreas() {
         noteInput.classList.add("field-locked");
         cameraBtn.classList.add("field-locked");
       }
-      cameraBtn.disabled = area.locked || uploadPending || areaPhotoCount >= MAX_AREA_PHOTOS;
+      cameraBtn.disabled = area.locked || areaPhotoCount >= MAX_AREA_PHOTOS;
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
         applyCheckVisualState(checkNode, check);
