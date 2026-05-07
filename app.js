@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.83";
+const APP_VERSION = "2026.05.07.84";
 
 function getOwnerApartmentProjectId(apartmentName) {
   const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
