@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.91";
+const APP_VERSION = "2026.05.07.92";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1793,6 +1793,7 @@ function renderAreas() {
       const checkPhotoCount = getCheckPhotoCount(area, check.code);
       const areaPhotoCount = getAreaPhotoCount(area);
       const uploadPending = isPhotoUploadPending(area.id, check.code);
+      const cameraEnabledForStatus = check.status === "issue";
       statusSelect.value = check.status;
       noteInput.value = check.note;
       cameraCount.textContent = `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
@@ -1807,7 +1808,7 @@ function renderAreas() {
         noteInput.classList.add("field-locked");
         cameraBtn.classList.add("field-locked");
       }
-      cameraBtn.disabled = area.locked || areaPhotoCount >= MAX_AREA_PHOTOS;
+      cameraBtn.disabled = area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS;
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
         applyCheckVisualState(checkNode, check);
