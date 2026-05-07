@@ -721,7 +721,7 @@ select {
 
 .check-controls {
   display: grid;
-  grid-template-columns: 1fr 110px;
+  grid-template-columns: 1fr 118px;
   gap: 10px;
 }
 
@@ -761,6 +761,43 @@ select {
 
 .note-input {
   grid-column: 1 / -1;
+}
+
+.area-photo-count {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.camera-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid rgba(24, 90, 97, 0.24);
+  border-radius: 15px;
+  background: rgba(24, 90, 97, 0.08);
+  color: var(--accent);
+}
+
+.camera-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.camera-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  flex: 0 0 auto;
+}
+
+.camera-count {
+  font-weight: 700;
+  font-size: 13px;
 }
 
 .issue-item strong,

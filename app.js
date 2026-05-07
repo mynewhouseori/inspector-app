@@ -167,6 +167,8 @@ const ownerApartmentLabels = [
   "כניסה-17 דירה-08"
 ];
 
+const MAX_AREA_PHOTOS = 3;
+
 function getOwnerApartmentProjectId(apartmentName) {
   const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
   const suffix = apartmentIndex >= 0 ? String(apartmentIndex + 1).padStart(2, "0") : "00";
@@ -321,7 +323,8 @@ function hydrateArea(area) {
     selected: area.selected !== false,
     locked: area.locked === true,
     checks: mergeChecksWithDefaults(areaChecks, expectedChecks),
-    dimensions: area.dimensions || createDimensions()
+    dimensions: area.dimensions || createDimensions(),
+    photoCaptures: Array.isArray(area.photoCaptures) ? area.photoCaptures : []
   };
 }
 
@@ -391,6 +394,88 @@ function updateCloudStatus(message, tone = "") {
   els.cloudStatus.textContent = compactMessage;
   els.cloudStatus.classList.remove("status-ok", "status-warn", "status-error");
   if (tone) els.cloudStatus.classList.add(`status-${tone}`);
+}
+
+function getAreaPhotoCount(area) {
+  return Array.isArray(area.photoCaptures) ? area.photoCaptures.length : 0;
+}
+
+function sanitizeFileSegment(value) {
+  return String(value || "")
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/\s+/g, "_")
+    .replace(/_+/g, "_");
+}
+
+function buildCapturedPhotoName(area, check, file) {
+  const apartmentName = sanitizeFileSegment(state.propertyName || "דירה");
+  const roomName = sanitizeFileSegment(area.name || "חדר");
+  const checkCode = sanitizeFileSegment(check.code || "בדיקה");
+  const timestamp = new Date().toISOString().replace(/[:T]/g, "-").split(".")[0];
+  const typePart = (file?.type || "").split("/")[1] || "jpg";
+  const extension = typePart === "jpeg" ? "jpg" : typePart.replace(/[^a-z0-9]/gi, "").toLowerCase() || "jpg";
+  return `${apartmentName}__${roomName}__${checkCode}__${timestamp}.${extension}`;
+}
+
+async function exportCapturedPhoto(file, fileName) {
+  const exportedFile = new File([file], fileName, {
+    type: file.type || "image/jpeg",
+    lastModified: Date.now()
+  });
+
+  if (navigator.canShare && navigator.canShare({ files: [exportedFile] })) {
+    try {
+      await navigator.share({
+        files: [exportedFile],
+        title: fileName,
+        text: "צילום בדיקה"
+      });
+      return true;
+    } catch (error) {
+      if (error?.name === "AbortError") return false;
+    }
+  }
+
+  const url = URL.createObjectURL(exportedFile);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+  return true;
+}
+
+async function handleCheckCameraCapture(area, check, fileInput) {
+  const file = fileInput.files?.[0];
+  fileInput.value = "";
+  if (!file) return;
+
+  if (getAreaPhotoCount(area) >= MAX_AREA_PHOTOS) {
+    window.alert(`אפשר לשמור עד ${MAX_AREA_PHOTOS} תמונות לכל חדר.`);
+    return;
+  }
+
+  const fileName = buildCapturedPhotoName(area, check, file);
+  const exported = await exportCapturedPhoto(file, fileName);
+  if (!exported) return;
+
+  area.photoCaptures = [
+    ...(Array.isArray(area.photoCaptures) ? area.photoCaptures : []),
+    {
+      id: uid(),
+      checkCode: check.code,
+      checkName: check.name,
+      fileName,
+      capturedAt: new Date().toISOString()
+    }
+  ].slice(0, MAX_AREA_PHOTOS);
+
+  saveState({ immediateCloud: true });
+  render({ preserveScroll: true });
 }
 
 function applyCheckVisualState(checkNode, check) {
@@ -463,7 +548,8 @@ function createArea(name, type, selected = true) {
     selected,
     locked: false,
     checks: defaultChecks(type, name),
-    dimensions: createDimensions()
+    dimensions: createDimensions(),
+    photoCaptures: []
   };
 }
 
@@ -471,6 +557,7 @@ function resetArea(area) {
   area.locked = false;
   area.checks = defaultChecks(area.type, area.name);
   area.dimensions = createDimensions();
+  area.photoCaptures = [];
 }
 
 function toggleAreaLock(area) {
@@ -1058,6 +1145,15 @@ function projectDataSignature(projectData = {}) {
             actualWidth: area.dimensions?.actualWidth || "",
             actualLength: area.dimensions?.actualLength || ""
           },
+          photoCaptures: Array.isArray(area.photoCaptures)
+            ? area.photoCaptures.map((photo) => ({
+                id: photo.id || "",
+                checkCode: photo.checkCode || "",
+                checkName: photo.checkName || "",
+                fileName: photo.fileName || "",
+                capturedAt: photo.capturedAt || ""
+              }))
+            : [],
           checks: Array.isArray(area.checks)
             ? area.checks.map((check) => ({
                 code: check.code || "",
@@ -1494,6 +1590,7 @@ function renderAreas() {
     const node = els.areaTemplate.content.firstElementChild.cloneNode(true);
     node.querySelector(".area-title").textContent = area.name;
     node.querySelector(".area-type").textContent = areaTypeLabels[area.type];
+    node.querySelector(".area-photo-count").textContent = `תמונות חדר: ${getAreaPhotoCount(area)}/${MAX_AREA_PHOTOS}`;
     if (area.locked) node.classList.add("is-locked");
 
     node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
@@ -1520,9 +1617,13 @@ function renderAreas() {
       checkNode.querySelector(".check-name").textContent = check.name;
       checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
       const statusSelect = checkNode.querySelector(".status-select");
+      const cameraBtn = checkNode.querySelector(".camera-btn");
+      const cameraInput = checkNode.querySelector(".camera-input");
+      const cameraCount = checkNode.querySelector(".camera-count");
       const noteInput = checkNode.querySelector(".note-input");
       statusSelect.value = check.status;
       noteInput.value = check.note;
+      cameraCount.textContent = `${getAreaPhotoCount(area)}/${MAX_AREA_PHOTOS}`;
       applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
       noteInput.disabled = area.locked;
@@ -1530,7 +1631,9 @@ function renderAreas() {
       if (area.locked) {
         statusSelect.classList.add("field-locked");
         noteInput.classList.add("field-locked");
+        cameraBtn.classList.add("field-locked");
       }
+      cameraBtn.disabled = area.locked || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
         applyCheckVisualState(checkNode, check);
@@ -1540,6 +1643,16 @@ function renderAreas() {
         check.note = event.target.value;
         applyCheckVisualState(checkNode, check);
         refreshProgressAndSummary();
+      });
+      cameraBtn.addEventListener("click", () => {
+        if (getAreaPhotoCount(area) >= MAX_AREA_PHOTOS) {
+          window.alert(`אפשר לשמור עד ${MAX_AREA_PHOTOS} תמונות לכל חדר.`);
+          return;
+        }
+        cameraInput.click();
+      });
+      cameraInput.addEventListener("change", async () => {
+        await handleCheckCameraCapture(area, check, cameraInput);
       });
       checksList.appendChild(checkNode);
     });
