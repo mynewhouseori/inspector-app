@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.94";
+const APP_VERSION = "2026.05.07.95";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1795,6 +1795,9 @@ function renderAreas() {
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
         applyCheckVisualState(checkNode, check);
+        const enabledForStatus = check.status === "issue";
+        cameraBtn.disabled = area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
+        cameraBtn.classList.toggle("field-locked", area.locked || !enabledForStatus);
         refreshProgressAndSummary();
       });
       noteInput.addEventListener("input", (event) => {
