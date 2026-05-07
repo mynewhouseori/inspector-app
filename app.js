@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.89";
+const APP_VERSION = "2026.05.07.90";
 const pendingPhotoUploads = new Set();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;

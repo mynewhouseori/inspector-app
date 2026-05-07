@@ -199,6 +199,19 @@ select {
   box-shadow: var(--shadow);
 }
 
+.mode-card:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.12);
+}
+
+.mode-card:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .mode-card strong,
 .mode-card span {
   display: block;
