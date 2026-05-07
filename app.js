@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.85";
+const APP_VERSION = "2026.05.07.86";
 const pendingPhotoUploads = new Set();
 
 function getOwnerApartmentProjectId(apartmentName) {
@@ -716,7 +716,7 @@ function getAreaProgress(area) {
   const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
   const touchedDimensions = 0;
   const touched = touchedChecks + touchedDimensions;
-  if (touched === 0) return { key: "pending", label: "לא התחיל" };
+  if (touched === 0) return { key: "pending", label: "לא נבדק" };
   if (touchedChecks >= total && total > 0) return { key: "complete", label: "הושלם" };
   return { key: "progress", label: "בבדיקה" };
 }
