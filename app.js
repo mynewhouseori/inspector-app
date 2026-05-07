@@ -175,7 +175,8 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.84";
+const APP_VERSION = "2026.05.07.85";
+const pendingPhotoUploads = new Set();
 
 function getOwnerApartmentProjectId(apartmentName) {
   const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
@@ -438,6 +439,20 @@ function getAreaPhotoCount(area) {
   return Array.isArray(area.photoCaptures) ? area.photoCaptures.length : 0;
 }
 
+function getCheckPhotoCount(area, checkCode) {
+  return (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
+    .filter((photo) => photo.checkCode === checkCode)
+    .length;
+}
+
+function getPhotoUploadKey(areaId, checkCode) {
+  return `${areaId}::${checkCode}`;
+}
+
+function isPhotoUploadPending(areaId, checkCode) {
+  return pendingPhotoUploads.has(getPhotoUploadKey(areaId, checkCode));
+}
+
 function applyCameraButtonState(button, count) {
   const safeCount = Math.max(0, Math.min(MAX_AREA_PHOTOS, Number(count) || 0));
   const fillPercent = (safeCount / MAX_AREA_PHOTOS) * 100;
@@ -493,11 +508,16 @@ async function handleCheckCameraCapture(area, check, fileInput) {
   }
 
   const fileName = buildCapturedPhotoName(area, check, file);
+  const uploadKey = getPhotoUploadKey(area.id, check.code);
+  pendingPhotoUploads.add(uploadKey);
+  render({ preserveScroll: true });
   let uploadedPhoto;
   try {
     uploadedPhoto = await uploadCapturedPhoto(file, area, check, fileName);
   } catch (error) {
     window.alert("שמירת התמונה לענן נכשלה כרגע. נסה שוב.");
+    pendingPhotoUploads.delete(uploadKey);
+    render({ preserveScroll: true });
     console.error(error);
     return;
   }
@@ -515,6 +535,7 @@ async function handleCheckCameraCapture(area, check, fileInput) {
     }
   ].slice(0, MAX_AREA_PHOTOS);
 
+  pendingPhotoUploads.delete(uploadKey);
   saveState({ immediateCloud: true });
   render({ preserveScroll: true });
 }
@@ -1668,10 +1689,14 @@ function renderAreas() {
       const cameraInput = checkNode.querySelector(".camera-input");
       const cameraCount = checkNode.querySelector(".camera-count");
       const noteInput = checkNode.querySelector(".note-input");
+      const checkPhotoCount = getCheckPhotoCount(area, check.code);
+      const areaPhotoCount = getAreaPhotoCount(area);
+      const uploadPending = isPhotoUploadPending(area.id, check.code);
       statusSelect.value = check.status;
       noteInput.value = check.note;
-      cameraCount.textContent = `${getAreaPhotoCount(area)}/${MAX_AREA_PHOTOS}`;
-      applyCameraButtonState(cameraBtn, getAreaPhotoCount(area));
+      cameraCount.textContent = uploadPending ? "..." : `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
+      applyCameraButtonState(cameraBtn, checkPhotoCount);
+      cameraBtn.classList.toggle("is-uploading", uploadPending);
       applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
       noteInput.disabled = area.locked;
@@ -1681,7 +1706,7 @@ function renderAreas() {
         noteInput.classList.add("field-locked");
         cameraBtn.classList.add("field-locked");
       }
-      cameraBtn.disabled = area.locked || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
+      cameraBtn.disabled = area.locked || uploadPending || areaPhotoCount >= MAX_AREA_PHOTOS;
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
         applyCheckVisualState(checkNode, check);

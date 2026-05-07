@@ -795,6 +795,12 @@ select {
   color: #145541;
 }
 
+.camera-btn.is-uploading {
+  border-color: rgba(209, 124, 34, 0.42);
+  background: linear-gradient(90deg, rgba(209, 124, 34, 0.18) 0%, rgba(209, 124, 34, 0.18) 100%);
+  color: #8a4e00;
+}
+
 .camera-icon {
   width: 18px;
   height: 18px;
