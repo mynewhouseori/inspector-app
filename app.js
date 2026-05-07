@@ -8,6 +8,12 @@ import {
   getDocs,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-storage.js";
 
 const baseChecks = {
   structureEnvelope: [
@@ -131,6 +137,7 @@ const SETTINGS = window.APP_CONFIG || window.DEFAULT_APP_CONFIG || {};
 const hasFirebaseConfig = Boolean(SETTINGS?.firebase?.apiKey);
 const firebaseApp = hasFirebaseConfig ? initializeApp(SETTINGS.firebase) : null;
 const db = firebaseApp ? getFirestore(firebaseApp) : null;
+const storage = firebaseApp ? getStorage(firebaseApp) : null;
 const PROJECTS_COLLECTION = SETTINGS?.firestoreCollections?.projects || "inspector_projects";
 
 let projectsUnsubscribe = null;
@@ -418,35 +425,23 @@ function buildCapturedPhotoName(area, check, file) {
   return `${apartmentName}__${roomName}__${checkCode}__${timestamp}.${extension}`;
 }
 
-async function exportCapturedPhoto(file, fileName) {
-  const exportedFile = new File([file], fileName, {
-    type: file.type || "image/jpeg",
-    lastModified: Date.now()
-  });
+function buildCapturedPhotoPath(area, check, fileName) {
+  const apartmentName = sanitizeFileSegment(state.propertyName || "דירה");
+  const roomName = sanitizeFileSegment(area.name || "חדר");
+  const checkCode = sanitizeFileSegment(check.code || "בדיקה");
+  return `inspections/${apartmentName}/${roomName}/${checkCode}/${fileName}`;
+}
 
-  if (navigator.canShare && navigator.canShare({ files: [exportedFile] })) {
-    try {
-      await navigator.share({
-        files: [exportedFile],
-        title: fileName,
-        text: "צילום בדיקה"
-      });
-      return true;
-    } catch (error) {
-      if (error?.name === "AbortError") return false;
-    }
+async function uploadCapturedPhoto(file, area, check, fileName) {
+  if (!storage) {
+    throw new Error("Cloud storage is not configured.");
   }
 
-  const url = URL.createObjectURL(exportedFile);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  link.rel = "noopener";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
-  return true;
+  const path = buildCapturedPhotoPath(area, check, fileName);
+  const photoRef = storageRef(storage, path);
+  await uploadBytes(photoRef, file, { contentType: file.type || "image/jpeg" });
+  const downloadURL = await getDownloadURL(photoRef);
+  return { storagePath: path, downloadURL };
 }
 
 async function handleCheckCameraCapture(area, check, fileInput) {
@@ -460,8 +455,14 @@ async function handleCheckCameraCapture(area, check, fileInput) {
   }
 
   const fileName = buildCapturedPhotoName(area, check, file);
-  const exported = await exportCapturedPhoto(file, fileName);
-  if (!exported) return;
+  let uploadedPhoto;
+  try {
+    uploadedPhoto = await uploadCapturedPhoto(file, area, check, fileName);
+  } catch (error) {
+    window.alert("שמירת התמונה לענן נכשלה כרגע. נסה שוב.");
+    console.error(error);
+    return;
+  }
 
   area.photoCaptures = [
     ...(Array.isArray(area.photoCaptures) ? area.photoCaptures : []),
@@ -470,7 +471,9 @@ async function handleCheckCameraCapture(area, check, fileInput) {
       checkCode: check.code,
       checkName: check.name,
       fileName,
-      capturedAt: new Date().toISOString()
+      capturedAt: new Date().toISOString(),
+      storagePath: uploadedPhoto.storagePath,
+      downloadURL: uploadedPhoto.downloadURL
     }
   ].slice(0, MAX_AREA_PHOTOS);
 
@@ -1151,7 +1154,9 @@ function projectDataSignature(projectData = {}) {
                 checkCode: photo.checkCode || "",
                 checkName: photo.checkName || "",
                 fileName: photo.fileName || "",
-                capturedAt: photo.capturedAt || ""
+                capturedAt: photo.capturedAt || "",
+                storagePath: photo.storagePath || "",
+                downloadURL: photo.downloadURL || ""
               }))
             : [],
           checks: Array.isArray(area.checks)
