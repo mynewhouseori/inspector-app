@@ -175,11 +175,20 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.97";
+const APP_VERSION = "2026.05.07.98";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
 const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם-יפו";
+
+function normalizePropertyAddress(value) {
+  const normalized = String(value || "").trim();
+  if (!normalized) return DEFAULT_PROPERTY_ADDRESS;
+  if (normalized === "מגן אברהם -יפו" || normalized === "מגן אברהם- יפו" || normalized === "מגן אברהם - יפו") {
+    return DEFAULT_PROPERTY_ADDRESS;
+  }
+  return normalized;
+}
 
 function getOwnerApartmentProjectId(apartmentName) {
   const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
@@ -357,7 +366,7 @@ function normalizeAreasForMode(areas = [], mode = state.inspectionMode) {
 function applyProjectData(projectData) {
   state.inspectionMode = projectData.inspectionMode || state.inspectionMode || "new";
   state.propertyName = projectData.propertyName || "";
-  state.propertyAddress = projectData.propertyAddress || DEFAULT_PROPERTY_ADDRESS;
+  state.propertyAddress = normalizePropertyAddress(projectData.propertyAddress);
   state.clientName = projectData.clientName || "";
   state.clientPhone = projectData.clientPhone || "";
   state.clientEmail = projectData.clientEmail || "";
@@ -1261,7 +1270,7 @@ function buildPrintPages() {
 
 function updateProjectFields() {
   state.propertyName = els.propertyName.value.trim();
-  state.propertyAddress = els.propertyAddress.value.trim();
+  state.propertyAddress = normalizePropertyAddress(els.propertyAddress.value);
   state.clientName = els.clientName.value.trim();
   state.clientPhone = els.clientPhone.value.trim();
   state.clientEmail = els.clientEmail.value.trim();
@@ -1276,7 +1285,7 @@ function projectDataSignature(projectData = {}) {
   const normalized = {
     inspectionMode: projectData.inspectionMode || "new",
     propertyName: projectData.propertyName || "",
-    propertyAddress: projectData.propertyAddress || DEFAULT_PROPERTY_ADDRESS,
+    propertyAddress: normalizePropertyAddress(projectData.propertyAddress),
     clientName: projectData.clientName || "",
     clientPhone: projectData.clientPhone || "",
     clientEmail: projectData.clientEmail || "",
@@ -1325,7 +1334,7 @@ function serializeCurrentProject() {
   return {
     inspectionMode: state.inspectionMode,
     propertyName: state.propertyName,
-    propertyAddress: state.propertyAddress,
+    propertyAddress: normalizePropertyAddress(state.propertyAddress),
     clientName: state.clientName,
     clientPhone: state.clientPhone,
     clientEmail: state.clientEmail,
@@ -1355,7 +1364,7 @@ function buildProjectRecord(projectId = state.currentProjectId || uid()) {
     id: projectId,
     title: getProjectTitle(),
     propertyName: state.propertyName,
-    propertyAddress: state.propertyAddress,
+    propertyAddress: normalizePropertyAddress(state.propertyAddress),
     updatedAt: now.toISOString(),
     updatedAtMs: now.getTime(),
     data: serializeCurrentProject()
@@ -1380,7 +1389,7 @@ function normalizeProjectRecord(project) {
   return {
     ...project,
     title: project.data.propertyName || project.title || "בדיקת דירה ללא שם נכס",
-    propertyAddress: project.data.propertyAddress || project.propertyAddress || DEFAULT_PROPERTY_ADDRESS,
+    propertyAddress: normalizePropertyAddress(project.data.propertyAddress || project.propertyAddress),
     updatedAt: project.updatedAt || new Date(project.updatedAtMs || Date.now()).toISOString(),
     updatedAtMs: Number(project.updatedAtMs || 0),
     data: {
@@ -1913,7 +1922,7 @@ function loadState() {
   applyProjectData({
     inspectionMode: parsed.inspectionMode || "new",
     propertyName: parsed.propertyName || "",
-    propertyAddress: parsed.propertyAddress || DEFAULT_PROPERTY_ADDRESS,
+    propertyAddress: normalizePropertyAddress(parsed.propertyAddress),
     clientName: parsed.clientName || "",
     clientPhone: parsed.clientPhone || "",
     clientEmail: parsed.clientEmail || "",
