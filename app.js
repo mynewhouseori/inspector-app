@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.88";
+const APP_VERSION = "2026.05.07.89";
 const pendingPhotoUploads = new Set();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -253,6 +253,8 @@ const els = {
   reportPageHeaderInspector: document.querySelector("#reportPageHeaderInspector"),
   reportPageHeaderStatus: document.querySelector("#reportPageHeaderStatus"),
   reportPageHeaderDate: document.querySelector("#reportPageHeaderDate"),
+  reportIntroTitle: document.querySelector("#reportIntroTitle"),
+  reportIntroBlock: document.querySelector("#reportIntroBlock"),
   reportOverview: document.querySelector("#reportOverview"),
   reportExecutiveSummary: document.querySelector("#reportExecutiveSummary"),
   reportSummaryStats: document.querySelector("#reportSummaryStats"),
@@ -997,6 +999,22 @@ function renderReportDocument(summary, issues) {
   els.reportPageHeaderInspector.textContent = headerBrandSubtitle;
   els.reportPageHeaderStatus.textContent = reportStatus;
   els.reportPageHeaderDate.textContent = formatGeneratedDateOnly();
+
+  if (els.reportIntroTitle && els.reportIntroBlock) {
+    if (state.inspectionMode === "owner") {
+      els.reportIntroTitle.textContent = "חשיבות תסקיר בדיקת בעלים";
+      els.reportIntroBlock.innerHTML = `
+        <p>תסקיר בדיקת בעלים נועד ליצור צילום מצב קיים של הדירה לפני תחילת השיפוץ, כך שניתן יהיה לתעד באופן מסודר את מצבה בנקודת הזמן הנוכחית.</p>
+        <p>התסקיר מסייע לבעלי הדירה, למתכננים ולבעלי המקצוע לעבוד מתוך בסיס ברור, להשוות בהמשך בין המצב הקיים לתכנון החדש, ולהפחית אי-הבנות במהלך השיפוץ.</p>
+      `;
+    } else {
+      els.reportIntroTitle.textContent = "חשיבות בדק בית";
+      els.reportIntroBlock.innerHTML = `
+        <p>בדק בית מקצועי נועד לוודא כי הנכס נבנה בהתאם לתקנים, לתוכניות ולדרישות הבטיחות, וכן לאתר ליקויים בשלב מוקדם ככל האפשר. איתור מוקדם מאפשר לצמצם עלויות תיקון עתידיות, לשפר את איכות הביצוע ולשמור על רמת גימור נאותה טרם מסירה או אכלוס.</p>
+        <p>מסמך זה מרכז ממצאים, הערות והמלצות להמשך טיפול, ומהווה כלי תיעודי חשוב להתנהלות מול הקבלן והגורמים המקצועיים. בדיקה מסודרת מעניקה לרוכש תמונת מצב אמינה, מסייעת במימוש זכויות האחריות ותורמת לשקט נפשי ולביטחון בהשקעה בנכס.</p>
+      `;
+    }
+  }
 
   const coverMetaItems = [
     state.clientName && `לקוח: ${state.clientName}`,
