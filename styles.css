@@ -814,6 +814,14 @@ select {
   color: #8a4e00;
 }
 
+.camera-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .camera-icon {
   width: 18px;
   height: 18px;

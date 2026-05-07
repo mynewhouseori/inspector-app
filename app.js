@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.95";
+const APP_VERSION = "2026.05.07.96";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1810,7 +1810,11 @@ function renderAreas() {
           window.alert(`אפשר לשמור עד ${MAX_AREA_PHOTOS} תמונות לכל חדר.`);
           return;
         }
-        cameraInput.click();
+        if (typeof cameraInput.showPicker === "function") {
+          cameraInput.showPicker();
+        } else {
+          cameraInput.click();
+        }
       });
       cameraInput.addEventListener("change", async () => {
         await handleCheckCameraCapture(area, check, cameraInput);
