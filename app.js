@@ -407,6 +407,13 @@ function getAreaPhotoCount(area) {
   return Array.isArray(area.photoCaptures) ? area.photoCaptures.length : 0;
 }
 
+function applyCameraButtonState(button, count) {
+  const safeCount = Math.max(0, Math.min(MAX_AREA_PHOTOS, Number(count) || 0));
+  const fillPercent = (safeCount / MAX_AREA_PHOTOS) * 100;
+  button.style.setProperty("--camera-fill", `${fillPercent}%`);
+  button.classList.toggle("is-complete", safeCount >= MAX_AREA_PHOTOS);
+}
+
 function sanitizeFileSegment(value) {
   return String(value || "")
     .trim()
@@ -1629,6 +1636,7 @@ function renderAreas() {
       statusSelect.value = check.status;
       noteInput.value = check.note;
       cameraCount.textContent = `${getAreaPhotoCount(area)}/${MAX_AREA_PHOTOS}`;
+      applyCameraButtonState(cameraBtn, getAreaPhotoCount(area));
       applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
       noteInput.disabled = area.locked;

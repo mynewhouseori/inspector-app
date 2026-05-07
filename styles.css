@@ -771,6 +771,7 @@ select {
 }
 
 .camera-btn {
+  --camera-fill: 0%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -779,13 +780,19 @@ select {
   padding: 10px 12px;
   border: 1px solid rgba(24, 90, 97, 0.24);
   border-radius: 15px;
-  background: rgba(24, 90, 97, 0.08);
+  background: linear-gradient(90deg, rgba(24, 90, 97, 0.24) 0%, rgba(24, 90, 97, 0.24) var(--camera-fill), rgba(24, 90, 97, 0.08) var(--camera-fill), rgba(24, 90, 97, 0.08) 100%);
   color: var(--accent);
 }
 
 .camera-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.camera-btn.is-complete {
+  border-color: rgba(42, 127, 98, 0.42);
+  background: linear-gradient(90deg, rgba(42, 127, 98, 0.28) 0%, rgba(42, 127, 98, 0.28) 100%);
+  color: #145541;
 }
 
 .camera-icon {
