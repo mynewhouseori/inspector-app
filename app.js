@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.92";
+const APP_VERSION = "2026.05.07.93";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -382,24 +382,6 @@ function updateAppVersionLabel() {
 }
 
 function ensureReportPlaceholders() {
-  const reportSections = [...document.querySelectorAll("#reportDocument .report-section")];
-  const overviewSection = reportSections.find((section) => section.querySelector("h3")?.textContent?.includes("פרטי הבדיקה"));
-  const statsSection = reportSections.find((section) => section.querySelector("h3")?.textContent?.includes("סיכום כמויות"));
-
-  if (overviewSection && !overviewSection.querySelector("#reportOverview")) {
-    const overview = document.createElement("div");
-    overview.id = "reportOverview";
-    overview.className = "report-overview";
-    overviewSection.appendChild(overview);
-  }
-
-  if (statsSection && !statsSection.querySelector("#reportSummaryStats")) {
-    const stats = document.createElement("div");
-    stats.id = "reportSummaryStats";
-    stats.className = "report-summary-stats";
-    statsSection.appendChild(stats);
-  }
-
   els.reportOverview = document.querySelector("#reportOverview");
   els.reportSummaryStats = document.querySelector("#reportSummaryStats");
 }
