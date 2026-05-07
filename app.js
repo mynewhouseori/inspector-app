@@ -175,11 +175,11 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.96";
+const APP_VERSION = "2026.05.07.97";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
-const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם -יפו";
+const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם-יפו";
 
 function getOwnerApartmentProjectId(apartmentName) {
   const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
