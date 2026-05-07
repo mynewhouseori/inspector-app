@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.86";
+const APP_VERSION = "2026.05.07.87";
 const pendingPhotoUploads = new Set();
 
 function getOwnerApartmentProjectId(apartmentName) {
@@ -509,6 +509,20 @@ async function handleCheckCameraCapture(area, check, fileInput) {
 
   const fileName = buildCapturedPhotoName(area, check, file);
   const uploadKey = getPhotoUploadKey(area.id, check.code);
+  const pendingPhotoId = uid();
+  const pendingPhotoRecord = {
+    id: pendingPhotoId,
+    checkCode: check.code,
+    checkName: check.name,
+    fileName,
+    capturedAt: new Date().toISOString(),
+    storagePath: "",
+    downloadURL: ""
+  };
+  area.photoCaptures = [
+    ...(Array.isArray(area.photoCaptures) ? area.photoCaptures : []),
+    pendingPhotoRecord
+  ].slice(0, MAX_AREA_PHOTOS);
   pendingPhotoUploads.add(uploadKey);
   render({ preserveScroll: true });
   let uploadedPhoto;
@@ -516,24 +530,23 @@ async function handleCheckCameraCapture(area, check, fileInput) {
     uploadedPhoto = await uploadCapturedPhoto(file, area, check, fileName);
   } catch (error) {
     window.alert("שמירת התמונה לענן נכשלה כרגע. נסה שוב.");
+    area.photoCaptures = (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
+      .filter((photo) => photo.id !== pendingPhotoId);
     pendingPhotoUploads.delete(uploadKey);
     render({ preserveScroll: true });
     console.error(error);
     return;
   }
 
-  area.photoCaptures = [
-    ...(Array.isArray(area.photoCaptures) ? area.photoCaptures : []),
-    {
-      id: uid(),
-      checkCode: check.code,
-      checkName: check.name,
-      fileName,
-      capturedAt: new Date().toISOString(),
-      storagePath: uploadedPhoto.storagePath,
-      downloadURL: uploadedPhoto.downloadURL
-    }
-  ].slice(0, MAX_AREA_PHOTOS);
+  area.photoCaptures = (Array.isArray(area.photoCaptures) ? area.photoCaptures : []).map((photo) => (
+    photo.id === pendingPhotoId
+      ? {
+          ...photo,
+          storagePath: uploadedPhoto.storagePath,
+          downloadURL: uploadedPhoto.downloadURL
+        }
+      : photo
+  ));
 
   pendingPhotoUploads.delete(uploadKey);
   saveState({ immediateCloud: true });
@@ -1694,7 +1707,7 @@ function renderAreas() {
       const uploadPending = isPhotoUploadPending(area.id, check.code);
       statusSelect.value = check.status;
       noteInput.value = check.note;
-      cameraCount.textContent = uploadPending ? "..." : `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
+      cameraCount.textContent = `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
       applyCameraButtonState(cameraBtn, checkPhotoCount);
       cameraBtn.classList.toggle("is-uploading", uploadPending);
       applyCheckVisualState(checkNode, check);
