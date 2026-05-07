@@ -175,8 +175,10 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.87";
+const APP_VERSION = "2026.05.07.88";
 const pendingPhotoUploads = new Set();
+const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
+const PHOTO_UPLOAD_QUALITY = 0.72;
 
 function getOwnerApartmentProjectId(apartmentName) {
   const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
@@ -485,6 +487,59 @@ function buildCapturedPhotoPath(area, check, fileName) {
   return `inspections/${apartmentName}/${roomName}/${checkCode}/${fileName}`;
 }
 
+async function compressImageForUpload(file) {
+  if (!file || !file.type?.startsWith("image/")) return file;
+  if (file.type === "image/gif" || file.type === "image/svg+xml") return file;
+
+  try {
+    const objectUrl = URL.createObjectURL(file);
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Image decode failed"));
+      img.src = objectUrl;
+    });
+
+    const sourceWidth = image.naturalWidth || image.width || 0;
+    const sourceHeight = image.naturalHeight || image.height || 0;
+    const longestSide = Math.max(sourceWidth, sourceHeight);
+    const scale = longestSide > PHOTO_UPLOAD_MAX_DIMENSION ? PHOTO_UPLOAD_MAX_DIMENSION / longestSide : 1;
+    const targetWidth = Math.max(1, Math.round(sourceWidth * scale));
+    const targetHeight = Math.max(1, Math.round(sourceHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      URL.revokeObjectURL(objectUrl);
+      return file;
+    }
+
+    context.drawImage(image, 0, 0, targetWidth, targetHeight);
+    const compressedBlob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Image compression failed"))),
+        "image/jpeg",
+        PHOTO_UPLOAD_QUALITY
+      );
+    });
+    URL.revokeObjectURL(objectUrl);
+
+    if (!compressedBlob || compressedBlob.size >= file.size) {
+      return file;
+    }
+
+    return new File([compressedBlob], file.name.replace(/\.[^.]+$/, ".jpg"), {
+      type: "image/jpeg",
+      lastModified: Date.now()
+    });
+  } catch (error) {
+    console.error(error);
+    return file;
+  }
+}
+
 async function uploadCapturedPhoto(file, area, check, fileName) {
   if (!storage) {
     throw new Error("Cloud storage is not configured.");
@@ -507,7 +562,8 @@ async function handleCheckCameraCapture(area, check, fileInput) {
     return;
   }
 
-  const fileName = buildCapturedPhotoName(area, check, file);
+  const preparedFile = await compressImageForUpload(file);
+  const fileName = buildCapturedPhotoName(area, check, preparedFile);
   const uploadKey = getPhotoUploadKey(area.id, check.code);
   const pendingPhotoId = uid();
   const pendingPhotoRecord = {
@@ -527,7 +583,7 @@ async function handleCheckCameraCapture(area, check, fileInput) {
   render({ preserveScroll: true });
   let uploadedPhoto;
   try {
-    uploadedPhoto = await uploadCapturedPhoto(file, area, check, fileName);
+    uploadedPhoto = await uploadCapturedPhoto(preparedFile, area, check, fileName);
   } catch (error) {
     window.alert("שמירת התמונה לענן נכשלה כרגע. נסה שוב.");
     area.photoCaptures = (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
