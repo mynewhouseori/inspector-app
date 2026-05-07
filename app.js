@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.98";
+const APP_VERSION = "2026.05.07.99";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1778,6 +1778,7 @@ function renderAreas() {
       checkNode.querySelector(".check-name").textContent = check.name;
       checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
       const statusSelect = checkNode.querySelector(".status-select");
+      const cameraTrigger = checkNode.querySelector(".camera-trigger");
       const cameraBtn = checkNode.querySelector(".camera-btn");
       const cameraInput = checkNode.querySelector(".camera-input");
       const cameraCount = checkNode.querySelector(".camera-count");
@@ -1791,6 +1792,7 @@ function renderAreas() {
       cameraCount.textContent = `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
       applyCameraButtonState(cameraBtn, checkPhotoCount);
       cameraBtn.classList.toggle("is-uploading", uploadPending);
+      cameraTrigger.classList.toggle("is-disabled", area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS);
       applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
       noteInput.disabled = area.locked;
@@ -1801,29 +1803,21 @@ function renderAreas() {
         cameraBtn.classList.add("field-locked");
       }
       cameraBtn.disabled = area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS;
+      cameraInput.disabled = area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS;
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
         applyCheckVisualState(checkNode, check);
         const enabledForStatus = check.status === "issue";
         cameraBtn.disabled = area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
+        cameraInput.disabled = area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
         cameraBtn.classList.toggle("field-locked", area.locked || !enabledForStatus);
+        cameraTrigger.classList.toggle("is-disabled", area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS);
         refreshProgressAndSummary();
       });
       noteInput.addEventListener("input", (event) => {
         check.note = event.target.value;
         applyCheckVisualState(checkNode, check);
         refreshProgressAndSummary();
-      });
-      cameraBtn.addEventListener("click", () => {
-        if (getAreaPhotoCount(area) >= MAX_AREA_PHOTOS) {
-          window.alert(`אפשר לשמור עד ${MAX_AREA_PHOTOS} תמונות לכל חדר.`);
-          return;
-        }
-        if (typeof cameraInput.showPicker === "function") {
-          cameraInput.showPicker();
-        } else {
-          cameraInput.click();
-        }
       });
       cameraInput.addEventListener("change", async () => {
         await handleCheckCameraCapture(area, check, cameraInput);
