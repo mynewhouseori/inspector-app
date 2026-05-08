@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.08.108";
+const APP_VERSION = "2026.05.08.109";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1819,8 +1819,6 @@ function renderAreas() {
       applyCameraButtonState(cameraBtn, checkPhotoCount);
       cameraBtn.classList.toggle("is-uploading", uploadPending);
       cameraBtn.classList.toggle("is-disabled", !cameraAllowed);
-      cameraBtn.disabled = !cameraAllowed;
-      cameraBtn.setAttribute("aria-disabled", String(!cameraAllowed));
       applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
       noteInput.disabled = area.locked;
@@ -1836,9 +1834,7 @@ function renderAreas() {
         applyCheckVisualState(checkNode, check);
         const nextAllowed = isCameraAllowedForCheck(area, check);
         cameraInput.disabled = !nextAllowed;
-        cameraBtn.disabled = !nextAllowed;
         cameraBtn.classList.toggle("is-disabled", !nextAllowed);
-        cameraBtn.setAttribute("aria-disabled", String(!nextAllowed));
         refreshProgressAndSummary();
       });
       noteInput.addEventListener("input", (event) => {
