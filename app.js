@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.08.107";
+const APP_VERSION = "2026.05.08.108";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -474,6 +474,10 @@ function applyCameraButtonState(button, count) {
   const fillPercent = (safeCount / MAX_AREA_PHOTOS) * 100;
   button.style.setProperty("--camera-fill", `${fillPercent}%`);
   button.classList.toggle("is-complete", safeCount >= MAX_AREA_PHOTOS);
+}
+
+function isCameraAllowedForCheck(area, check) {
+  return !area.locked && check.status === "issue" && getAreaPhotoCount(area) < MAX_AREA_PHOTOS;
 }
 
 function sanitizeFileSegment(value) {
@@ -1807,16 +1811,16 @@ function renderAreas() {
       const cameraCount = checkNode.querySelector(".camera-count");
       const noteInput = checkNode.querySelector(".note-input");
       const checkPhotoCount = getCheckPhotoCount(area, check.code);
-      const areaPhotoCount = getAreaPhotoCount(area);
       const uploadPending = isPhotoUploadPending(area.id, check.code);
-      const cameraEnabledForStatus = check.status === "issue";
+      const cameraAllowed = isCameraAllowedForCheck(area, check);
       statusSelect.value = check.status;
       noteInput.value = check.note;
       cameraCount.textContent = `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
       applyCameraButtonState(cameraBtn, checkPhotoCount);
       cameraBtn.classList.toggle("is-uploading", uploadPending);
-      cameraBtn.classList.toggle("is-disabled", area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS);
-      cameraBtn.disabled = area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS;
+      cameraBtn.classList.toggle("is-disabled", !cameraAllowed);
+      cameraBtn.disabled = !cameraAllowed;
+      cameraBtn.setAttribute("aria-disabled", String(!cameraAllowed));
       applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
       noteInput.disabled = area.locked;
@@ -1826,14 +1830,15 @@ function renderAreas() {
         noteInput.classList.add("field-locked");
         cameraBtn.classList.add("field-locked");
       }
-      cameraInput.disabled = area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS;
+      cameraInput.disabled = !cameraAllowed;
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
         applyCheckVisualState(checkNode, check);
-        const enabledForStatus = check.status === "issue";
-        cameraInput.disabled = area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
-        cameraBtn.disabled = area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
-        cameraBtn.classList.toggle("is-disabled", area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS);
+        const nextAllowed = isCameraAllowedForCheck(area, check);
+        cameraInput.disabled = !nextAllowed;
+        cameraBtn.disabled = !nextAllowed;
+        cameraBtn.classList.toggle("is-disabled", !nextAllowed);
+        cameraBtn.setAttribute("aria-disabled", String(!nextAllowed));
         refreshProgressAndSummary();
       });
       noteInput.addEventListener("input", (event) => {
@@ -1843,6 +1848,7 @@ function renderAreas() {
       });
       cameraBtn.addEventListener("click", (event) => {
         event.preventDefault();
+        if (!isCameraAllowedForCheck(area, check)) return;
         openCameraPicker(cameraInput);
       });
       cameraInput.addEventListener("change", async () => {
