@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.08.106";
+const APP_VERSION = "2026.05.08.107";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -473,7 +473,6 @@ function applyCameraButtonState(button, count) {
   const safeCount = Math.max(0, Math.min(MAX_AREA_PHOTOS, Number(count) || 0));
   const fillPercent = (safeCount / MAX_AREA_PHOTOS) * 100;
   button.style.setProperty("--camera-fill", `${fillPercent}%`);
-  button.classList.toggle("has-photos", safeCount > 0);
   button.classList.toggle("is-complete", safeCount >= MAX_AREA_PHOTOS);
 }
 
