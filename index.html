@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Inspector Mobile</title>
-  <link rel="stylesheet" href="styles.css?v=20260508-103">
+  <link rel="stylesheet" href="styles.css?v=20260508-104">
 </head>
 <body>
   <div class="mobile-app">
@@ -235,6 +235,21 @@
     </nav>
   </div>
 
+  <div id="cameraModal" class="camera-modal" aria-hidden="true">
+    <div class="camera-sheet">
+      <div class="camera-sheet-head">
+        <strong>צילום ליקוי</strong>
+        <button id="cameraCancelBtn" class="ghost-btn" type="button">סגור</button>
+      </div>
+      <video id="cameraPreview" class="camera-preview" playsinline autoplay muted></video>
+      <p id="cameraStatus" class="camera-status"></p>
+      <div class="camera-sheet-actions">
+        <button id="cameraFallbackBtn" class="ghost-btn" type="button">גלריה / קובץ</button>
+        <button id="cameraCaptureBtn" class="lock-btn" type="button">צלם</button>
+      </div>
+    </div>
+  </div>
+
   <template id="roomChipTemplate">
     <button class="room-pick" type="button">
       <span class="room-pick-name"></span>
@@ -290,7 +305,7 @@
     </div>
   </template>
 
-  <script src="config.demo.js?v=20260508-103"></script>
-  <script type="module" src="app.js?v=20260508-103"></script>
+  <script src="config.demo.js?v=20260508-104"></script>
+  <script type="module" src="app.js?v=20260508-104"></script>
 </body>
 </html>

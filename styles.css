@@ -827,16 +827,14 @@ select {
 
 .camera-input {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 1px;
+  height: 1px;
   opacity: 0;
-  z-index: 2;
-  cursor: pointer;
+  pointer-events: none;
 }
 
 .camera-trigger.is-disabled .camera-input {
-  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .camera-trigger .camera-btn {
@@ -853,6 +851,54 @@ select {
 
 .camera-count {
   font-weight: 700;
+  font-size: 13px;
+}
+
+.camera-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(18, 27, 28, 0.55);
+  z-index: 30;
+}
+
+.camera-modal.open {
+  display: flex;
+}
+
+.camera-sheet {
+  width: min(100%, 520px);
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 24px;
+  background: rgba(255, 252, 247, 0.98);
+  box-shadow: 0 18px 44px rgba(31, 41, 44, 0.28);
+}
+
+.camera-sheet-head,
+.camera-sheet-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.camera-preview {
+  width: 100%;
+  min-height: 280px;
+  max-height: 65vh;
+  border-radius: 20px;
+  background: #0d1a1c;
+  object-fit: cover;
+}
+
+.camera-status {
+  margin: 0;
+  color: var(--muted);
   font-size: 13px;
 }
 
