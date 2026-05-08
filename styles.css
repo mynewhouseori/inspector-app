@@ -827,14 +827,21 @@ select {
 
 .camera-input {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
-  pointer-events: none;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.camera-trigger.is-disabled .camera-input {
+  cursor: not-allowed;
 }
 
 .camera-trigger .camera-btn {
-  pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
 
 .camera-icon {

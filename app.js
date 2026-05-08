@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.08.102";
+const APP_VERSION = "2026.05.08.103";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -620,6 +620,21 @@ async function handleCheckCameraCapture(area, check, fileInput) {
   finishPhotoUpload(area.id, check.code);
   saveState({ immediateCloud: true });
   render({ preserveScroll: true });
+}
+
+function openCameraPicker(fileInput) {
+  if (!fileInput || fileInput.disabled) return;
+
+  try {
+    if (typeof fileInput.showPicker === "function") {
+      fileInput.showPicker();
+      return;
+    }
+  } catch (error) {
+    // Fall through to click() for browsers that block or lack showPicker().
+  }
+
+  fileInput.click();
 }
 
 function applyCheckVisualState(checkNode, check) {
@@ -1826,6 +1841,17 @@ function renderAreas() {
         check.note = event.target.value;
         applyCheckVisualState(checkNode, check);
         refreshProgressAndSummary();
+      });
+      cameraBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openCameraPicker(cameraInput);
+      });
+      cameraTrigger.addEventListener("click", (event) => {
+        if (event.target === cameraInput) return;
+        if (event.target.closest(".camera-btn")) return;
+        event.preventDefault();
+        openCameraPicker(cameraInput);
       });
       cameraInput.addEventListener("change", async () => {
         await handleCheckCameraCapture(area, check, cameraInput);
