@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.07.99";
+const APP_VERSION = "2026.05.08.100";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -184,7 +184,12 @@ const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם-יפו";
 function normalizePropertyAddress(value) {
   const normalized = String(value || "").trim();
   if (!normalized) return DEFAULT_PROPERTY_ADDRESS;
-  if (normalized === "מגן אברהם -יפו" || normalized === "מגן אברהם- יפו" || normalized === "מגן אברהם - יפו") {
+  if (
+    normalized === "מגן אברהם"
+    || normalized === "מגן אברהם -יפו"
+    || normalized === "מגן אברהם- יפו"
+    || normalized === "מגן אברהם - יפו"
+  ) {
     return DEFAULT_PROPERTY_ADDRESS;
   }
   return normalized;
