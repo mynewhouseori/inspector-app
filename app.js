@@ -175,13 +175,11 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.08.104";
+const APP_VERSION = "2026.05.08.105";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
 const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם-יפו";
-let activeCameraStream = null;
-let activeCameraContext = null;
 
 function normalizePropertyAddress(value) {
   const normalized = String(value || "").trim();
@@ -279,13 +277,7 @@ const els = {
   reportAreaDetails: document.querySelector("#reportAreaDetails"),
   reportClosingNote: document.querySelector("#reportClosingNote"),
   reportTitle: document.querySelector("#reportTitle"),
-  reportMeta: document.querySelector("#reportMeta"),
-  cameraModal: document.querySelector("#cameraModal"),
-  cameraPreview: document.querySelector("#cameraPreview"),
-  cameraStatus: document.querySelector("#cameraStatus"),
-  cameraCaptureBtn: document.querySelector("#cameraCaptureBtn"),
-  cameraCancelBtn: document.querySelector("#cameraCancelBtn"),
-  cameraFallbackBtn: document.querySelector("#cameraFallbackBtn")
+  reportMeta: document.querySelector("#reportMeta")
 };
 
 function uid() {
@@ -632,89 +624,6 @@ async function handleCheckCameraCapture(area, check, fileInput) {
   const file = fileInput.files?.[0];
   fileInput.value = "";
   await handleCheckCameraFile(area, check, file);
-}
-
-function updateCameraStatus(message = "") {
-  if (els.cameraStatus) {
-    els.cameraStatus.textContent = message;
-  }
-}
-
-function stopActiveCameraStream() {
-  if (activeCameraStream) {
-    activeCameraStream.getTracks().forEach((track) => track.stop());
-    activeCameraStream = null;
-  }
-  if (els.cameraPreview) {
-    els.cameraPreview.pause?.();
-    els.cameraPreview.srcObject = null;
-  }
-}
-
-function closeCameraModal() {
-  stopActiveCameraStream();
-  activeCameraContext = null;
-  els.cameraModal?.classList.remove("open");
-  els.cameraModal?.setAttribute("aria-hidden", "true");
-  updateCameraStatus("");
-}
-
-async function captureFromCameraModal() {
-  if (!activeCameraContext || !els.cameraPreview) return;
-  const { area, check } = activeCameraContext;
-  const video = els.cameraPreview;
-  const width = video.videoWidth || 1280;
-  const height = video.videoHeight || 720;
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext("2d").drawImage(video, 0, 0, width, height);
-
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
-  if (!blob) {
-    window.alert("לא הצלחנו ללכוד את הצילום. נסה שוב.");
-    return;
-  }
-
-  const capturedFile = new File([blob], "mobile-camera.jpg", { type: "image/jpeg" });
-  closeCameraModal();
-  await handleCheckCameraFile(area, check, capturedFile);
-}
-
-async function openNativeCamera(area, check, fileInput) {
-  if (!navigator.mediaDevices?.getUserMedia || !els.cameraModal || !els.cameraPreview) {
-    openCameraPicker(fileInput);
-    return;
-  }
-
-  try {
-    updateCameraStatus("פותח מצלמה...");
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1600 },
-        height: { ideal: 900 }
-      },
-      audio: false
-    });
-
-    activeCameraStream = stream;
-    activeCameraContext = { area, check, fileInput };
-    els.cameraPreview.srcObject = stream;
-    els.cameraModal.classList.add("open");
-    els.cameraModal.setAttribute("aria-hidden", "false");
-    updateCameraStatus("המצלמה פתוחה. אפשר לצלם.");
-
-    try {
-      await els.cameraPreview.play();
-    } catch (error) {
-      // Some mobile browsers autoplay the stream without a resolved play() promise.
-    }
-  } catch (error) {
-    console.error(error);
-    closeCameraModal();
-    openCameraPicker(fileInput);
-  }
 }
 
 function openCameraPicker(fileInput) {
@@ -1893,7 +1802,6 @@ function renderAreas() {
       checkNode.querySelector(".check-name").textContent = check.name;
       checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
       const statusSelect = checkNode.querySelector(".status-select");
-      const cameraTrigger = checkNode.querySelector(".camera-trigger");
       const cameraBtn = checkNode.querySelector(".camera-btn");
       const cameraInput = checkNode.querySelector(".camera-input");
       const cameraCount = checkNode.querySelector(".camera-count");
@@ -1902,16 +1810,13 @@ function renderAreas() {
       const areaPhotoCount = getAreaPhotoCount(area);
       const uploadPending = isPhotoUploadPending(area.id, check.code);
       const cameraEnabledForStatus = check.status === "issue";
-      const cameraInputId = `camera-${area.id}-${check.code}`.replace(/[^a-zA-Z0-9_-]/g, "-");
-      cameraInput.id = cameraInputId;
-      cameraTrigger.htmlFor = cameraInputId;
       statusSelect.value = check.status;
       noteInput.value = check.note;
       cameraCount.textContent = `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
       applyCameraButtonState(cameraBtn, checkPhotoCount);
       cameraBtn.classList.toggle("is-uploading", uploadPending);
-      cameraTrigger.classList.toggle("is-disabled", area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS);
       cameraBtn.classList.toggle("is-disabled", area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS);
+      cameraBtn.disabled = area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS;
       applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
       noteInput.disabled = area.locked;
@@ -1927,9 +1832,8 @@ function renderAreas() {
         applyCheckVisualState(checkNode, check);
         const enabledForStatus = check.status === "issue";
         cameraInput.disabled = area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
-        cameraBtn.classList.toggle("field-locked", area.locked || !enabledForStatus);
+        cameraBtn.disabled = area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
         cameraBtn.classList.toggle("is-disabled", area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS);
-        cameraTrigger.classList.toggle("is-disabled", area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS);
         refreshProgressAndSummary();
       });
       noteInput.addEventListener("input", (event) => {
@@ -1939,14 +1843,7 @@ function renderAreas() {
       });
       cameraBtn.addEventListener("click", (event) => {
         event.preventDefault();
-        event.stopPropagation();
-        openNativeCamera(area, check, cameraInput);
-      });
-      cameraTrigger.addEventListener("click", (event) => {
-        if (event.target === cameraInput) return;
-        if (event.target.closest(".camera-btn")) return;
-        event.preventDefault();
-        openNativeCamera(area, check, cameraInput);
+        openCameraPicker(cameraInput);
       });
       cameraInput.addEventListener("change", async () => {
         await handleCheckCameraCapture(area, check, cameraInput);
@@ -2170,34 +2067,6 @@ els.printBtn.addEventListener("click", () => {
   buildPrintPages();
   setTimeout(() => window.print(), 80);
 });
-
-if (els.cameraCancelBtn) {
-  els.cameraCancelBtn.addEventListener("click", () => {
-    closeCameraModal();
-  });
-}
-
-if (els.cameraCaptureBtn) {
-  els.cameraCaptureBtn.addEventListener("click", async () => {
-    await captureFromCameraModal();
-  });
-}
-
-if (els.cameraFallbackBtn) {
-  els.cameraFallbackBtn.addEventListener("click", () => {
-    const currentInput = activeCameraContext?.fileInput;
-    closeCameraModal();
-    openCameraPicker(currentInput);
-  });
-}
-
-if (els.cameraModal) {
-  els.cameraModal.addEventListener("click", (event) => {
-    if (event.target === els.cameraModal) {
-      closeCameraModal();
-    }
-  });
-}
 
 loadState();
 state.currentScreen = "home";

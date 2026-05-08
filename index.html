@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Inspector Mobile</title>
-  <link rel="stylesheet" href="styles.css?v=20260508-104">
+  <link rel="stylesheet" href="styles.css?v=20260508-105">
 </head>
 <body>
   <div class="mobile-app">
@@ -235,21 +235,6 @@
     </nav>
   </div>
 
-  <div id="cameraModal" class="camera-modal" aria-hidden="true">
-    <div class="camera-sheet">
-      <div class="camera-sheet-head">
-        <strong>צילום ליקוי</strong>
-        <button id="cameraCancelBtn" class="ghost-btn" type="button">סגור</button>
-      </div>
-      <video id="cameraPreview" class="camera-preview" playsinline autoplay muted></video>
-      <p id="cameraStatus" class="camera-status"></p>
-      <div class="camera-sheet-actions">
-        <button id="cameraFallbackBtn" class="ghost-btn" type="button">גלריה / קובץ</button>
-        <button id="cameraCaptureBtn" class="lock-btn" type="button">צלם</button>
-      </div>
-    </div>
-  </div>
-
   <template id="roomChipTemplate">
     <button class="room-pick" type="button">
       <span class="room-pick-name"></span>
@@ -291,21 +276,19 @@
           <option value="issue">ליקוי</option>
           <option value="na">לא רלוונטי</option>
         </select>
-        <label class="camera-trigger" aria-label="צילום">
-          <div class="camera-btn">
+        <button class="camera-btn" type="button" aria-label="צילום">
             <svg class="camera-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M8 5h2l1.2-1.6c.2-.3.5-.4.8-.4h2c.3 0 .6.1.8.4L16 5h2c1.7 0 3 1.3 3 3v8c0 1.7-1.3 3-3 3H6c-1.7 0-3-1.3-3-3V8c0-1.7 1.3-3 3-3h2Zm4 3.2A4.8 4.8 0 1 0 12 18a4.8 4.8 0 0 0 0-9.8Zm0 2A2.8 2.8 0 1 1 12 16a2.8 2.8 0 0 1 0-5.8Z"/>
             </svg>
             <span class="camera-count">0/3</span>
-          </div>
-          <input class="camera-input" type="file" accept="image/*" capture="environment">
-        </label>
+        </button>
+        <input class="camera-input" type="file" accept="image/*" capture="environment" hidden>
         <input class="note-input" type="text" placeholder="הערה / ממצא">
       </div>
     </div>
   </template>
 
-  <script src="config.demo.js?v=20260508-104"></script>
-  <script type="module" src="app.js?v=20260508-104"></script>
+  <script src="config.demo.js?v=20260508-105"></script>
+  <script type="module" src="app.js?v=20260508-105"></script>
 </body>
 </html>
