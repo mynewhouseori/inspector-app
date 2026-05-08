@@ -817,6 +817,8 @@ select {
 
 .camera-trigger {
   position: relative;
+  display: block;
+  width: 100%;
 }
 
 .camera-trigger.is-disabled .camera-input {
@@ -825,12 +827,14 @@ select {
 
 .camera-input {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 1px;
+  height: 1px;
   opacity: 0;
-  z-index: 2;
-  cursor: pointer;
+  pointer-events: none;
+}
+
+.camera-trigger .camera-btn {
+  pointer-events: none;
 }
 
 .camera-icon {

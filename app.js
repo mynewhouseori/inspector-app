@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.08.101";
+const APP_VERSION = "2026.05.08.102";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1792,6 +1792,9 @@ function renderAreas() {
       const areaPhotoCount = getAreaPhotoCount(area);
       const uploadPending = isPhotoUploadPending(area.id, check.code);
       const cameraEnabledForStatus = check.status === "issue";
+      const cameraInputId = `camera-${area.id}-${check.code}`.replace(/[^a-zA-Z0-9_-]/g, "-");
+      cameraInput.id = cameraInputId;
+      cameraTrigger.htmlFor = cameraInputId;
       statusSelect.value = check.status;
       noteInput.value = check.note;
       cameraCount.textContent = `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
