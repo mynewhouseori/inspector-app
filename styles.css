@@ -796,11 +796,17 @@ select {
   border-radius: 15px;
   background: linear-gradient(90deg, rgba(24, 90, 97, 0.24) 0%, rgba(24, 90, 97, 0.24) var(--camera-fill), rgba(24, 90, 97, 0.08) var(--camera-fill), rgba(24, 90, 97, 0.08) 100%);
   color: var(--accent);
+  transition: color 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
 
 .camera-btn.is-disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.camera-btn.has-photos {
+  border-color: rgba(24, 90, 97, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32);
 }
 
 .camera-btn.is-complete {
@@ -825,6 +831,25 @@ select {
 .camera-count {
   font-weight: 700;
   font-size: 13px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #0f4f56;
+  box-shadow: 0 1px 4px rgba(20, 45, 47, 0.12);
+}
+
+.camera-btn.has-photos .camera-count {
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.94);
+  color: #083e45;
+}
+
+.camera-btn.is-complete .camera-count {
+  color: #145541;
+}
+
+.camera-btn.is-uploading .camera-count {
+  color: #8a4e00;
 }
 
 .issue-item strong,
