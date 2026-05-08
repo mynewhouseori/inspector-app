@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.08.100";
+const APP_VERSION = "2026.05.08.101";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1798,6 +1798,7 @@ function renderAreas() {
       applyCameraButtonState(cameraBtn, checkPhotoCount);
       cameraBtn.classList.toggle("is-uploading", uploadPending);
       cameraTrigger.classList.toggle("is-disabled", area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS);
+      cameraBtn.classList.toggle("is-disabled", area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS);
       applyCheckVisualState(checkNode, check);
       statusSelect.disabled = area.locked;
       noteInput.disabled = area.locked;
@@ -1807,15 +1808,14 @@ function renderAreas() {
         noteInput.classList.add("field-locked");
         cameraBtn.classList.add("field-locked");
       }
-      cameraBtn.disabled = area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS;
       cameraInput.disabled = area.locked || !cameraEnabledForStatus || areaPhotoCount >= MAX_AREA_PHOTOS;
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
         applyCheckVisualState(checkNode, check);
         const enabledForStatus = check.status === "issue";
-        cameraBtn.disabled = area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
         cameraInput.disabled = area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS;
         cameraBtn.classList.toggle("field-locked", area.locked || !enabledForStatus);
+        cameraBtn.classList.toggle("is-disabled", area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS);
         cameraTrigger.classList.toggle("is-disabled", area.locked || !enabledForStatus || getAreaPhotoCount(area) >= MAX_AREA_PHOTOS);
         refreshProgressAndSummary();
       });
