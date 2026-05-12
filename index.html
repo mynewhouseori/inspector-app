@@ -1,294 +1,437 @@
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>Inspector Mobile</title>
-  <link rel="stylesheet" href="styles.css?v=20260508-109">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>טופס בדק דירה - כניסות 17 / 19</title>
+<style>
+:root {
+  --green:#006b57;
+  --green2:#007d67;
+  --bg:#eef5f2;
+  --card:#ffffff;
+  --line:#d9e5e0;
+  --text:#17332d;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family: Arial, "Noto Sans Hebrew", sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  direction:rtl;
+}
+header {
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  color:white;
+  padding:18px 14px;
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+h1 { margin:0; font-size:20px; }
+.container { max-width:980px; margin:0 auto; padding:12px; }
+.card {
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  margin:12px 0;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+@media (max-width:700px) {
+  .grid { grid-template-columns:1fr; }
+}
+label { display:block; font-weight:700; margin-bottom:5px; }
+input, select, textarea, button {
+  width:100%;
+  font:inherit;
+  border-radius:12px;
+  border:1px solid #cbd9d4;
+  padding:10px;
+  background:#fff;
+}
+textarea { min-height:72px; resize:vertical; }
+button {
+  cursor:pointer;
+  border:0;
+  background:var(--green);
+  color:white;
+  font-weight:700;
+}
+button.secondary { background:#e7f0ed; color:var(--green); border:1px solid #cbd9d4; }
+button.danger { background:#d92323; }
+.room-title {
+  background:#e9f4f0;
+  color:var(--green);
+  border-radius:14px;
+  padding:10px 12px;
+  font-weight:800;
+  margin-top:14px;
+}
+.item-card {
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px;
+  margin:10px 0;
+  background:#fff;
+}
+.item-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:10px;
+}
+.item-name { font-weight:800; font-size:16px; }
+.row {
+  display:grid;
+  grid-template-columns: 180px 1fr 170px;
+  gap:8px;
+  align-items:start;
+}
+@media (max-width:760px) {
+  .row { grid-template-columns:1fr; }
+}
+.photo-list {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+.photo-box {
+  position:relative;
+  width:130px;
+  height:100px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  background:#f8fbfa;
+}
+.photo-box img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.photo-caption {
+  position:absolute;
+  right:0;
+  left:0;
+  bottom:0;
+  background:rgba(0,0,0,.62);
+  color:white;
+  font-size:11px;
+  line-height:1.25;
+  padding:4px 5px;
+  text-align:right;
+}
+.photo-remove {
+  position:absolute;
+  top:4px;
+  left:4px;
+  width:24px;
+  height:24px;
+  padding:0;
+  border-radius:50%;
+  background:#d92323;
+  color:#fff;
+  font-size:14px;
+}
+.actions {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+@media (max-width:700px) {
+  .actions { grid-template-columns:1fr; }
+}
+.small { color:#60736d; font-size:12px; }
+@media print {
+  header, .actions, input[type=file], button, .top-controls { display:none !important; }
+  body { background:#fff; }
+  .card, .item-card { box-shadow:none; break-inside:avoid; }
+}
+</style>
 </head>
 <body>
-  <div class="mobile-app">
-    <header class="topbar">
-      <p class="top-version">גרסה 2026.05.07.80</p>
-    </header>
+<header>
+  <h1>טופס בדק דירה - כניסות 17 / 19</h1>
+  <div class="small" style="color:#eafff8">שמירה מקומית בדפדפן + תמונות עם כיתוב על התמונה</div>
+</header>
 
-    <main class="screen-stack">
-      <section id="screen-home" class="screen active">
-        <section class="panel home-panel">
-          <div class="home-brand">
-            <img class="home-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
-            <div>
-              <p class="eyebrow">INSPECTOR</p>
-              <h2 class="home-title">בחירת מסלול בדיקה</h2>
-              <p class="section-text">בחר את סוג הבדיקה הרצוי כדי לפתוח את מסלול העבודה המתאים.</p>
-            </div>
-          </div>
-
-          <div class="mode-selection">
-            <button id="selectNewPropertyBtn" class="mode-card mode-card-new" type="button" disabled>
-              <strong>בדיקת נכס חדש</strong>
-              <span>בדיקות מסירה, ליקויי ביצוע והתאמה לתכנון ולרמת הגמר. זמין בהמשך.</span>
-            </button>
-            <button id="selectOwnerReportBtn" class="mode-card mode-card-owner" type="button">
-              <strong>תסקיר בדיקת בעלים</strong>
-              <span>סקירת נכס קיים לפני שיפוץ, תיעוד מצב קיים והמלצות מקצועיות להמשך.</span>
-            </button>
-          </div>
-        </section>
-      </section>
-
-      <section id="screen-owner-apartments" class="screen">
-        <section class="panel owner-apartments-panel">
-          <div class="section-head owner-apartments-head">
-            <div>
-              <p class="eyebrow">תסקיר בדיקת בעלים</p>
-              <h3>בחירת דירה</h3>
-            </div>
-            <button id="backToHomeFromOwnerBtn" class="ghost-btn" type="button">חזרה</button>
-          </div>
-          <p class="section-text">בחר דירה כדי לפתוח את מסלול העבודה עם שם נכס מוכן מראש.</p>
-          <div id="ownerApartmentsGrid" class="owner-apartments-grid"></div>
-        </section>
-      </section>
-
-      <section id="screen-welcome" class="screen">
-        <h2 id="welcomeTitle" class="welcome-title">בדיקת נכס חדש</h2>
-
-        <section class="panel intro-panel">
-          <label>
-            <span>שם הנכס</span>
-            <input id="propertyName" type="text" placeholder="למשל: דירה 7">
-          </label>
-          <label id="propertyAddressField">
-            <span>כתובת</span>
-            <input id="propertyAddress" type="text" placeholder="מגן אברהם-יפו">
-          </label>
-          <label>
-            <span id="clientNameLabel">שם הלקוח</span>
-            <input id="clientName" type="text" placeholder="הזן שם לקוח">
-          </label>
-          <label>
-            <span>טלפון נייד דיירים</span>
-            <input id="clientPhone" type="tel" inputmode="tel" placeholder="05X-XXXXXXX">
-          </label>
-          <label>
-            <span>Email דיירים</span>
-            <input id="clientEmail" type="email" inputmode="email" placeholder="name@example.com">
-          </label>
-          <label id="inspectorNameField">
-            <span>שם הבודק</span>
-            <input id="inspectorName" type="text" placeholder="הזן שם בודק">
-          </label>
-          <p id="cloudStatus" class="cloud-status">סנכרון ענן</p>
-          <button id="saveProjectBtn" class="ghost-btn full-width" type="button">שמור בדיקת דירה</button>
-        </section>
-
-      </section>
-
-      <section id="screen-rooms" class="screen">
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <p id="roomsPropertyName" class="rooms-property-name"></p>
-              <p class="eyebrow">שלב 1</p>
-              <h3>בחירת חדרים</h3>
-            </div>
-            <span id="selectedRoomsCount" class="inline-badge">0 חדרים</span>
-          </div>
-          <button id="backToWelcomeBtn" class="ghost-btn back-btn" type="button">חזרה לעמוד הקודם</button>
-          <div id="roomsSelection" class="room-selector-grid"></div>
-        </section>
-
-        <section class="panel">
-          <div class="section-head">
-            <h3>הוספת אזור מותאם</h3>
-          </div>
-          <label>
-            <span>שם חדר / אזור</span>
-            <input id="areaName" type="text" placeholder="למשל: חדר עבודה">
-          </label>
-          <label>
-            <span>סוג אזור</span>
-            <select id="areaType">
-              <option value="dry">חדר יבש</option>
-              <option value="wet">חדר רטוב</option>
-              <option value="outdoor">אזור חוץ</option>
-            </select>
-          </label>
-          <button id="addAreaBtn" class="ghost-btn full-width" type="button">הוסף אזור</button>
-        </section>
-      </section>
-
-      <section id="screen-inspection" class="screen">
-        <section class="panel compact-panel">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">שלב 2</p>
-              <h3 id="reportTitle">דוח בדיקה הנדסית</h3>
-            </div>
-            <button id="resetBtn" class="ghost-btn" type="button">איפוס חדר</button>
-          </div>
-          <p id="reportMeta" class="section-text">התחל בהזנת פרטי הנכס והוספת אזורים לבדיקה.</p>
-        </section>
-        <section id="areasContainer" class="areas-list"></section>
-      </section>
-
-      <section id="screen-summary" class="screen">
-        <section class="panel">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">שלב 3</p>
-              <h3>דוחות סיכום</h3>
-            </div>
-            <button id="printBtn" class="ghost-btn" type="button">הדפס / PDF</button>
-          </div>
-        </section>
-
-        <section class="panel">
-          <h3>ממצאים מרכזיים</h3>
-          <div id="issueSummary" class="issue-summary"></div>
-        </section>
-
-        <section class="panel">
-          <h3>סיכום חדרים</h3>
-          <div id="reportAreasSummary" class="report-areas-summary"></div>
-        </section>
-
-        <section class="panel report-preview-panel">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">PDF תצוגה</p>
-              <h3>תצוגת דוח לשליחה</h3>
-            </div>
-          </div>
-
-          <article id="reportDocument" class="report-document">
-            <div class="report-page-header" aria-hidden="true">
-              <div class="report-page-brand">
-                <img class="report-page-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
-                <div>
-                  <strong id="reportPageHeaderTitle">אורי לוין</strong>
-                  <span id="reportPageHeaderInspector">ביצוע ופיקוח בבנייה</span>
-                </div>
-              </div>
-              <div class="report-page-meta">
-                <span id="reportPageHeaderStatus">דוח ביניים</span>
-                <span id="reportPageHeaderDate">03.05.2026</span>
-                <span class="report-page-number">עמוד</span>
-              </div>
-            </div>
-
-            <header class="report-cover">
-              <div class="report-cover-top">
-                <div class="report-cover-brand">
-                  <img class="report-cover-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
-                  <div>
-                    <p class="report-kicker">INSPECTOR</p>
-                  </div>
-                </div>
-                <div class="report-cover-badge" id="reportCoverBadge">דוח ביניים</div>
-              </div>
-              <h2 id="reportDocTitle">דוח בדיקה הנדסית</h2>
-              <p id="reportDocSubtitle" class="report-subtitle">דוח מסודר וקריא לשליחה ללקוח.</p>
-              <div id="reportCoverMeta" class="report-cover-meta"></div>
-              <p class="report-legal-note">המסמך נערך לצורך תיעוד ממצאי בדיקה בשטח, הצגה ללקוח, ומעקב אחר תיקונים. יש להסתמך על הנתונים והממצאים הרשומים בו בלבד.</p>
-            </header>
-
-            <section class="report-section">
-              <h3 id="reportIntroTitle">חשיבות בדק בית</h3>
-              <div id="reportIntroBlock" class="report-text-block report-intro-block">
-                <p>בדק בית מקצועי נועד לוודא כי הנכס נבנה בהתאם לתקנים, לתוכניות ולדרישות הבטיחות, וכן לאתר ליקויים בשלב מוקדם ככל האפשר. איתור מוקדם מאפשר לצמצם עלויות תיקון עתידיות, לשפר את איכות הביצוע ולשמור על רמת גימור נאותה טרם מסירה או אכלוס.</p>
-                <p>מסמך זה מרכז ממצאים, הערות והמלצות להמשך טיפול, ומהווה כלי תיעודי חשוב להתנהלות מול הקבלן והגורמים המקצועיים. בדיקה מסודרת מעניקה לרוכש תמונת מצב אמינה, מסייעת במימוש זכויות האחריות ותורמת לשקט נפשי ולביטחון בהשקעה בנכס.</p>
-              </div>
-            </section>
-
-            <section class="report-section">
-              <h3>ממצאים לטיפול</h3>
-              <div id="reportCriticalFindings" class="report-findings"></div>
-            </section>
-
-            <section class="report-section">
-              <h3>פירוט לפי אזורים</h3>
-              <div id="reportAreaDetails" class="report-area-details"></div>
-            </section>
-
-            <section class="report-section report-section-closing">
-              <h3>סיכום והמלצות</h3>
-              <div id="reportClosingNote" class="report-text-block"></div>
-            </section>
-          </article>
-          <div id="printPages" class="print-pages" aria-hidden="true"></div>
-        </section>
-      </section>
-    </main>
-
-    <nav class="bottom-nav">
-      <button class="nav-btn active" data-screen="home" type="button">ראשי</button>
-      <button class="nav-btn" data-screen="owner-apartments" type="button">דירות</button>
-      <button id="welcomeNavBtn" class="nav-btn" data-screen="welcome" type="button">פתיחה</button>
-      <button class="nav-btn" data-screen="rooms" type="button">חדרים</button>
-      <button class="nav-btn" data-screen="inspection" type="button">בדיקה</button>
-      <button class="nav-btn" data-screen="summary" type="button">דוחות</button>
-    </nav>
-  </div>
-
-  <template id="roomChipTemplate">
-    <button class="room-pick" type="button">
-      <span class="room-pick-name"></span>
-      <small class="room-pick-type"></small>
-      <small class="room-pick-status"></small>
-    </button>
-  </template>
-
-  <template id="areaTemplate">
-    <article class="area-card">
-      <header class="area-head">
-        <div>
-          <p class="area-type"></p>
-          <h3 class="area-title"></h3>
-          <small class="area-photo-count"></small>
-        </div>
-        <div class="area-actions">
-          <button class="lock-btn ghost-btn" type="button">לחץ לשמירה ונעילה</button>
-          <button class="delete-btn" type="button">הסר</button>
-        </div>
-      </header>
-      <div class="checks-list"></div>
-      <div class="area-footer-actions">
-        <button class="lock-btn ghost-btn lock-btn-bottom" type="button">לחץ לשמירה ונעילה</button>
-      </div>
-    </article>
-  </template>
-
-  <template id="checkTemplate">
-    <div class="check-row">
-      <div class="check-info">
-        <strong class="check-name"></strong>
-        <small class="check-category"></small>
-      </div>
-      <div class="check-controls">
-        <select class="status-select">
-          <option value="pending">לבדיקה</option>
-          <option value="ok">תקין</option>
-          <option value="issue">ליקוי</option>
-          <option value="na">לא רלוונטי</option>
+<div class="container">
+  <section class="card top-controls">
+    <div class="grid">
+      <div>
+        <label>כניסה</label>
+        <select id="entry">
+          <option value="17">כניסה 17</option>
+          <option value="19">כניסה 19</option>
         </select>
-        <button class="camera-btn" type="button" aria-label="צילום">
-            <svg class="camera-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 5h2l1.2-1.6c.2-.3.5-.4.8-.4h2c.3 0 .6.1.8.4L16 5h2c1.7 0 3 1.3 3 3v8c0 1.7-1.3 3-3 3H6c-1.7 0-3-1.3-3-3V8c0-1.7 1.3-3 3-3h2Zm4 3.2A4.8 4.8 0 1 0 12 18a4.8 4.8 0 0 0 0-9.8Zm0 2A2.8 2.8 0 1 1 12 16a2.8 2.8 0 0 1 0-5.8Z"/>
-            </svg>
-            <span class="camera-count">0/3</span>
-        </button>
-        <input class="camera-input" type="file" accept="image/*" capture="environment" hidden>
-        <input class="note-input" type="text" placeholder="הערה / ממצא">
+      </div>
+      <div>
+        <label>דירה</label>
+        <select id="apt"></select>
+      </div>
+      <div>
+        <label>שם הבודק</label>
+        <input id="inspector" placeholder="שם הבודק">
+      </div>
+      <div>
+        <label>תאריך</label>
+        <input id="date" type="date">
       </div>
     </div>
-  </template>
+  </section>
 
-  <script src="config.demo.js?v=20260508-109"></script>
-  <script type="module" src="app.js?v=20260508-109"></script>
+  <section id="form" class="card"></section>
+
+  <section class="card actions">
+    <button onclick="saveData()">שמור</button>
+    <button class="secondary" onclick="window.print()">הדפס / PDF</button>
+    <button class="secondary" onclick="downloadBackup()">גיבוי JSON</button>
+    <button class="secondary" onclick="document.getElementById('restoreFile').click()">שחזור מגיבוי</button>
+    <input id="restoreFile" type="file" accept="application/json" style="display:none" onchange="restoreBackup(event)">
+    <button class="secondary" onclick="clearApartment()">נקה דירה נוכחית</button>
+    <button class="danger" onclick="clearAll()">איפוס כל הטפסים</button>
+  </section>
+</div>
+
+<script>
+const ROOMS = ["מטבח", "סלון", "חדר שינה 1", "הורים", "ילדים", "רחצה כללי", "מרפסת שרות"];
+const ITEMS = ["ארונות מטבח", "שיש מטבח", "סורגים", "אלומיניום - מידות וסוג", "רשת יתושים", "סדקים בקירות", "מז\"א", "ריצוף סוג ותקינות", "דלת פנים", "כלים סניטריים", "שונות"];
+const STORE_KEY = "bedek_entries_17_19_clean_v8";
+let state = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+let currentRoom = null;
+
+function todayISO() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function aptKey() {
+  return "כניסה " + document.getElementById("entry").value + " - דירה " + document.getElementById("apt").value;
+}
+
+function initApts() {
+  const apt = document.getElementById("apt");
+  apt.innerHTML = "";
+  for (let i=1;i<=8;i++) {
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = "דירה " + i;
+    apt.appendChild(opt);
+  }
+}
+
+function blankApartment() {
+  const cells = {};
+  for (const room of ROOMS) {
+    for (const item of ITEMS) {
+      const key = room + "||" + item;
+      cells[key] = { status:"", note:"", photos:[] };
+    }
+  }
+  return { inspector:"", date:todayISO(), cells };
+}
+
+function ensureApartment() {
+  const key = aptKey();
+  if (!state[key]) state[key] = blankApartment();
+  return state[key];
+}
+
+function cellKey(room,item) {
+  return room + "||" + item;
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
+}
+
+function render() {
+  const data = ensureApartment();
+  document.getElementById("inspector").value = data.inspector || "";
+  document.getElementById("date").value = data.date || todayISO();
+
+  let html = `<h2>${esc(aptKey())}</h2>`;
+
+  if (!currentRoom) {
+    html += `<div class="small">בחר חדר לבדיקה:</div><div class="room-menu">`;
+    for (const room of ROOMS) {
+      html += `<button class="room-btn" onclick="openRoom('${esc(room)}')">${esc(room)}</button>`;
+    }
+    html += `</div>`;
+    document.getElementById("form").innerHTML = html;
+    return;
+  }
+
+  html += `<button class="secondary back-btn" onclick="backToRooms()">חזרה לרשימת חדרים</button>`;
+  html += `<div class="room-title">${esc(currentRoom)}</div>`;
+
+  const room = currentRoom;
+  for (const item of ITEMS) {
+    if ((item === "ארונות מטבח" || item === "שיש מטבח") && room !== "מטבח") continue;
+    if (item === "כלים סניטריים" && room !== "רחצה כללי") continue;
+
+    const key = cellKey(room,item);
+    const cell = data.cells[key] || {status:"",note:"",photos:[]};
+    const isYesNo = item.trim() === "סורגים" || item.trim() === "רשת יתושים";
+    const options = isYesNo
+      ? `<option value="">בחר</option><option value="יש" ${cell.status==="יש"?"selected":""}>יש</option><option value="אין" ${cell.status==="אין"?"selected":""}>אין</option>`
+      : `<option value="">בחר סטטוס</option><option value="תקין" ${cell.status==="תקין"?"selected":""}>תקין</option><option value="ליקוי" ${cell.status==="ליקוי"?"selected":""}>ליקוי</option><option value="לא רלוונטי" ${cell.status==="לא רלוונטי"?"selected":""}>לא רלוונטי</option>`;
+
+    html += `
+    <div class="item-card">
+      <div class="item-head"><div class="item-name">${esc(item)}</div></div>
+      <div class="row">
+        <select onchange="setStatus('${esc(key)}', this.value)">${options}</select>
+        <textarea placeholder="הערות" oninput="setNote('${esc(key)}', this.value)">${esc(cell.note)}</textarea>
+        <div>
+          <input type="file" accept="image/*" capture="environment" onchange="addPhoto('${esc(key)}', event)">
+          <div class="small">${(cell.photos||[]).length} תמונות</div>
+          <div class="photo-list">
+            ${(cell.photos||[]).map((p,idx)=>`
+              <div class="photo-box">
+                <img src="${p.data}">
+                <div class="photo-caption">${esc(p.caption)}</div>
+                <button class="photo-remove" onclick="removePhoto('${esc(key)}', ${idx})">×</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById("form").innerHTML = html;
+}
+
+function openRoom(room) {
+  currentRoom = room;
+  render();
+}
+
+function backToRooms() {
+  currentRoom = null;
+  render();
+}
+
+function saveMeta() {
+  const data = ensureApartment();
+  data.inspector = document.getElementById("inspector").value.trim();
+  data.date = document.getElementById("date").value || todayISO();
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+
+function setStatus(key,val) {
+  ensureApartment().cells[key].status = val;
+  saveMeta();
+}
+
+function setNote(key,val) {
+  ensureApartment().cells[key].note = val;
+  saveMeta();
+}
+
+function addPhoto(key,event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  saveMeta();
+  const data = ensureApartment();
+  const entry = document.getElementById("entry").value;
+  const apt = document.getElementById("apt").value;
+  const date = document.getElementById("date").value || todayISO();
+  const caption = `כניסה ${entry} | דירה ${apt} | ${date}`;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    data.cells[key].photos.push({ data:e.target.result, caption });
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    saveImageToPhone(e.target.result, caption);
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+
+function saveImageToPhone(imageData, captionText) {
+  const link = document.createElement("a");
+  link.href = imageData;
+  const safeName = captionText.replace(/\s+/g,'_').replace(/\|/g,'-');
+  link.download = safeName + ".jpg";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function removePhoto(key,idx) {
+  ensureApartment().cells[key].photos.splice(idx,1);
+  saveMeta();
+  render();
+}
+
+function saveData() {
+  saveMeta();
+  alert("הטופס נשמר במכשיר");
+}
+
+function downloadBackup() {
+  saveMeta();
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "backup-bedek-entries-17-19.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function restoreBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      state = JSON.parse(e.target.result);
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      render();
+      alert("השחזור בוצע");
+    } catch(err) {
+      alert("קובץ גיבוי לא תקין");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function clearApartment() {
+  if (!confirm("למחוק את הטופס של הדירה הנוכחית?")) return;
+  delete state[aptKey()];
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  render();
+}
+
+function clearAll() {
+  if (!confirm("למחוק את כל 16 הטפסים?")) return;
+  state = {};
+  localStorage.removeItem(STORE_KEY);
+  render();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initApts();
+  document.getElementById("date").value = todayISO();
+  document.getElementById("entry").addEventListener("change", () => { currentRoom = null; render(); });
+  document.getElementById("apt").addEventListener("change", () => { currentRoom = null; render(); });
+  document.getElementById("inspector").addEventListener("input", saveMeta);
+  document.getElementById("date").addEventListener("change", saveMeta);
+  render();
+});
+</script>
 </body>
 </html>
