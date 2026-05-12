@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>טופס בדק דירה - כניסות 17 / 19</title>
+<style>
+:root {
+  --green:#006b57;
+  --green2:#007d67;
+  --bg:#eef5f2;
+  --card:#ffffff;
+  --line:#d9e5e0;
+  --text:#17332d;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family: Arial, "Noto Sans Hebrew", sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  direction:rtl;
+}
+header {
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  color:white;
+  padding:18px 14px;
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+h1 { margin:0; font-size:20px; }
+.container { max-width:980px; margin:0 auto; padding:12px; }
+.card {
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  margin:12px 0;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+@media (max-width:700px) {
+  .grid { grid-template-columns:1fr; }
+}
+label { display:block; font-weight:700; margin-bottom:5px; }
+input, select, textarea, button {
+  width:100%;
+  font:inherit;
+  border-radius:12px;
+  border:1px solid #cbd9d4;
+  padding:10px;
+  background:#fff;
+}
+textarea { min-height:72px; resize:vertical; }
+button {
+  cursor:pointer;
+  border:0;
+  background:var(--green);
+  color:white;
+  font-weight:700;
+}
+button.secondary { background:#e7f0ed; color:var(--green); border:1px solid #cbd9d4; }
+button.danger { background:#d92323; }
+.room-title {
+  background:#e9f4f0;
+  color:var(--green);
+  border-radius:14px;
+  padding:10px 12px;
+  font-weight:800;
+  margin-top:14px;
+}
+.room-menu {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+  margin-top:18px;
+}
+.room-btn {
+  min-height:72px;
+  font-size:19px;
+  border-radius:18px;
+  background:#ffffff;
+  color:var(--green);
+  border:1px solid #d7e3df;
+  box-shadow:0 4px 14px rgba(0,0,0,0.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 22px;
+}
+.room-icon{
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  background:#e7f3ef;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  flex-shrink:0;
+}
+.room-btn:hover,
+.room-btn:active {
+  background:#f4faf8;
+  transform:translateY(-1px);
+}
+.back-btn {
+  margin-bottom:12px;
+}
+@media (max-width:700px) {
+  .room-menu { grid-template-columns:1fr; }
+}
+.item-card {
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px;
+  margin:10px 0;
+  background:#fff;
+}
+.item-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:10px;
+}
+.item-name { font-weight:800; font-size:16px; }
+.row {
+  display:grid;
+  grid-template-columns: 180px 1fr 170px;
+  gap:8px;
+  align-items:start;
+}
+@media (max-width:760px) {
+  .row { grid-template-columns:1fr; }
+}
+.photo-list {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+.photo-box {
+  position:relative;
+  width:130px;
+  height:100px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  background:#f8fbfa;
+}
+.photo-box img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.photo-caption {
+  position:absolute;
+  right:0;
+  left:0;
+  bottom:0;
+  background:rgba(0,0,0,.62);
+  color:white;
+  font-size:11px;
+  line-height:1.25;
+  padding:4px 5px;
+  text-align:right;
+}
+.photo-remove {
+  position:absolute;
+  top:4px;
+  left:4px;
+  width:24px;
+  height:24px;
+  padding:0;
+  border-radius:50%;
+  background:#d92323;
+  color:#fff;
+  font-size:14px;
+}
+.actions {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+@media (max-width:700px) {
+  .actions { grid-template-columns:1fr; }
+}
+.small { color:#60736d; font-size:12px; }
+@media print {
+  header, .actions, input[type=file], button, .top-controls { display:none !important; }
+  body { background:#fff; }
+  .card, .item-card { box-shadow:none; break-inside:avoid; }
+}
+
+.camera-file{
+  width:76px !important;
+  height:64px !important;
+  overflow:hidden;
+  color:transparent;
+  font-size:0;
+  border:2px dashed #0a7a63;
+  border-radius:18px;
+  background:#f4fbf8;
+  cursor:pointer;
+  padding:0;
+}
+.camera-file::-webkit-file-upload-button{
+  width:76px;
+  height:64px;
+  border:0;
+  background:#f4fbf8;
+  color:transparent;
+  cursor:pointer;
+}
+.camera-file::before{
+  content:"📷";
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:76px;
+  height:64px;
+  font-size:30px;
+  color:#0a7a63;
+  pointer-events:none;
+}
+
+
+
+@media print{
+  @page{
+    size: A4;
+    margin: 10mm 8mm 10mm 8mm;
+  }
+
+  body{
+    background:#fff !important;
+    padding-top:18mm;
+    font-size:11px;
+  }
+
+  body::before{
+    content:'פרויקט "מגן אברהם"  |  טופס בדק דירה - כניסות 17 / 19';
+    position:fixed;
+    top:0;
+    right:0;
+    left:0;
+    height:14mm;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-bottom:2px solid #0a7a63;
+    color:#0a7a63;
+    font-weight:900;
+    font-size:16px;
+    background:white;
+    z-index:9999;
+  }
+
+  header, .actions, .top-controls, .camera-file, input[type="file"], button.photo-remove{
+    display:none !important;
+  }
+
+  .card, .item-card{
+    box-shadow:none !important;
+    border:1px solid #d7e4df !important;
+    break-inside:avoid;
+    page-break-inside:avoid;
+    margin:5px 0 !important;
+    padding:7px !important;
+    border-radius:8px !important;
+  }
+
+  h2{
+    font-size:16px !important;
+    margin:0 0 6px 0 !important;
+  }
+
+  .room-title{
+    font-size:15px !important;
+    padding:6px !important;
+    margin:6px 0 !important;
+  }
+
+  .item-name{
+    font-size:13px !important;
+    margin-bottom:4px !important;
+  }
+
+  select, textarea{
+    border:0 !important;
+    background:white !important;
+    padding:2px !important;
+    min-height:0 !important;
+    height:auto !important;
+    font-size:11px !important;
+  }
+
+  textarea{
+    min-height:24px !important;
+  }
+
+  .row{
+    display:block !important;
+  }
+
+  .photo-list{
+    gap:4px !important;
+    margin-top:4px !important;
+  }
+
+  .photo-box{
+    width:95px !important;
+    height:72px !important;
+    border-radius:6px !important;
+  }
+
+  .photo-caption{
+    font-size:8px !important;
+    padding:2px 3px !important;
+  }
+
+  .small{
+    font-size:10px !important;
+    margin-top:2px !important;
+  }
+
+  .print-hide-empty{
+    display:none !important;
+  }
+}
+
+
+@media print{
+  .print-hide-empty-room{
+    display:none !important;
+  }
+}
+
+
+@media print{
+  details.room-details,
+  details{
+    display:block !important;
+  }
+  details.room-details[open],
+  details[open]{
+    display:block !important;
+  }
+  .print-hide-empty,
+  .print-hide-empty-room{
+    display:none !important;
+  }
+}
+
+
+.print-report{
+  display:none;
+}
+
+@media print{
+  @page{
+    size:A4;
+    margin:10mm 8mm 10mm 8mm;
+  }
+
+  body{
+    background:white !important;
+    font-size:11px !important;
+  }
+
+  body > *:not(.container){
+    display:none !important;
+  }
+
+  .container > *{
+    display:none !important;
+  }
+
+  #printReport{
+    display:block !important;
+    background:white !important;
+    box-shadow:none !important;
+    border:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  #printReport .report-header{
+    text-align:center;
+    border-bottom:2px solid #0a7a63;
+    padding-bottom:6px;
+    margin-bottom:8px;
+    color:#0a7a63;
+    font-weight:900;
+    font-size:18px;
+  }
+
+  #printReport .report-sub{
+    color:#17352f;
+    font-size:13px;
+    margin-top:3px;
+    font-weight:700;
+  }
+
+  #printReport .report-room{
+    break-inside:avoid;
+    page-break-inside:avoid;
+    margin:6px 0 8px 0;
+    border:1px solid #d7e4df;
+    border-radius:8px;
+    padding:6px;
+  }
+
+  #printReport .report-room-title{
+    font-size:15px;
+    font-weight:900;
+    color:#005f4e;
+    background:#e9f4f0;
+    padding:5px 7px;
+    border-radius:6px;
+    margin-bottom:5px;
+  }
+
+  #printReport .report-item{
+    border-top:1px solid #e1ebe7;
+    padding:5px 0;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+
+  #printReport .report-item-name{
+    font-size:12px;
+    font-weight:900;
+    color:#17352f;
+  }
+
+  #printReport .report-line{
+    font-size:11px;
+    margin-top:2px;
+  }
+
+  #printReport .report-photos{
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px;
+    margin-top:4px;
+  }
+
+  #printReport .report-photo{
+    position:relative;
+    width:95px;
+    height:72px;
+    border:1px solid #d7e4df;
+    border-radius:6px;
+    overflow:hidden;
+  }
+
+  #printReport .report-photo img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  #printReport .report-photo-caption{
+    position:absolute;
+    right:0;
+    left:0;
+    bottom:0;
+    background:rgba(0,0,0,.62);
+    color:white;
+    font-size:8px;
+    padding:2px 3px;
+    text-align:right;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<header>
+  <div style="font-size:22px;font-weight:900;margin-bottom:8px;color:#ffffff;text-shadow:0 2px 6px rgba(0,0,0,0.35);letter-spacing:0.5px">פרויקט "מגן אברהם"</div>
+  <h1>טופס בדק דירה - כניסות 17 / 19</h1>
+  <div class="small" style="color:#eafff8">שמירה מקומית בדפדפן + תמונות עם כיתוב על התמונה</div>
+</header>
+
+<div class="container">
+  <section class="card top-controls">
+    <div class="grid">
+      <div>
+        <label>כניסה</label>
+        <select id="entry">
+          <option value="17">כניסה 17</option>
+          <option value="19">כניסה 19</option>
+        </select>
+      </div>
+      <div>
+        <label>דירה</label>
+        <select id="apt"></select>
+      </div>
+      <div>
+        <label>שם הבודק</label>
+        <input id="inspector" placeholder="שם הבודק">
+      </div>
+      <div>
+        <label>תאריך</label>
+        <input id="date" type="date">
+      </div>
+    </div>
+  </section>
+
+  <section id="form" class="card"></section>
+  <section id="printReport" class="print-report"></section>
+
+  <section class="card actions">
+    <button onclick="saveData()">שמור</button>
+    <button class="secondary" onclick="printFullApartmentReport()">הדפס דוח</button>
+    <button class="secondary" onclick="downloadBackup()">גיבוי JSON</button>
+    <button class="secondary" onclick="document.getElementById('restoreFile').click()">שחזור מגיבוי</button>
+    <input id="restoreFile" type="file" accept="application/json" style="display:none" onchange="restoreBackup(event)">
+    <button class="secondary" onclick="clearApartment()">נקה דירה נוכחית</button>
+    <button class="danger" onclick="clearAll()">איפוס כל הטפסים</button>
+  </section>
+</div>
+
+<script>
+const ROOMS = ["מטבח", "סלון", "חדר שינה 1", "הורים", "ילדים", "רחצה כללי", "מרפסת שרות"];
+const ITEMS = ["ארונות מטבח", "שיש מטבח", "סורגים", "אלומיניום - מידות וסוג", "רשת יתושים", "סדקים בקירות", "מז\"א", "ריצוף סוג ותקינות", "דלת פנים", "כלים סניטריים", "שונות"];
+const STORE_KEY = "bedek_entries_17_19_clean_v8";
+let state = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+let currentRoom = null;
+
+function todayISO() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function aptKey() {
+  return "כניסה " + document.getElementById("entry").value + " - דירה " + document.getElementById("apt").value;
+}
+
+function initApts() {
+  const apt = document.getElementById("apt");
+  apt.innerHTML = "";
+  for (let i=1;i<=8;i++) {
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = "דירה " + i;
+    apt.appendChild(opt);
+  }
+}
+
+function blankApartment() {
+  const cells = {};
+  for (const room of ROOMS) {
+    for (const item of ITEMS) {
+      const key = room + "||" + item;
+      cells[key] = { status:"", note:"", photos:[] };
+    }
+  }
+  return { inspector:"", date:todayISO(), cells };
+}
+
+function ensureApartment() {
+  const key = aptKey();
+  if (!state[key]) state[key] = blankApartment();
+  return state[key];
+}
+
+function cellKey(room,item) {
+  return room + "||" + item;
+}
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
+}
+
+function render() {
+  const data = ensureApartment();
+  document.getElementById("inspector").value = data.inspector || "";
+  document.getElementById("date").value = data.date || todayISO();
+
+  let html = `<h2>${esc(aptKey())}</h2>`;
+
+  if (!currentRoom) {
+    html += `<div class="small">בחר חדר לבדיקה:</div><div class="room-menu">`;
+    for (const room of ROOMS) {
+      const roomIcons = {
+        "מטבח":"🍽️",
+        "סלון":"🛋️",
+        "חדר שינה 1":"🛏️",
+        "הורים":"🛌",
+        "ילדים":"🧸",
+        "רחצה כללי":"🛁",
+        "מרפסת שרות":"🧺"
+      };
+      html += `<button class="room-btn" onclick="openRoom('${esc(room)}')">
+        <div class="room-icon">${roomIcons[room] || "🏠"}</div>
+        <div>${esc(room)}</div>
+      </button>`;
+    }
+    html += `</div>`;
+    document.getElementById("form").innerHTML = html;
+    return;
+  }
+
+  html += `<button class="secondary back-btn" onclick="backToRooms()">חזרה לרשימת חדרים</button>`;
+  html += `<div class="room-title">${esc(currentRoom)}</div>`;
+
+  const room = currentRoom;
+  for (const item of ITEMS) {
+    if ((item === "ארונות מטבח" || item === "שיש מטבח") && room !== "מטבח") continue;
+    if (item === "כלים סניטריים" && room !== "רחצה כללי") continue;
+
+    const key = cellKey(room,item);
+    const cell = data.cells[key] || {status:"",note:"",photos:[]};
+    const isYesNo = item.trim() === "סורגים" || item.trim() === "רשת יתושים";
+    const options = isYesNo
+      ? `<option value="">בחר</option><option value="יש" ${cell.status==="יש"?"selected":""}>יש</option><option value="אין" ${cell.status==="אין"?"selected":""}>אין</option>`
+      : `<option value="">בחר סטטוס</option><option value="תקין" ${cell.status==="תקין"?"selected":""}>תקין</option><option value="ליקוי" ${cell.status==="ליקוי"?"selected":""}>ליקוי</option><option value="לא רלוונטי" ${cell.status==="לא רלוונטי"?"selected":""}>לא רלוונטי</option>`;
+
+    html += `
+    <div class="item-card">
+      <div class="item-head"><div class="item-name">${esc(item)}</div></div>
+      <div class="row">
+        <select onchange="setStatus('${esc(key)}', this.value)">${options}</select>
+        <textarea placeholder="הערות" oninput="setNote('${esc(key)}', this.value)">${esc(cell.note)}</textarea>
+        <div>
+          <input class="camera-file" type="file" accept="image/*" capture="environment" onchange="addPhoto('${esc(key)}', event)">
+          <div class="small">${(cell.photos||[]).length} תמונות</div>
+          <div class="photo-list">
+            ${(cell.photos||[]).map((p,idx)=>`
+              <div class="photo-box">
+                <img src="${p.data}">
+                <div class="photo-caption">${esc(p.caption)}</div>
+                <button class="photo-remove" onclick="removePhoto('${esc(key)}', ${idx})">×</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById("form").innerHTML = html;
+}
+
+function openRoom(room) {
+  currentRoom = room;
+  render();
+}
+
+function backToRooms() {
+  currentRoom = null;
+  render();
+}
+
+function saveMeta() {
+  const data = ensureApartment();
+  data.inspector = document.getElementById("inspector").value.trim();
+  data.date = document.getElementById("date").value || todayISO();
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+
+function setStatus(key,val) {
+  ensureApartment().cells[key].status = val;
+  saveMeta();
+}
+
+function setNote(key,val) {
+  ensureApartment().cells[key].note = val;
+  saveMeta();
+}
+
+
+function compressImageFile(file, callback) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const maxSide = 1280;
+      let w = img.width;
+      let h = img.height;
+
+      if (w > h && w > maxSide) {
+        h = Math.round(h * maxSide / w);
+        w = maxSide;
+      } else if (h >= w && h > maxSide) {
+        w = Math.round(w * maxSide / h);
+        h = maxSide;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const compressed = canvas.toDataURL("image/jpeg", 0.72);
+      callback(compressed);
+    };
+    img.onerror = function() {
+      callback(e.target.result);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function addPhoto(key,event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const input = event.target;
+  saveMeta();
+
+  const data = ensureApartment();
+  const entry = document.getElementById("entry").value;
+  const apt = document.getElementById("apt").value;
+  const date = document.getElementById("date").value || todayISO();
+  const roomName = currentRoom || "";
+  const caption = "כניסה " + entry + " | דירה " + apt + " | " + roomName + " | " + date;
+
+  compressImageFile(file, function(imageData) {
+    try {
+      if (!data.cells[key]) data.cells[key] = {status:"",note:"",photos:[]};
+      data.cells[key].photos.push({ data:imageData, caption });
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      input.value = "";
+      render();
+    } catch (err) {
+      input.value = "";
+      alert("לא ניתן לשמור תמונה נוספת. ייתכן שהאחסון בדפדפן מלא. נסה למחוק תמונות כבדות או לבצע גיבוי.");
+    }
+  });
+}
+
+
+function saveImageToPhone(imageData, captionText) {
+  const link = document.createElement("a");
+  link.href = imageData;
+  const safeName = captionText.replace(/\s+/g,'_').replace(/\|/g,'-');
+  link.download = safeName + ".jpg";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function removePhoto(key,idx) {
+  ensureApartment().cells[key].photos.splice(idx,1);
+  saveMeta();
+  render();
+}
+
+function saveData() {
+  saveMeta();
+  alert("הטופס נשמר במכשיר");
+}
+
+function downloadBackup() {
+  saveMeta();
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "backup-bedek-entries-17-19.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function restoreBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      state = JSON.parse(e.target.result);
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      render();
+      alert("השחזור בוצע");
+    } catch(err) {
+      alert("קובץ גיבוי לא תקין");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function clearApartment() {
+  if (!confirm("למחוק את הטופס של הדירה הנוכחית?")) return;
+  delete state[aptKey()];
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  render();
+}
+
+function clearAll() {
+  if (!confirm("למחוק את כל 16 הטפסים?")) return;
+  state = {};
+  localStorage.removeItem(STORE_KEY);
+  render();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initApts();
+  document.getElementById("date").value = todayISO();
+  document.getElementById("entry").addEventListener("change", () => { currentRoom = null; render(); });
+  document.getElementById("apt").addEventListener("change", () => { currentRoom = null; render(); });
+  document.getElementById("inspector").addEventListener("input", saveMeta);
+  document.getElementById("date").addEventListener("change", saveMeta);
+  render();
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+<script>
+function escapeReportHtml(value){
+  return String(value ?? "").replace(/[&<>"']/g, function(ch){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch];
+  });
+}
+
+function getCurrentApartmentKeyForReport(){
+  const entry = document.getElementById("entry")?.value || "";
+  const apt = document.getElementById("apt")?.value || "";
+  return "כניסה " + entry + " - דירה " + apt;
+}
+
+function getStoreKeyForReport(){
+  // Use the existing STORE_KEY when it exists in the original app
+  try{
+    if(typeof STORE_KEY !== "undefined") return STORE_KEY;
+  }catch(e){}
+  return "bedek_entries_17_19_clean_v8";
+}
+
+function syncCurrentVisibleRoomBeforeReport(){
+  // Make sure current room changes are saved before printing
+  try{
+    if(typeof saveMeta === "function") saveMeta();
+  }catch(e){}
+
+  try{
+    document.querySelectorAll("#form .item-card").forEach(function(card){
+      const select = card.querySelector("select");
+      const textarea = card.querySelector("textarea");
+      if(!select && !textarea) return;
+
+      // Find key from inline handlers/data is hard; rely on existing onchange/oninput saving.
+      if(select) select.dispatchEvent(new Event("change", {bubbles:true}));
+      if(textarea) textarea.dispatchEvent(new Event("input", {bubbles:true}));
+    });
+  }catch(e){}
+}
+
+function buildFullApartmentReport(){
+  syncCurrentVisibleRoomBeforeReport();
+
+  const report = document.getElementById("printReport");
+  if(!report){
+    alert("לא נמצא אזור הדוח להדפסה");
+    return false;
+  }
+
+  const entry = document.getElementById("entry")?.value || "";
+  const apt = document.getElementById("apt")?.value || "";
+  const date = document.getElementById("date")?.value || "";
+  const inspector = document.getElementById("inspector")?.value || "";
+  const aptKey = getCurrentApartmentKeyForReport();
+
+  let state = {};
+  try{
+    state = JSON.parse(localStorage.getItem(getStoreKeyForReport()) || "{}");
+  }catch(e){
+    state = {};
+  }
+
+  const aptData = state[aptKey] || {};
+  const cells = aptData.cells || {};
+
+  const rooms = ["מטבח","סלון","חדר שינה 1","הורים","ילדים","רחצה כללי","מרפסת שרות"];
+  const items = [
+    "ארונות מטבח",
+    "שיש מטבח",
+    "סורגים",
+    "אלומיניום - מידות וסוג",
+    "רשת יתושים",
+    "סדקים בקירות",
+    'מז\"א',
+    "ריצוף סוג ותקינות",
+    "דלת פנים",
+    "כלים סניטריים",
+    "שונות"
+  ];
+
+  function isVisibleItem(room,item){
+    if((item === "ארונות מטבח" || item === "שיש מטבח") && room !== "מטבח") return false;
+    if(item === "כלים סניטריים" && room !== "רחצה כללי") return false;
+    return true;
+  }
+
+  let out = "";
+  out += '<div class="report-header">פרויקט "מגן אברהם"<div class="report-sub">דוח בדק דירה - חדרים עם שינויים בלבד - כניסה ' +
+    escapeReportHtml(entry) + ' | דירה ' + escapeReportHtml(apt) + 
+    (date ? ' | תאריך ' + escapeReportHtml(date) : '') +
+    (inspector ? ' | בודק: ' + escapeReportHtml(inspector) : '') +
+    '</div></div>';
+
+  let printedRooms = 0;
+
+  rooms.forEach(function(room){
+    let roomHtml = "";
+    items.forEach(function(item){
+      if(!isVisibleItem(room,item)) return;
+
+      const key = room + "||" + item;
+      const cell = cells[key] || {};
+      const status = (cell.status || "").trim();
+      const note = (cell.note || "").trim();
+      const photos = cell.photos || [];
+
+      const hasChange = Boolean(status || note || photos.length > 0);
+      if(!hasChange) return;
+
+      roomHtml += '<div class="report-item">';
+      roomHtml += '<div class="report-item-name">' + escapeReportHtml(item) + '</div>';
+      if(status) roomHtml += '<div class="report-line"><b>סטטוס:</b> ' + escapeReportHtml(status) + '</div>';
+      if(note) roomHtml += '<div class="report-line"><b>הערה:</b> ' + escapeReportHtml(note) + '</div>';
+
+      if(photos.length){
+        roomHtml += '<div class="report-photos">';
+        photos.forEach(function(p){
+          roomHtml += '<div class="report-photo"><img src="' + p.data + '"><div class="report-photo-caption">' +
+            escapeReportHtml(p.caption || "") + '</div></div>';
+        });
+        roomHtml += '</div>';
+      }
+
+      roomHtml += '</div>';
+    });
+
+    if(roomHtml){
+      printedRooms++;
+      out += '<div class="report-room"><div class="report-room-title">' + escapeReportHtml(room) + '</div>' + roomHtml + '</div>';
+    }
+  });
+
+  if(printedRooms === 0){
+    out += '<div class="report-room"><div class="report-room-title">אין נתונים להדפסה</div><div class="report-line">לא נמצאו חדרים שבהם בוצע שינוי או מילוי נתונים.</div></div>';
+  }
+
+  report.innerHTML = out;
+  return true;
+}
+
+function printFullApartmentReport(){
+  if(buildFullApartmentReport()){
+    setTimeout(function(){
+      window.print();
+    }, 300);
+  }
+}
+window.printFullApartmentReport = printFullApartmentReport;
+
+// Force the existing print button to use the full apartment report
+document.addEventListener("DOMContentLoaded", function(){
+  const printBtn = Array.from(document.querySelectorAll("button")).find(function(btn){
+    return (btn.textContent || "").trim().includes("הדפס");
+  });
+  if(printBtn){
+    printBtn.textContent = "הדפס דוח";
+    printBtn.onclick = function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      printFullApartmentReport();
+      return false;
+    };
+  }
+});
+</script>
+
+</body>
+</html>
