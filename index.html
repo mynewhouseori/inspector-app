@@ -501,7 +501,7 @@ button.danger { background:#d92323; }
 <header>
   <div style="font-size:22px;font-weight:900;margin-bottom:8px;color:#ffffff;text-shadow:0 2px 6px rgba(0,0,0,0.35);letter-spacing:0.5px">פרויקט "מגן אברהם"</div>
   <h1>טופס בדק דירה - כניסות 17 / 19</h1>
-  <div class="small" style="color:#eafff8">שמירה מקומית בדפדפן + תמונות עם כיתוב על התמונה</div>
+  <div class="small" style="color:#eafff8">שמירה אוטומטית בדפדפן + תמונות עם כיתוב על התמונה</div>
   <div class="version-badge">גרסה 2026.06.06.110</div>
 </header>
 
@@ -536,9 +536,6 @@ button.danger { background:#d92323; }
   <section class="card actions">
     <button onclick="saveData()">שמור</button>
     <button class="secondary" onclick="printFullApartmentReport()">הדפס דוח</button>
-    <button class="secondary" onclick="downloadBackup()">גיבוי JSON</button>
-    <button class="secondary" onclick="document.getElementById('restoreFile').click()">שחזור מגיבוי</button>
-    <input id="restoreFile" type="file" accept="application/json" style="display:none" onchange="restoreBackup(event)">
     <button class="secondary" onclick="clearApartment()">נקה דירה נוכחית</button>
     <button class="danger" onclick="clearAll()">איפוס כל הטפסים</button>
   </section>
