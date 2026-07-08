@@ -639,7 +639,7 @@ function render() {
       ? `<option value="">בחר</option><option value="יש" ${cell.status==="יש"?"selected":""}>יש</option><option value="אין" ${cell.status==="אין"?"selected":""}>אין</option>`
       : `<option value="">בחר סטטוס</option><option value="תקין" ${cell.status==="תקין"?"selected":""}>תקין</option><option value="ליקוי" ${cell.status==="ליקוי"?"selected":""}>ליקוי</option><option value="לא רלוונטי" ${cell.status==="לא רלוונטי"?"selected":""}>לא רלוונטי</option>`;
 
-    const canCapturePhoto = cell.status === "ליקוי";
+    const canCapturePhoto = true;
 
     html += `
     <div class="item-card">
@@ -738,12 +738,6 @@ function addPhoto(key,event) {
   saveMeta();
 
   const data = ensureApartment();
-  if ((data.cells[key]?.status || "") !== "ליקוי") {
-    input.value = "";
-    alert("אפשר לצלם רק כאשר הסטטוס הוא ליקוי.");
-    render();
-    return;
-  }
   const entry = document.getElementById("entry").value;
   const apt = document.getElementById("apt").value;
   const date = document.getElementById("date").value || todayISO();

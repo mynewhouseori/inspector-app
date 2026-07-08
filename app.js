@@ -477,7 +477,7 @@ function applyCameraButtonState(button, count) {
 }
 
 function isCameraAllowedForCheck(area, check) {
-  return !area.locked && check.status === "issue" && getAreaPhotoCount(area) < MAX_AREA_PHOTOS;
+  return !area.locked && getAreaPhotoCount(area) < MAX_AREA_PHOTOS;
 }
 
 function sanitizeFileSegment(value) {
