@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.05.08.109";
+const APP_VERSION = "2026.07.08.111";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -352,7 +352,12 @@ function hydrateArea(area) {
     locked: area.locked === true,
     checks: mergeChecksWithDefaults(areaChecks, expectedChecks),
     dimensions: area.dimensions || createDimensions(),
-    photoCaptures: Array.isArray(area.photoCaptures) ? area.photoCaptures : []
+    photoCaptures: Array.isArray(area.photoCaptures)
+      ? area.photoCaptures.map((photo) => ({
+          ...photo,
+          previewDataUrl: photo.previewDataUrl || ""
+        }))
+      : []
   };
 }
 
@@ -480,6 +485,15 @@ function isCameraAllowedForCheck(area, check) {
   return !area.locked && getAreaPhotoCount(area) < MAX_AREA_PHOTOS;
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("File read failed"));
+    reader.readAsDataURL(file);
+  });
+}
+
 function sanitizeFileSegment(value) {
   return String(value || "")
     .trim()
@@ -579,6 +593,7 @@ async function handleCheckCameraFile(area, check, file) {
   }
 
   const preparedFile = await compressImageForUpload(file);
+  const previewDataUrl = await readFileAsDataUrl(preparedFile).catch(() => "");
   const fileName = buildCapturedPhotoName(area, check, preparedFile);
   const pendingPhotoId = uid();
   const pendingPhotoRecord = {
@@ -588,7 +603,8 @@ async function handleCheckCameraFile(area, check, file) {
     fileName,
     capturedAt: new Date().toISOString(),
     storagePath: "",
-    downloadURL: ""
+    downloadURL: "",
+    previewDataUrl
   };
   area.photoCaptures = [
     ...(Array.isArray(area.photoCaptures) ? area.photoCaptures : []),
@@ -600,17 +616,16 @@ async function handleCheckCameraFile(area, check, file) {
   try {
     uploadedPhoto = await uploadCapturedPhoto(preparedFile, area, check, fileName);
   } catch (error) {
-    window.alert("שמירת התמונה לענן נכשלה כרגע. נסה שוב.");
-    area.photoCaptures = (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
-      .filter((photo) => photo.id !== pendingPhotoId);
+    window.alert("התמונה נשמרה מקומית, אבל העלאה לענן נכשלה כרגע.");
     finishPhotoUpload(area.id, check.code);
+    saveState({ immediateCloud: true });
     render({ preserveScroll: true });
     console.error(error);
     return;
   }
 
   area.photoCaptures = (Array.isArray(area.photoCaptures) ? area.photoCaptures : []).map((photo) => (
-    photo.id === pendingPhotoId
+        photo.id === pendingPhotoId
       ? {
           ...photo,
           storagePath: uploadedPhoto.storagePath,
@@ -819,7 +834,7 @@ function getAreaProgress(area) {
   if (area.locked) return { key: "locked", label: "הושלם וננעל" };
   const total = area.checks.length;
   const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
-  const touchedDimensions = 0;
+  const touchedDimensions = hasDimensionInput(area) ? 1 : 0;
   const touched = touchedChecks + touchedDimensions;
   if (touched === 0) return { key: "pending", label: "לא נבדק" };
   if (touchedChecks >= total && total > 0) return { key: "complete", label: "הושלם" };
@@ -873,7 +888,8 @@ function getTouchedChecksCount(area) {
 }
 
 function hasDimensionInput(area) {
-  return false;
+  const dims = area.dimensions || createDimensions();
+  return ["planWidth", "planLength", "actualWidth", "actualLength"].some((key) => String(dims[key] || "").trim() !== "");
 }
 
 function isAreaInspected(area) {
@@ -1156,6 +1172,14 @@ function renderReportDocument(summary, issues) {
           </div>
         </div>
         <div class="report-area-meta">סטטוס מידות: ${escapeHtml(dimensionStatus.label)} | תקין: ${escapeHtml(okCount)} | ליקויים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
+        ${area.photoCaptures?.length ? `
+          <div class="report-area-photos">
+            ${area.photoCaptures.map((photo) => {
+              const src = photo.downloadURL || photo.previewDataUrl || "";
+              return src ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(photo.checkName || area.name)}">` : "";
+            }).join("")}
+          </div>
+        ` : ""}
         <div class="report-area-checks">${areaIssuesMarkup}</div>
       </article>
     `;
@@ -1340,7 +1364,8 @@ function projectDataSignature(projectData = {}) {
                 fileName: photo.fileName || "",
                 capturedAt: photo.capturedAt || "",
                 storagePath: photo.storagePath || "",
-                downloadURL: photo.downloadURL || ""
+                downloadURL: photo.downloadURL || "",
+                previewDataUrl: photo.previewDataUrl || ""
               }))
             : [],
           checks: Array.isArray(area.checks)
@@ -1782,6 +1807,34 @@ function renderAreas() {
     node.querySelector(".area-photo-count").textContent = `תמונות חדר: ${getAreaPhotoCount(area)}/${MAX_AREA_PHOTOS}`;
     if (area.locked) node.classList.add("is-locked");
 
+    const dimensionFields = {
+      planWidth: node.querySelector('[data-dimension-key="planWidth"]'),
+      planLength: node.querySelector('[data-dimension-key="planLength"]'),
+      actualWidth: node.querySelector('[data-dimension-key="actualWidth"]'),
+      actualLength: node.querySelector('[data-dimension-key="actualLength"]')
+    };
+
+    Object.entries(dimensionFields).forEach(([key, input]) => {
+      if (!input) return;
+      input.value = area.dimensions?.[key] || "";
+      input.disabled = area.locked;
+      if (area.locked) input.classList.add("field-locked");
+      input.addEventListener("input", (event) => {
+        area.dimensions[key] = event.target.value.replace(",", ".");
+        applyDimensionStateToCard(node, area);
+        refreshProgressAndSummary();
+      });
+      input.addEventListener("blur", (event) => {
+        const formatted = formatDimensionValue(event.target.value);
+        area.dimensions[key] = formatted;
+        event.target.value = formatted;
+        applyDimensionStateToCard(node, area);
+        refreshProgressAndSummary();
+      });
+    });
+
+    applyDimensionStateToCard(node, area);
+
     node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
       lockBtn.textContent = area.locked ? "לחץ לפתיחה לעריכה" : "לחץ לשמירה ונעילה";
       if (area.locked) lockBtn.classList.add("locked");
@@ -1810,9 +1863,12 @@ function renderAreas() {
       const cameraInput = checkNode.querySelector(".camera-input");
       const cameraCount = checkNode.querySelector(".camera-count");
       const noteInput = checkNode.querySelector(".note-input");
+      const photoList = checkNode.querySelector(".check-photo-list");
       const checkPhotoCount = getCheckPhotoCount(area, check.code);
       const uploadPending = isPhotoUploadPending(area.id, check.code);
       const cameraAllowed = isCameraAllowedForCheck(area, check);
+      const checkPhotos = (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
+        .filter((photo) => photo.checkCode === check.code);
       statusSelect.value = check.status;
       noteInput.value = check.note;
       cameraCount.textContent = `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
@@ -1828,6 +1884,15 @@ function renderAreas() {
         noteInput.classList.add("field-locked");
         cameraBtn.classList.add("field-locked");
       }
+      photoList.innerHTML = checkPhotos.length
+        ? checkPhotos.map((photo) => {
+            const src = photo.downloadURL || photo.previewDataUrl || "";
+            const alt = photo.checkName || check.name;
+            return src
+              ? `<a class="check-photo-thumb" href="${escapeHtml(src)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"></a>`
+              : `<div class="check-photo-thumb is-pending">ממתין</div>`;
+          }).join("")
+        : "";
       cameraInput.disabled = !cameraAllowed;
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
@@ -1999,6 +2064,22 @@ if (els.selectNewPropertyBtn) {
 if (els.selectOwnerReportBtn) {
   els.selectOwnerReportBtn.addEventListener("click", () => {
     selectInspectionMode("owner");
+  });
+}
+
+if (els.welcomeNavBtn) {
+  els.welcomeNavBtn.addEventListener("click", () => {
+    updateProjectFields();
+    if (!state.propertyName) {
+      window.alert("יש להזין שם נכס לפני מעבר לחדרים.");
+      els.propertyName.focus();
+      return;
+    }
+    if (!state.currentProjectId) {
+      state.currentProjectId = uid();
+    }
+    saveState({ immediateCloud: true });
+    setScreen("rooms", { scroll: true });
   });
 }
 

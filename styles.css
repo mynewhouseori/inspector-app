@@ -31,6 +31,10 @@ select {
   font: inherit;
 }
 
+textarea {
+  font: inherit;
+}
+
 .mobile-app {
   max-width: 760px;
   margin: 0 auto;
@@ -841,6 +845,38 @@ select {
   color: #8a4e00;
 }
 
+.check-photo-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.check-photo-thumb {
+  width: 72px;
+  height: 72px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d8d0c4;
+  border-radius: 14px;
+  background: #fffdfa;
+  overflow: hidden;
+}
+
+.check-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.check-photo-thumb.is-pending {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .issue-item strong,
 .summary-card strong {
   display: block;
@@ -1207,6 +1243,21 @@ select {
   padding: 12px 14px;
   border-radius: 16px;
   background: #faf6ef;
+}
+
+.report-area-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.report-area-photos img {
+  width: 112px;
+  height: 112px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid #e4ddd1;
+  background: white;
 }
 
 .report-dimensions-row {
