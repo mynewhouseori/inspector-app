@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.09.113";
+const APP_VERSION = "2026.07.09.114";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1791,7 +1791,7 @@ function updateHeader() {
 
   if (welcomeLikeScreens.has(state.currentScreen) && !state.propertyName) {
     els.reportTitle.textContent = defaultReportTitle;
-    els.reportMeta.textContent = "מלא פרטי נכס והמשך לבדיקה לפי חדרים.";
+    els.reportMeta.textContent = "מלא פרטי נכס, בחר חדרים ואז עבור למסך הבדיקה.";
     return;
   }
 
