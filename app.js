@@ -152,7 +152,7 @@ let pendingFocusAreaId = null;
 
 const inspectionModeLabels = {
   new: "בדיקת נכס חדש",
-  owner: "תסקיר בדיקת בעלים"
+  owner: "תסקיר דירות בעלים"
 };
 
 const ownerApartmentLabels = [
@@ -1052,9 +1052,9 @@ function renderReportDocument(summary, issues) {
 
   if (els.reportIntroTitle && els.reportIntroBlock) {
     if (state.inspectionMode === "owner") {
-      els.reportIntroTitle.textContent = "חשיבות תסקיר בדיקת בעלים";
+      els.reportIntroTitle.textContent = "חשיבות תסקיר דירות בעלים";
       els.reportIntroBlock.innerHTML = `
-        <p>תסקיר בדיקת בעלים נועד ליצור צילום מצב קיים של הדירה לפני תחילת השיפוץ, כך שניתן יהיה לתעד באופן מסודר את מצבה בנקודת הזמן הנוכחית.</p>
+        <p>תסקיר דירות בעלים נועד ליצור צילום מצב קיים של הדירה לפני תחילת השיפוץ, כך שניתן יהיה לתעד באופן מסודר את מצבה בנקודת הזמן הנוכחית.</p>
         <p>התסקיר מסייע לבעלי הדירה, למתכננים ולבעלי המקצוע לעבוד מתוך בסיס ברור, להשוות בהמשך בין המצב הקיים לתכנון החדש, ולהפחית אי-הבנות במהלך השיפוץ.</p>
       `;
     } else {
@@ -1710,7 +1710,7 @@ function renderSavedProjects() {
 
 function updateHeader() {
   updateProjectFields();
-  const defaultReportTitle = state.inspectionMode === "owner" ? "תסקיר בדיקת בעלים" : "דוח בדיקה הנדסית";
+  const defaultReportTitle = state.inspectionMode === "owner" ? "תסקיר דירות בעלים" : "דוח בדיקה הנדסית";
   const introScreens = new Set(["home", "owner-apartments"]);
   const welcomeLikeScreens = new Set(["welcome", "rooms"]);
   if (introScreens.has(state.currentScreen)) {
