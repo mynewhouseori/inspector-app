@@ -300,10 +300,10 @@ textarea {
 }
 
 .owner-apartment-card {
-  min-height: 108px;
-  padding: 16px;
+  min-height: 0;
+  padding: 14px 16px;
   border: 1px solid transparent;
-  border-radius: 22px;
+  border-radius: 18px;
   color: var(--ink);
   text-align: right;
   box-shadow: 0 12px 26px rgba(24, 34, 38, 0.08);
@@ -319,20 +319,11 @@ textarea {
   background: linear-gradient(160deg, rgba(255, 250, 245, 0.99), rgba(246, 218, 196, 0.98));
 }
 
-.owner-apartment-card strong,
-.owner-apartment-card span {
-  display: block;
-}
-
 .owner-apartment-card strong {
-  margin-bottom: 8px;
-  font-size: 21px;
-}
-
-.owner-apartment-card span {
-  color: var(--muted);
-  line-height: 1.5;
-  font-size: 13px;
+  display: block;
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.35;
 }
 
 .owner-apartment-card-17 strong {

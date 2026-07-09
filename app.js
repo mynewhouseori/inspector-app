@@ -1952,7 +1952,6 @@ function renderOwnerApartments() {
   els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => `
     <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"}" type="button" data-owner-apartment="${apartmentName}">
       <strong>${apartmentName}</strong>
-      <span>פתיחת תסקיר עבור הדירה שנבחרה</span>
     </button>
   `).join("");
 
