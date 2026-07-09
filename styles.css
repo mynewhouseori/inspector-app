@@ -139,6 +139,10 @@ textarea {
   display: block;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .hero-card,
 .panel,
 .area-card {
