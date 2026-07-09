@@ -1711,6 +1711,20 @@ function renderSavedProjects() {
 function updateHeader() {
   updateProjectFields();
   const defaultReportTitle = state.inspectionMode === "owner" ? "תסקיר בדיקת בעלים" : "דוח בדיקה הנדסית";
+  const introScreens = new Set(["home", "owner-apartments"]);
+  const welcomeLikeScreens = new Set(["welcome", "rooms"]);
+  if (introScreens.has(state.currentScreen)) {
+    els.reportTitle.textContent = "Inspector";
+    els.reportMeta.textContent = "בדיקות הנדסיות לנכס";
+    return;
+  }
+
+  if (welcomeLikeScreens.has(state.currentScreen) && !state.propertyName) {
+    els.reportTitle.textContent = defaultReportTitle;
+    els.reportMeta.textContent = "מלא פרטי נכס והמשך לבדיקה לפי חדרים.";
+    return;
+  }
+
   els.reportTitle.textContent = state.propertyName || defaultReportTitle;
   const parts = [
     state.propertyAddress && `כתובת: ${state.propertyAddress}`,
@@ -1755,6 +1769,7 @@ function persistAndRender(renderOptions = {}, stateOptions = {}) {
 }
 
 function applyScreenState(screen) {
+  document.body.dataset.screen = screen;
   els.screens.forEach((section) => section.classList.toggle("active", section.id === `screen-${screen}`));
   els.navButtons.forEach((button) => button.classList.toggle("active", button.dataset.screen === screen));
 }
