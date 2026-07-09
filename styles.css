@@ -302,16 +302,21 @@ textarea {
 .owner-apartment-card {
   min-height: 108px;
   padding: 16px;
-  border: 1px solid rgba(194, 120, 79, 0.28);
+  border: 1px solid transparent;
   border-radius: 22px;
-  background: linear-gradient(160deg, rgba(255,255,255,0.98), rgba(248, 239, 230, 0.98));
   color: var(--ink);
   text-align: right;
+  box-shadow: 0 12px 26px rgba(24, 34, 38, 0.08);
 }
 
-.owner-apartment-card-alt {
-  border-color: rgba(24, 90, 97, 0.34);
-  background: linear-gradient(160deg, rgba(255,255,255,0.98), rgba(228, 242, 245, 0.98));
+.owner-apartment-card-17 {
+  border-color: rgba(31, 112, 102, 0.46);
+  background: linear-gradient(160deg, rgba(244, 255, 251, 0.99), rgba(208, 238, 231, 0.98));
+}
+
+.owner-apartment-card-19 {
+  border-color: rgba(194, 120, 79, 0.52);
+  background: linear-gradient(160deg, rgba(255, 250, 245, 0.99), rgba(246, 218, 196, 0.98));
 }
 
 .owner-apartment-card strong,
@@ -328,6 +333,14 @@ textarea {
   color: var(--muted);
   line-height: 1.5;
   font-size: 13px;
+}
+
+.owner-apartment-card-17 strong {
+  color: #155c54;
+}
+
+.owner-apartment-card-19 strong {
+  color: #8d4f2b;
 }
 
 .intro-panel {

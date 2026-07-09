@@ -156,14 +156,6 @@ const inspectionModeLabels = {
 };
 
 const ownerApartmentLabels = [
-  "כניסה-19 דירה-01",
-  "כניסה-19 דירה-02",
-  "כניסה-19 דירה-03",
-  "כניסה-19 דירה-04",
-  "כניסה-19 דירה-05",
-  "כניסה-19 דירה-06",
-  "כניסה-19 דירה-07",
-  "כניסה-19 דירה-08",
   "כניסה-17 דירה-01",
   "כניסה-17 דירה-02",
   "כניסה-17 דירה-03",
@@ -171,11 +163,19 @@ const ownerApartmentLabels = [
   "כניסה-17 דירה-05",
   "כניסה-17 דירה-06",
   "כניסה-17 דירה-07",
-  "כניסה-17 דירה-08"
+  "כניסה-17 דירה-08",
+  "כניסה-19 דירה-01",
+  "כניסה-19 דירה-02",
+  "כניסה-19 דירה-03",
+  "כניסה-19 דירה-04",
+  "כניסה-19 דירה-05",
+  "כניסה-19 דירה-06",
+  "כניסה-19 דירה-07",
+  "כניסה-19 דירה-08"
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.08.111";
+const APP_VERSION = "2026.07.09.112";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1950,7 +1950,7 @@ function renderAreas() {
 function renderOwnerApartments() {
   if (!els.ownerApartmentsGrid) return;
   els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => `
-    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-alt" : ""}" type="button" data-owner-apartment="${apartmentName}">
+    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"}" type="button" data-owner-apartment="${apartmentName}">
       <strong>${apartmentName}</strong>
       <span>פתיחת תסקיר עבור הדירה שנבחרה</span>
     </button>
