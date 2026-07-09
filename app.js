@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.09.118";
+const APP_VERSION = "2026.07.09.119";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1964,7 +1964,7 @@ function renderAreas() {
     });
 
     node.querySelector(".delete-btn").addEventListener("click", () => {
-      const confirmed = window.confirm(`למחוק את "${area.name}" מהבדיקה?`);
+      const confirmed = window.confirm(`למחוק את "${area.name}" מהבדיקה הנוכחית?\n\nהמחיקה תסיר את החדר הזה מהדירה הפעילה ותמחק ממנו את כל המידות, ההערות, התמונות והממצאים שנשמרו בו.`);
       if (!confirmed) return;
       state.areas = state.areas.filter((item) => item.id !== area.id);
       if (state.activeInspectionAreaId === area.id) {
