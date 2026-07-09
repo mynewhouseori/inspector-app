@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.09.117";
+const APP_VERSION = "2026.07.09.118";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1902,7 +1902,9 @@ function renderRoomSelection() {
     button.addEventListener("click", () => {
       area.selected = true;
       state.activeInspectionAreaId = area.id;
-      persistAndRender({}, { immediateCloud: true });
+      saveState({ immediateCloud: true });
+      render({});
+      setScreen("inspection", { scroll: true });
     });
     els.roomsSelection.appendChild(button);
   });
