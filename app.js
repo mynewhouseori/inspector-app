@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.09.112";
+const APP_VERSION = "2026.07.09.113";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -199,6 +199,44 @@ function getOwnerApartmentProjectId(apartmentName) {
   const apartmentIndex = ownerApartmentLabels.indexOf(apartmentName);
   const suffix = apartmentIndex >= 0 ? String(apartmentIndex + 1).padStart(2, "0") : "00";
   return `owner-apartment-${suffix}`;
+}
+
+function isOwnerApartmentName(value) {
+  return ownerApartmentLabels.includes(String(value || "").trim());
+}
+
+function getCanonicalProjectId(projectLike = {}) {
+  const inspectionMode = projectLike?.data?.inspectionMode || projectLike?.inspectionMode || "";
+  const propertyName = String(projectLike?.data?.propertyName || projectLike?.propertyName || "").trim();
+  if (inspectionMode === "owner" && isOwnerApartmentName(propertyName)) {
+    return getOwnerApartmentProjectId(propertyName);
+  }
+  return projectLike?.id || null;
+}
+
+function dedupeProjectRecords(projects = []) {
+  const sortedProjects = [...projects].sort((a, b) => (b?.updatedAtMs || 0) - (a?.updatedAtMs || 0));
+  const seenProjectIds = new Set();
+  const dedupedProjects = [];
+  const duplicateProjects = [];
+
+  sortedProjects.forEach((project) => {
+    const canonicalId = getCanonicalProjectId(project);
+    const dedupeKey = canonicalId || project?.id;
+    if (!dedupeKey) return;
+
+    if (seenProjectIds.has(dedupeKey)) {
+      duplicateProjects.push(project);
+      return;
+    }
+
+    seenProjectIds.add(dedupeKey);
+    const normalizedProject = normalizeProjectRecord({ ...project, id: canonicalId || project.id });
+    if (!normalizedProject) return;
+    dedupedProjects.push(normalizedProject);
+  });
+
+  return { dedupedProjects, duplicateProjects };
 }
 
 const state = {
@@ -1402,16 +1440,25 @@ function saveProjectsLibrary() {
 }
 
 function upsertSavedProjectRecord(record) {
-  const existingIndex = state.savedProjects.findIndex((project) => project.id === record.id);
+  const canonicalRecordId = getCanonicalProjectId(record) || record.id;
+  const normalizedRecord = normalizeProjectRecord({ ...record, id: canonicalRecordId });
+  if (!normalizedRecord) return;
+  const existingIndex = state.savedProjects.findIndex((project) => (
+    (getCanonicalProjectId(project) || project.id) === normalizedRecord.id
+  ));
   if (existingIndex >= 0) {
-    state.savedProjects[existingIndex] = record;
+    state.savedProjects[existingIndex] = normalizedRecord;
   } else {
-    state.savedProjects.unshift(record);
+    state.savedProjects.unshift(normalizedRecord);
   }
   state.savedProjects.sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
 }
 
-function buildProjectRecord(projectId = state.currentProjectId || uid()) {
+function buildProjectRecord(projectId = getCanonicalProjectId({
+  id: state.currentProjectId,
+  inspectionMode: state.inspectionMode,
+  propertyName: state.propertyName
+}) || state.currentProjectId || uid()) {
   const now = new Date();
   return {
     id: projectId,
@@ -1435,6 +1482,24 @@ function syncCurrentProjectDraft() {
 async function saveProjectRecordToCloud(record) {
   if (!db) return;
   await setDoc(doc(db, PROJECTS_COLLECTION, record.id), record);
+}
+
+async function cleanupDuplicateOwnerProjects(duplicateProjects = []) {
+  if (!db || !duplicateProjects.length) return;
+
+  const duplicateOwnerProjects = duplicateProjects.filter((project) => {
+    const propertyName = String(project?.data?.propertyName || project?.propertyName || "").trim();
+    const canonicalId = getCanonicalProjectId(project);
+    return project?.rawCloudId && canonicalId && project.rawCloudId !== canonicalId && isOwnerApartmentName(propertyName);
+  });
+
+  for (const project of duplicateOwnerProjects) {
+    try {
+      await deleteDoc(doc(db, PROJECTS_COLLECTION, project.rawCloudId));
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }
 
 function normalizeProjectRecord(project) {
@@ -1501,17 +1566,18 @@ function subscribeToCloudProjects() {
   bootstrapCloudProjects(localProjectsSeed);
   projectsUnsubscribe = onSnapshot(
     collection(db, PROJECTS_COLLECTION),
-    (snapshot) => {
-      const projects = snapshot.docs
-        .map((item) => normalizeProjectRecord({ id: item.id, ...item.data() }))
-        .filter(Boolean)
-        .sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
-      state.savedProjects = projects;
+    async (snapshot) => {
+      const incomingProjects = snapshot.docs
+        .map((item) => normalizeProjectRecord({ id: item.id, rawCloudId: item.id, ...item.data() }))
+        .filter(Boolean);
+      const { dedupedProjects, duplicateProjects } = dedupeProjectRecords(incomingProjects);
+      state.savedProjects = dedupedProjects;
       saveProjectsLibrary();
       renderSavedProjects();
       updateCloudStatus("סנכרון ענן פעיל. אותם פרויקטים זמינים במחשב ובנייד.", "ok");
+      cleanupDuplicateOwnerProjects(duplicateProjects);
 
-      const activeProject = state.currentProjectId ? projects.find((project) => project.id === state.currentProjectId) : null;
+      const activeProject = state.currentProjectId ? dedupedProjects.find((project) => project.id === state.currentProjectId) : null;
       if (isPickerOpen || isUserEditingField()) return;
       const localIsIdle = Date.now() - lastLocalMutationAt > 1200;
       const remoteDiffersFromLocal = activeProject
@@ -1541,7 +1607,11 @@ async function saveCurrentProject() {
     return false;
   }
 
-  const id = state.currentProjectId || uid();
+  const id = getCanonicalProjectId({
+    id: state.currentProjectId,
+    inspectionMode: state.inspectionMode,
+    propertyName: state.propertyName
+  }) || state.currentProjectId || uid();
   const record = buildProjectRecord(id);
 
   state.currentProjectId = id;
@@ -2007,7 +2077,9 @@ function renderSummaryReports() {
 
 function loadState() {
   const projectsRaw = localStorage.getItem(projectsKey);
-  state.savedProjects = projectsRaw ? JSON.parse(projectsRaw) : [];
+  const localProjects = projectsRaw ? JSON.parse(projectsRaw) : [];
+  state.savedProjects = dedupeProjectRecords(localProjects).dedupedProjects;
+  saveProjectsLibrary();
   const raw = localStorage.getItem(storageKey);
   if (!raw) {
     state.currentScreen = "home";
