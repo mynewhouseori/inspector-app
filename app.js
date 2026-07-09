@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.09.116";
+const APP_VERSION = "2026.07.09.117";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1665,7 +1665,7 @@ function loadProject(projectId) {
   applyProjectData(project.data);
   lastCloudAppliedAt = project.updatedAtMs || Date.now();
   isApplyingCloudProject = false;
-  const targetScreen = selectedAreas().length ? "inspection" : "rooms";
+  const targetScreen = "rooms";
   state.currentScreen = targetScreen;
   syncActiveInspectionArea();
   render({ preserveScroll: false });
