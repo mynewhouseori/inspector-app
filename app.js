@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.09.119";
+const APP_VERSION = "2026.07.09.120";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2160,7 +2160,9 @@ function addArea(name, type) {
   const cleanName = name.trim();
   if (!cleanName) return;
   state.areas.push(createArea(cleanName, type, true));
-  els.areaName.value = "";
+  if (els.areaName) {
+    els.areaName.value = "";
+  }
   persistAndRender({}, { immediateCloud: true });
 }
 
@@ -2231,7 +2233,9 @@ els.backToWelcomeBtn.addEventListener("click", () => {
   setScreen("welcome", { scroll: true });
 });
 
-els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
+if (els.addAreaBtn && els.areaName && els.areaType) {
+  els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
+}
 
 [els.propertyName, els.propertyAddress, els.clientName, els.clientPhone, els.clientEmail, els.inspectorName].forEach((input) => {
   input.addEventListener("input", () => {
@@ -2241,9 +2245,11 @@ els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.a
   });
 });
 
-els.areaName.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") addArea(els.areaName.value, els.areaType.value);
-});
+if (els.areaName && els.areaType) {
+  els.areaName.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") addArea(els.areaName.value, els.areaType.value);
+  });
+}
 
 els.navButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -2254,17 +2260,19 @@ els.navButtons.forEach((button) => {
   });
 });
 
-els.resetBtn.addEventListener("click", () => {
-  const activeArea = ensureActiveInspectionArea();
-  if (!activeArea) {
-    window.alert("אין חדר פעיל לאיפוס כרגע.");
-    return;
-  }
-  const confirmed = window.confirm(`לאפס את "${activeArea.name}" בלבד? כל המידות, הממצאים והנעילה של החדר הזה יימחקו.`);
-  if (!confirmed) return;
-  resetArea(activeArea);
-  persistAndRender({}, { immediateCloud: true });
-});
+if (els.resetBtn) {
+  els.resetBtn.addEventListener("click", () => {
+    const activeArea = ensureActiveInspectionArea();
+    if (!activeArea) {
+      window.alert("אין חדר פעיל לאיפוס כרגע.");
+      return;
+    }
+    const confirmed = window.confirm(`לאפס את "${activeArea.name}" בלבד? כל המידות, הממצאים והנעילה של החדר הזה יימחקו.`);
+    if (!confirmed) return;
+    resetArea(activeArea);
+    persistAndRender({}, { immediateCloud: true });
+  });
+}
 
 els.printBtn.addEventListener("click", () => {
   setScreen("summary", { scroll: true });
