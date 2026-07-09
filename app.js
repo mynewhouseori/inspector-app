@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.09.115";
+const APP_VERSION = "2026.07.09.116";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1505,6 +1505,29 @@ async function cleanupDuplicateOwnerProjects(duplicateProjects = []) {
   }
 }
 
+async function deleteOwnerApartmentProjectCopies(project = {}) {
+  if (!db) return;
+
+  const propertyName = String(project?.data?.propertyName || project?.propertyName || "").trim();
+  if (!isOwnerApartmentName(propertyName)) return;
+
+  const canonicalId = getOwnerApartmentProjectId(propertyName);
+  const snapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
+  const matchingDocs = snapshot.docs.filter((item) => {
+    const data = item.data() || {};
+    const itemPropertyName = String(data?.data?.propertyName || data?.propertyName || "").trim();
+    const inspectionMode = data?.data?.inspectionMode || data?.inspectionMode || "";
+    return (
+      item.id === canonicalId
+      || (inspectionMode === "owner" && itemPropertyName === propertyName)
+    );
+  });
+
+  for (const item of matchingDocs) {
+    await deleteDoc(doc(db, PROJECTS_COLLECTION, item.id));
+  }
+}
+
 function normalizeProjectRecord(project) {
   if (!project || !project.id || !project.data) return null;
   return {
@@ -1655,7 +1678,10 @@ async function deleteProject(projectId) {
   const confirmed = window.confirm(`למחוק את "${project.title}" מרשימת הבדיקות השמורות?`);
   if (!confirmed) return;
 
-  state.savedProjects = state.savedProjects.filter((item) => item.id !== projectId);
+  const canonicalId = getCanonicalProjectId(project) || projectId;
+  state.savedProjects = state.savedProjects.filter((item) => (
+    (getCanonicalProjectId(item) || item.id) !== canonicalId
+  ));
   if (state.currentProjectId === projectId) {
     state.currentProjectId = null;
   }
@@ -1663,7 +1689,11 @@ async function deleteProject(projectId) {
   saveState();
   if (db) {
     try {
-      await deleteDoc(doc(db, PROJECTS_COLLECTION, projectId));
+      if (project?.data?.inspectionMode === "owner") {
+        await deleteOwnerApartmentProjectCopies(project);
+      } else {
+        await deleteDoc(doc(db, PROJECTS_COLLECTION, projectId));
+      }
     } catch (error) {
       updateCloudStatus("הפרויקט נמחק מקומית, אבל המחיקה בענן נכשלה.", "error");
       console.error(error);
