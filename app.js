@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.09.114";
+const APP_VERSION = "2026.07.09.115";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -462,6 +462,9 @@ function updateWelcomeFormMode() {
   }
   if (els.welcomeNavBtn) {
     els.welcomeNavBtn.hidden = isOwnerMode;
+  }
+  if (els.newProjectBtn) {
+    els.newProjectBtn.hidden = isOwnerMode;
   }
 }
 
