@@ -1863,16 +1863,16 @@ textarea:focus {
 
 .check-row {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr) 132px;
+  grid-template-columns: 96px minmax(0, 1fr) 178px;
   grid-template-rows: auto auto auto;
   align-items: start;
   direction: ltr;
   padding: 0;
   overflow: hidden;
-  border: 1px solid rgba(24, 87, 96, 0.12);
-  border-radius: 24px;
+  border: 1px solid rgba(24, 87, 96, 0.1);
+  border-radius: 22px;
   background: #ffffff;
-  box-shadow: 0 12px 26px rgba(18, 40, 46, 0.07);
+  box-shadow: 0 10px 24px rgba(18, 40, 46, 0.08);
 }
 
 .check-row::before {
@@ -1887,38 +1887,46 @@ textarea:focus {
   min-height: 100%;
   align-self: stretch;
   justify-self: stretch;
-  border-radius: 20px 0 0 20px;
+  border-radius: 18px 0 0 18px;
   border: 0;
   box-shadow: none;
-  padding: 18px 12px;
+  padding: 16px 10px;
   color: var(--accent);
   position: relative;
 }
 
+.check-icon-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
 .check-icon-badge svg {
-  width: 54px;
-  height: 54px;
+  width: 56px;
+  height: 56px;
 }
 
 .check-title-copy {
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
-  padding: 16px 12px 8px 14px;
+  padding: 14px 10px 4px 14px;
   direction: rtl;
   text-align: right;
 }
 
 .check-row .check-name {
-  font-size: 19px;
-  line-height: 1.1;
+  font-size: 17px;
+  line-height: 1.15;
   color: #17343c;
 }
 
 .check-row .check-category {
-  margin-top: 5px;
+  margin-top: 4px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .tone-structure::before,
@@ -1972,10 +1980,12 @@ textarea:focus {
 .check-controls-top {
   grid-column: 3;
   grid-row: 1;
-  display: grid;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: flex-start;
   gap: 8px;
-  padding: 14px 14px 8px 6px;
-  align-content: start;
+  padding: 12px 12px 0 0;
   direction: rtl;
 }
 
@@ -1984,37 +1994,49 @@ textarea:focus {
 }
 
 .status-select {
-  min-height: 42px;
-  padding: 8px 12px;
-  border-radius: 14px;
+  min-height: 40px;
+  padding: 7px 12px;
+  min-width: 116px;
+  border-radius: 13px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
+  color: #ba7646;
+  border-color: rgba(218, 166, 133, 0.5);
+  background: linear-gradient(180deg, #fffdfb, #fff5ef);
 }
 
 .camera-btn {
-  min-height: 42px;
-  width: 100%;
+  min-height: 38px;
+  min-width: 74px;
+  width: auto;
   justify-content: center;
-  border-radius: 14px;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.26);
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 13px;
+  color: #0f5a71;
+  border: 1px solid rgba(153, 191, 207, 0.55);
+  background: linear-gradient(180deg, #f5fbff, #eaf4fb);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 }
 
 .note-input {
   grid-column: 2 / 4;
   grid-row: 2;
-  min-height: 92px;
-  margin: 0 14px 12px 14px;
-  padding: 12px 14px;
-  border-radius: 18px;
+  min-height: 74px;
+  margin: 0 14px 12px 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
   direction: rtl;
   text-align: right;
   resize: vertical;
+  border-color: rgba(209, 218, 226, 0.95);
+  box-shadow: inset 0 1px 2px rgba(20, 44, 52, 0.03);
 }
 
 .check-photo-list {
   grid-column: 2 / 4;
   grid-row: 3;
-  padding: 0 14px 14px;
+  padding: 0 14px 12px 10px;
   direction: rtl;
 }
 
@@ -2046,24 +2068,24 @@ textarea:focus {
   position: absolute;
   inset-block: 10px;
   inset-inline-end: 0;
-  width: 5px;
+  width: 4px;
   border-radius: 999px 0 0 999px;
 }
 
 .tone-structure::after {
-  background: linear-gradient(180deg, #ef6355, #ff8d82);
+  background: linear-gradient(180deg, #ef6254, #ff8a7b);
 }
 
 .tone-plumbing::after {
-  background: linear-gradient(180deg, #2cb7c7, #67dce0);
+  background: linear-gradient(180deg, #14aeb8, #4fd5db);
 }
 
 .tone-finishes::after {
-  background: linear-gradient(180deg, #f6a623, #ffd26f);
+  background: linear-gradient(180deg, #f1a01a, #ffc44f);
 }
 
 .tone-openings::after {
-  background: linear-gradient(180deg, #5f96e8, #8cc4ff);
+  background: linear-gradient(180deg, #5f96e8, #88befe);
 }
 
 .tone-electric::after {
@@ -2256,38 +2278,49 @@ textarea:focus {
   }
 
   .check-row {
-    grid-template-columns: 76px minmax(0, 1fr) 114px;
+    grid-template-columns: 84px minmax(0, 1fr) 152px;
     border-radius: 22px;
   }
 
   .check-icon-badge {
-    padding: 16px 10px;
+    padding: 14px 8px;
   }
 
   .check-icon-badge svg {
-    width: 46px;
-    height: 46px;
+    width: 50px;
+    height: 50px;
   }
 
   .check-row .check-name {
-    font-size: 17px;
+    font-size: 16px;
   }
 
   .check-title-copy {
-    padding: 14px 10px 8px 12px;
+    padding: 12px 8px 4px 12px;
   }
 
   .check-controls-top {
-    padding: 12px 12px 8px 4px;
+    padding: 10px 10px 0 0;
+    gap: 6px;
   }
 
   .note-input {
-    min-height: 84px;
-    margin: 0 12px 12px 12px;
+    min-height: 68px;
+    margin: 0 12px 12px 8px;
   }
 
   .check-photo-list {
-    padding: 0 12px 12px;
+    padding: 0 12px 12px 8px;
+  }
+
+  .camera-btn {
+    min-width: 68px;
+    padding: 7px 10px;
+  }
+
+  .status-select {
+    min-width: 104px;
+    font-size: 12px;
   }
 
   .report-overview,
