@@ -787,6 +787,11 @@ select {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  align-items: stretch;
+}
+
+.check-controls > div {
+  width: 100%;
 }
 
 .status-select,
@@ -795,6 +800,7 @@ select {
 }
 
 .status-select {
+  width: 100%;
   min-height: 48px;
   padding: 10px 12px;
   border-radius: 15px;
