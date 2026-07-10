@@ -794,7 +794,12 @@ select {
   min-width: 0;
 }
 
-.check-controls > div {
+.control-cell {
+  width: 100%;
+  min-width: 0;
+}
+
+.camera-cell {
   width: 100%;
 }
 
