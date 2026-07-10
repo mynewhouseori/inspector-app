@@ -174,11 +174,29 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.10.128";
+const APP_VERSION = "2026.07.10.130";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
 const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם-יפו";
+
+const AREA_ICON_MARKUP = {
+  dry: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 18.5h16v1.5H4zM6 11.5h4.6c1.9 0 2.8.8 3.2 2H18V8.8c0-.9-.7-1.6-1.6-1.6H7.6C6.7 7.2 6 7.9 6 8.8v2.7Zm12 3.5h-3.8c-.4 1.1-1.4 1.8-3 1.8H6v-1.8H4v-1.5h14v3.3Z"></path>
+    </svg>
+  `,
+  wet: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3.5c2.4 3 4.8 5.8 4.8 8.9A4.8 4.8 0 1 1 7.2 12.4c0-3.1 2.4-5.9 4.8-8.9Zm0 14.2c1.5 0 2.8-1 3.2-2.4-.8.6-1.7.9-2.7.9-1.5 0-2.9-.7-3.8-1.9.2 1.9 1.7 3.4 3.3 3.4Z"></path>
+    </svg>
+  `,
+  outdoor: `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 18.5h14v1.5H5zm7-15 1.1 3.1 3.3.3-2.5 2.1.8 3.2L12 10.8l-2.7 1.4.8-3.2-2.5-2.1 3.3-.3L12 3.5Zm-5.7 10h11.4l1.3 3H5l1.3-3Z"></path>
+    </svg>
+  `
+};
 
 function normalizePropertyAddress(value) {
   const normalized = String(value || "").trim();
@@ -202,6 +220,64 @@ function getOwnerApartmentProjectId(apartmentName) {
 
 function isOwnerApartmentName(value) {
   return ownerApartmentLabels.includes(String(value || "").trim());
+}
+
+function getAreaIconMarkup(area) {
+  if (area.name.includes("חדר שינה")) return AREA_ICON_MARKUP.dry;
+  if (area.name.includes("רחצה") || area.name.includes("ש.אורחים")) return AREA_ICON_MARKUP.wet;
+  if (area.name.includes("מרפסת") || area.name.includes("גג")) return AREA_ICON_MARKUP.outdoor;
+  return AREA_ICON_MARKUP[area.type] || AREA_ICON_MARKUP.dry;
+}
+
+function getCheckVisual(check) {
+  const category = check.category || "";
+  const code = check.code || "";
+  if (category.includes("שלד")) {
+    return {
+      tone: "tone-structure",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h8l-3.2 5.1h4L8.5 20l2.1-7H6L9.7 4Z"></path></svg>`
+    };
+  }
+  if (category.includes("גמר")) {
+    return {
+      tone: "tone-finishes",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zm9 0h7v7h-7zM4 14h7v5H4zm9 0h7v5h-7z"></path></svg>`
+    };
+  }
+  if (category.includes("פתחים")) {
+    return {
+      tone: "tone-openings",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zm2 2v12h4V6Zm6 0v12h4V6Z"></path></svg>`
+    };
+  }
+  if (category.includes("אינסטלציה")) {
+    return {
+      tone: "tone-plumbing",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.3c2.2 2.7 4.4 5.2 4.4 8a4.4 4.4 0 1 1-8.8 0c0-2.8 2.2-5.3 4.4-8Z"></path></svg>`
+    };
+  }
+  if (category.includes("חשמל")) {
+    return {
+      tone: "tone-electric",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 6.5h2v4h3V6.5h2V11a1.5 1.5 0 0 1-1.5 1.5H13v2h1.2a3.8 3.8 0 1 1 0 1.8H10V12.5H9A1.5 1.5 0 0 1 7.5 11V6.5Z"></path></svg>`
+    };
+  }
+  if (category.includes("בטיחות")) {
+    return {
+      tone: "tone-safety",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 19 6v5.3c0 4.2-2.6 7.8-7 9.2-4.4-1.4-7-5-7-9.2V6l7-2.5Zm-.8 5.3v4.4h1.6V8.8Zm0 5.7v1.7h1.6v-1.7Z"></path></svg>`
+    };
+  }
+  if (category.includes("גג") || code.startsWith("6.")) {
+    return {
+      tone: "tone-outdoor",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 13 8-7 8 7v6h-5.5v-4h-5v4H4z"></path></svg>`
+    };
+  }
+  return {
+    tone: "tone-neutral",
+    icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v2H5zm0 5h14v2H5zm0 5h9v2H5z"></path></svg>`
+  };
 }
 
 function getCanonicalProjectId(projectLike = {}) {
@@ -1876,9 +1952,11 @@ function renderAreas() {
 
   [activeArea].forEach((area) => {
     const node = els.areaTemplate.content.firstElementChild.cloneNode(true);
+    node.querySelector(".area-icon-badge").innerHTML = getAreaIconMarkup(area);
     node.querySelector(".area-title").textContent = area.name;
     node.querySelector(".area-type").textContent = areaTypeLabels[area.type];
     node.querySelector(".area-photo-count").textContent = `תמונות חדר: ${getAreaPhotoCount(area)}/${MAX_AREA_PHOTOS}`;
+    node.classList.add(`area-${area.type}`);
     if (area.locked) node.classList.add("is-locked");
 
     node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
@@ -1902,6 +1980,9 @@ function renderAreas() {
     const checksList = node.querySelector(".checks-list");
     area.checks.forEach((check) => {
       const checkNode = els.checkTemplate.content.firstElementChild.cloneNode(true);
+      const checkVisual = getCheckVisual(check);
+      checkNode.classList.add(checkVisual.tone);
+      checkNode.querySelector(".check-icon-badge").innerHTML = checkVisual.icon;
       checkNode.querySelector(".check-name").textContent = check.name;
       checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
       const statusSelect = checkNode.querySelector(".status-select");
