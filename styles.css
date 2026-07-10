@@ -9,11 +9,6 @@
   --ok: #2a7f62;
   --warn: #d17c22;
   --issue: #b43f3f;
-  --teal-soft: #dff2ee;
-  --sand-soft: #f8efe2;
-  --sky-soft: #e5f1f7;
-  --mint-soft: #e7f5e9;
-  --peach-soft: #f8e7de;
   --shadow: 0 16px 40px rgba(24, 34, 38, 0.1);
 }
 
@@ -648,52 +643,7 @@ select {
 }
 
 .area-card {
-  position: relative;
-  overflow: hidden;
-  padding: 18px;
-  border-radius: 30px;
-  background:
-    radial-gradient(circle at top left, rgba(24, 90, 97, 0.08), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(252, 247, 240, 0.96));
-}
-
-.area-dry {
-  background:
-    radial-gradient(circle at top left, rgba(34, 156, 135, 0.14), transparent 32%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(241, 250, 247, 0.98));
-}
-
-.area-wet {
-  background:
-    radial-gradient(circle at top left, rgba(82, 165, 214, 0.16), transparent 32%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(241, 248, 253, 0.98));
-}
-
-.area-outdoor {
-  background:
-    radial-gradient(circle at top left, rgba(217, 144, 83, 0.17), transparent 32%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(253, 246, 239, 0.98));
-}
-
-.area-accent {
-  position: absolute;
-  inset-block: 18px;
-  inset-inline-end: 12px;
-  width: 6px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(24, 90, 97, 0.9), rgba(24, 90, 97, 0.25));
-}
-
-.area-dry .area-accent {
-  background: linear-gradient(180deg, #1c7b71, rgba(28, 123, 113, 0.22));
-}
-
-.area-wet .area-accent {
-  background: linear-gradient(180deg, #3697b8, rgba(54, 151, 184, 0.2));
-}
-
-.area-outdoor .area-accent {
-  background: linear-gradient(180deg, #c2784f, rgba(194, 120, 79, 0.22));
+  padding: 16px;
 }
 
 .area-head,
@@ -704,68 +654,10 @@ select {
   gap: 12px;
 }
 
-.area-head-main {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  min-width: 0;
-}
-
-.area-head-copy {
-  min-width: 0;
-}
-
-.area-icon-badge {
-  width: 52px;
-  height: 52px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  border-radius: 18px;
-  background: linear-gradient(160deg, #f4fffb, #d9f0ea);
-  border: 1px solid rgba(24, 90, 97, 0.18);
-  box-shadow: 0 10px 18px rgba(24, 90, 97, 0.08);
-}
-
-.area-icon-badge svg {
-  width: 28px;
-  height: 28px;
-  fill: #185a61;
-}
-
-.area-dry .area-icon-badge {
-  background: linear-gradient(160deg, #f3fffb, #daf3eb);
-  border-color: rgba(28, 123, 113, 0.22);
-}
-
-.area-dry .area-icon-badge svg {
-  fill: #17675f;
-}
-
-.area-wet .area-icon-badge {
-  background: linear-gradient(160deg, #f1fbff, #dceef8);
-  border-color: rgba(54, 151, 184, 0.22);
-}
-
-.area-wet .area-icon-badge svg {
-  fill: #2d7fa2;
-}
-
-.area-outdoor .area-icon-badge {
-  background: linear-gradient(160deg, #fff8f1, #f8e5d8);
-  border-color: rgba(194, 120, 79, 0.26);
-}
-
-.area-outdoor .area-icon-badge svg {
-  fill: #a45f35;
-}
-
 .area-actions {
   display: flex;
   gap: 8px;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 .area-footer-actions {
@@ -774,18 +666,6 @@ select {
 
 .area-head {
   margin-bottom: 14px;
-}
-
-.area-title {
-  font-size: 32px;
-  line-height: 0.95;
-  letter-spacing: -0.03em;
-}
-
-.area-type {
-  margin-top: 4px;
-  font-size: 15px;
-  font-weight: 600;
 }
 
 .delete-btn {
@@ -903,113 +783,6 @@ select {
   margin-bottom: 10px;
 }
 
-.check-row {
-  position: relative;
-  overflow: hidden;
-  border-radius: 22px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(252, 247, 241, 0.95));
-  box-shadow: 0 10px 22px rgba(24, 34, 38, 0.05);
-}
-
-.check-row::before {
-  content: "";
-  position: absolute;
-  inset-block: 12px;
-  inset-inline-end: 10px;
-  width: 5px;
-  border-radius: 999px;
-  background: rgba(24, 90, 97, 0.22);
-}
-
-.check-title-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.check-title-copy {
-  min-width: 0;
-}
-
-.check-icon-badge {
-  width: 46px;
-  height: 46px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  flex: 0 0 auto;
-  background: white;
-  border: 1px solid rgba(24, 90, 97, 0.12);
-  box-shadow: 0 10px 18px rgba(24, 34, 38, 0.07);
-}
-
-.check-icon-badge svg {
-  width: 22px;
-  height: 22px;
-  fill: currentColor;
-}
-
-.check-row .check-name {
-  font-size: 20px;
-  line-height: 1.12;
-}
-
-.check-row .check-category {
-  margin-top: 4px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.tone-structure::before,
-.tone-structure .check-icon-badge {
-  background-color: rgba(255, 229, 197, 0.95);
-  color: #b36a18;
-}
-
-.tone-finishes::before,
-.tone-finishes .check-icon-badge {
-  background-color: rgba(253, 239, 208, 0.95);
-  color: #9b7426;
-}
-
-.tone-openings::before,
-.tone-openings .check-icon-badge {
-  background-color: rgba(221, 244, 247, 0.96);
-  color: #17748c;
-}
-
-.tone-plumbing::before,
-.tone-plumbing .check-icon-badge {
-  background-color: rgba(219, 240, 255, 0.95);
-  color: #3478b8;
-}
-
-.tone-electric::before,
-.tone-electric .check-icon-badge {
-  background-color: rgba(227, 250, 210, 0.96);
-  color: #5d8d16;
-}
-
-.tone-safety::before,
-.tone-safety .check-icon-badge {
-  background-color: rgba(254, 230, 218, 0.96);
-  color: #bb6240;
-}
-
-.tone-outdoor::before,
-.tone-outdoor .check-icon-badge {
-  background-color: rgba(241, 233, 255, 0.96);
-  color: #7a5cc7;
-}
-
-.tone-neutral::before,
-.tone-neutral .check-icon-badge {
-  background-color: rgba(236, 240, 242, 0.96);
-  color: #5a7077;
-}
-
 .check-controls {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1041,7 +814,6 @@ select {
   min-height: 48px;
   padding: 10px 12px;
   border-radius: 15px;
-  font-weight: 700;
 }
 
 .status-select.status-pending {
@@ -1078,17 +850,10 @@ select {
 }
 
 .area-photo-count {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  margin-top: 8px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  color: var(--accent);
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
   font-size: 12px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(24, 90, 97, 0.12);
 }
 
 .camera-btn {
@@ -1105,7 +870,6 @@ select {
   background: linear-gradient(90deg, rgba(24, 90, 97, 0.24) 0%, rgba(24, 90, 97, 0.24) var(--camera-fill), rgba(24, 90, 97, 0.08) var(--camera-fill), rgba(24, 90, 97, 0.08) 100%);
   color: var(--accent);
   transition: color 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background 0.16s ease;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 }
 
 .camera-btn.is-disabled {
