@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.10.128";
+const APP_VERSION = "2026.07.10.131";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -202,6 +202,85 @@ function getOwnerApartmentProjectId(apartmentName) {
 
 function isOwnerApartmentName(value) {
   return ownerApartmentLabels.includes(String(value || "").trim());
+}
+
+const AREA_ICON_MARKUP = {
+  dry: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18.5h16v1.5H4zM6 11.5h4.5c1.9 0 2.9.8 3.3 2H18V8.8c0-.9-.7-1.6-1.6-1.6H7.6C6.7 7.2 6 7.9 6 8.8v2.7Zm12 3.5h-3.8c-.4 1.1-1.4 1.8-3 1.8H6v-1.8H4v-1.5h14v3.3Z"></path></svg>`,
+  wet: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c2.4 3 4.8 5.8 4.8 8.9A4.8 4.8 0 1 1 7.2 12.4c0-3.1 2.4-5.9 4.8-8.9Zm0 14.2c1.5 0 2.8-1 3.2-2.4-.8.6-1.7.9-2.7.9-1.5 0-2.9-.7-3.8-1.9.2 1.9 1.7 3.4 3.3 3.4Z"></path></svg>`,
+  outdoor: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18.5h14v1.5H5zm7-15 1.1 3.1 3.3.3-2.5 2.1.8 3.2L12 10.8l-2.7 1.4.8-3.2-2.5-2.1 3.3-.3L12 3.5Zm-5.7 10h11.4l1.3 3H5l1.3-3Z"></path></svg>`
+};
+
+const STATUS_ICON_MARKUP = {
+  areas: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v6H4zm9 0h7v6h-7zM4 13h7v6H4zm9 0h7v6h-7z"></path></svg>`,
+  checks: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 16.6 5.8 13.2l1.4-1.4 2 2 7.6-7.6 1.4 1.4-9 9Z"></path></svg>`,
+  ok: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 21 7v5.4c0 4.2-2.7 8-9 8.8-6.3-.8-9-4.6-9-8.8V7l9-4.2Zm-1.2 12.8 5.6-5.6-1.4-1.4-4.2 4.2-1.8-1.8-1.4 1.4 3.2 3.2Z"></path></svg>`,
+  issues: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Zm1 12h-2v2h2v-2Zm0-6h-2v4h2V9Z"></path></svg>`,
+  pending: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16Zm1 4h-2v5l4 2 .8-1.8-2.8-1.4V8Z"></path></svg>`,
+  high: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 8.5 15H3.5L12 2Zm1 11h-2v2h2v-2Zm0-6h-2v4h2V7Z"></path></svg>`,
+  saved: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h10l4 4v12H6V4Zm2 2v4h8V6H8Zm0 8v4h8v-4H8Z"></path></svg>`,
+  summary: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18h14v1.5H5zm1-3h3v3H6zm5-5h3v8h-3zm5-4h3v12h-3z"></path></svg>`
+};
+
+function getAreaIconMarkup(area) {
+  if (area.name.includes("חדר שינה")) return AREA_ICON_MARKUP.dry;
+  if (area.name.includes("רחצה") || area.name.includes("ש.אורחים")) return AREA_ICON_MARKUP.wet;
+  if (area.name.includes("מרפסת") || area.name.includes("גג")) return AREA_ICON_MARKUP.outdoor;
+  return AREA_ICON_MARKUP[area.type] || AREA_ICON_MARKUP.dry;
+}
+
+function getCheckVisual(check) {
+  const category = check.category || "";
+  const code = check.code || "";
+  if (category.includes("שלד")) {
+    return {
+      tone: "tone-structure",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h8l-3.2 5.1h4L8.5 20l2.1-7H6L9.7 4Z"></path></svg>`
+    };
+  }
+  if (category.includes("גמר")) {
+    return {
+      tone: "tone-finishes",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zm9 0h7v7h-7zM4 14h7v5H4zm9 0h7v5h-7z"></path></svg>`
+    };
+  }
+  if (category.includes("פתחים")) {
+    return {
+      tone: "tone-openings",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zm2 2v12h4V6Zm6 0v12h4V6Z"></path></svg>`
+    };
+  }
+  if (category.includes("אינסטלציה")) {
+    return {
+      tone: "tone-plumbing",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.3c2.2 2.7 4.4 5.2 4.4 8a4.4 4.4 0 1 1-8.8 0c0-2.8 2.2-5.3 4.4-8Z"></path></svg>`
+    };
+  }
+  if (category.includes("חשמל")) {
+    return {
+      tone: "tone-electric",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 6.5h2v4h3V6.5h2V11a1.5 1.5 0 0 1-1.5 1.5H13v2h1.2a3.8 3.8 0 1 1 0 1.8H10V12.5H9A1.5 1.5 0 0 1 7.5 11V6.5Z"></path></svg>`
+    };
+  }
+  if (category.includes("בטיחות")) {
+    return {
+      tone: "tone-safety",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 19 6v5.3c0 4.2-2.6 7.8-7 9.2-4.4-1.4-7-5-7-9.2V6l7-2.5Zm-.8 5.3v4.4h1.6V8.8Zm0 5.7v1.7h1.6v-1.7Z"></path></svg>`
+    };
+  }
+  if (category.includes("גג") || code.startsWith("6.")) {
+    return {
+      tone: "tone-outdoor",
+      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 13 8-7 8 7v6h-5.5v-4h-5v4H4z"></path></svg>`
+    };
+  }
+  return {
+    tone: "tone-neutral",
+    icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v2H5zm0 5h14v2H5zm0 5h9v2H5z"></path></svg>`
+  };
+}
+
+function getSummaryStatVisual(key) {
+  return STATUS_ICON_MARKUP[key] || STATUS_ICON_MARKUP.summary;
 }
 
 function getCanonicalProjectId(projectLike = {}) {
@@ -1738,11 +1817,15 @@ function renderSavedProjects() {
       : "";
     const propertyName = project.data?.propertyName || project.title || "בדיקת דירה ללא שם נכס";
     const addressLine = project.propertyAddress ? `<p class="saved-project-meta">${project.propertyAddress}</p>` : "";
+    const modeLabel = project.data?.inspectionMode === "owner" ? "תסקיר בעלים" : "בדיקת נכס";
     return `
       <article class="saved-project" data-project-id="${project.id}">
+        <div class="saved-project-accent"></div>
         <div class="saved-project-head">
+          <span class="saved-project-icon" aria-hidden="true">${STATUS_ICON_MARKUP.saved}</span>
           <div>
             <p class="saved-project-title">${propertyName}</p>
+            <p class="saved-project-mode">${modeLabel}</p>
             ${addressLine}
             <p class="saved-project-meta">עודכן: ${updatedAt || "ללא תאריך"}</p>
           </div>
@@ -1847,12 +1930,14 @@ function renderRoomSelection() {
   state.areas.forEach((area) => {
     const button = els.roomChipTemplate.content.firstElementChild.cloneNode(true);
     const progress = getAreaProgress(area);
+    button.querySelector(".room-pick-icon").innerHTML = getAreaIconMarkup(area);
     button.querySelector(".room-pick-name").textContent = area.name;
     button.querySelector(".room-pick-type").textContent = areaTypeLabels[area.type];
     button.querySelector(".room-pick-status").textContent = progress.label;
     button.classList.toggle("active", area.selected);
     button.classList.toggle("is-current", area.id === state.activeInspectionAreaId);
     button.classList.add(`status-${progress.key}`);
+    button.classList.add(`room-${area.type}`);
     button.addEventListener("click", () => {
       area.selected = true;
       state.activeInspectionAreaId = area.id;
@@ -1876,9 +1961,11 @@ function renderAreas() {
 
   [activeArea].forEach((area) => {
     const node = els.areaTemplate.content.firstElementChild.cloneNode(true);
+    node.querySelector(".area-icon-badge").innerHTML = getAreaIconMarkup(area);
     node.querySelector(".area-title").textContent = area.name;
     node.querySelector(".area-type").textContent = areaTypeLabels[area.type];
     node.querySelector(".area-photo-count").textContent = `תמונות חדר: ${getAreaPhotoCount(area)}/${MAX_AREA_PHOTOS}`;
+    node.classList.add(`area-${area.type}`);
     if (area.locked) node.classList.add("is-locked");
 
     node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
@@ -1902,6 +1989,9 @@ function renderAreas() {
     const checksList = node.querySelector(".checks-list");
     area.checks.forEach((check) => {
       const checkNode = els.checkTemplate.content.firstElementChild.cloneNode(true);
+      const checkVisual = getCheckVisual(check);
+      checkNode.classList.add(checkVisual.tone);
+      checkNode.querySelector(".check-icon-badge").innerHTML = checkVisual.icon;
       checkNode.querySelector(".check-name").textContent = check.name;
       checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
       const statusSelect = checkNode.querySelector(".status-select");
@@ -1982,6 +2072,7 @@ function renderOwnerApartments() {
   if (!els.ownerApartmentsGrid) return;
   els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => `
     <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"}" type="button" data-owner-apartment="${apartmentName}">
+      <span class="owner-apartment-icon" aria-hidden="true">${STATUS_ICON_MARKUP.saved}</span>
       <strong>${apartmentName}</strong>
     </button>
   `).join("");
@@ -1995,15 +2086,21 @@ function renderSummaryReports() {
   const summary = computeSummary();
   const issues = getAllIssues();
   const stats = [
-    { label: "אזורים", value: summary.totalAreas },
-    { label: "בדיקות", value: summary.totalChecks },
-    { label: "תקין", value: summary.ok },
-    { label: "ליקויים", value: summary.issues },
-    { label: "לבדיקה", value: summary.pending },
-    { label: "ליקוי גבוה", value: summary.highIssues }
+    { key: "areas", label: "אזורים", value: summary.totalAreas },
+    { key: "checks", label: "בדיקות", value: summary.totalChecks },
+    { key: "ok", label: "תקין", value: summary.ok },
+    { key: "issues", label: "ליקויים", value: summary.issues },
+    { key: "pending", label: "לבדיקה", value: summary.pending },
+    { key: "high", label: "ליקוי גבוה", value: summary.highIssues }
   ];
   if (els.summaryStats) {
-    els.summaryStats.innerHTML = stats.map((item) => `<div class="summary-card"><p>${item.label}</p><strong>${item.value}</strong></div>`).join("");
+    els.summaryStats.innerHTML = stats.map((item) => `
+      <div class="summary-card stat-${item.key}">
+        <span class="summary-card-icon" aria-hidden="true">${getSummaryStatVisual(item.key)}</span>
+        <strong>${item.value}</strong>
+        <p>${item.label}</p>
+      </div>
+    `).join("");
   }
 
   if (!issues.length) {
@@ -2011,6 +2108,7 @@ function renderSummaryReports() {
   } else {
     els.issueSummary.innerHTML = issues.map((issue) => `
       <div class="issue-item">
+        <span class="issue-item-icon" aria-hidden="true">${STATUS_ICON_MARKUP.issues}</span>
         <strong>${issue.area} • ${issue.code} • ${issue.name}</strong>
         <div class="issue-meta">${issue.category}</div>
         <div>${issue.note || "לא הוזנה הערה."}</div>
@@ -2024,7 +2122,8 @@ function renderSummaryReports() {
     const done = area.checks.filter((check) => check.status !== "pending").length;
     const progress = getAreaProgress(area);
     return `
-      <div class="summary-card">
+      <div class="summary-card area-summary-card area-${area.type}">
+        <span class="summary-card-icon area-summary-icon" aria-hidden="true">${getAreaIconMarkup(area)}</span>
         <strong>${area.name}</strong>
         <p>${areaTypeLabels[area.type]} | ${progress.label}</p>
         <p>הושלמו ${done} מתוך ${total} | ליקויים: ${issuesCount}</p>
