@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.10.133";
+const APP_VERSION = "2026.07.10.134";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -234,25 +234,25 @@ function getCheckVisual(check) {
   if (category.includes("׳©׳׳“")) {
     return {
       tone: "tone-structure",
-      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h8l-3.2 5.1h4L8.5 20l2.1-7H6L9.7 4Z"></path></svg>`
+      icon: `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M35 6 22 23l10 2-12 15 7 2-9 13" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M18 14h8M42 18h8M16 34h7M40 39h8M20 52h9" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="3.8" stroke-linecap="round"></path></svg>`
     };
   }
   if (category.includes("׳’׳׳¨")) {
     return {
       tone: "tone-finishes",
-      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zm9 0h7v7h-7zM4 14h7v5H4zm9 0h7v5h-7z"></path></svg>`
+      icon: `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 17 31 10l15 9-13 7-15-9Z" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linejoin="round"></path><path d="M18 17v17l15 9V26M46 19v16l-13 8" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linejoin="round"></path><path d="m19 33 14 8 12-7" fill="none" stroke="currentColor" stroke-opacity="0.24" stroke-width="3" stroke-linecap="round"></path></svg>`
     };
   }
   if (category.includes("׳₪׳×׳—׳™׳")) {
     return {
       tone: "tone-openings",
-      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zm2 2v12h4V6Zm6 0v12h4V6Z"></path></svg>`
+      icon: `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 12h36v40H14z" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linejoin="round"></path><path d="M32 12v40M18 20h10m6 0h12" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"></path><path d="M20 28c3 2 5 5 6 9M44 24c-2 2-3 4-4 7" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="2.8" stroke-linecap="round"></path></svg>`
     };
   }
   if (category.includes("׳׳™׳ ׳¡׳˜׳׳¦׳™׳”")) {
     return {
       tone: "tone-plumbing",
-      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.3c2.2 2.7 4.4 5.2 4.4 8a4.4 4.4 0 1 1-8.8 0c0-2.8 2.2-5.3 4.4-8Z"></path></svg>`
+      icon: `<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 10c7 9 12 15 12 22a12 12 0 1 1-24 0c0-7 5-13 12-22Z" fill="none" stroke="currentColor" stroke-width="3.8" stroke-linejoin="round"></path><path d="M16 47c4-2 8-2 12 0s8 2 12 0 8-2 12 0" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"></path><path d="M24 52c3-1.5 6-1.5 9 0 3 1.4 6 1.4 9 0" fill="none" stroke="currentColor" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"></path></svg>`
     };
   }
   if (category.includes("׳—׳©׳׳")) {
