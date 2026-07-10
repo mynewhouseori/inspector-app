@@ -10,6 +10,7 @@
   --warn: #d17c22;
   --issue: #b43f3f;
   --shadow: 0 16px 40px rgba(24, 34, 38, 0.1);
+  --bottom-nav-clearance: 148px;
 }
 
 * {
@@ -40,7 +41,7 @@ textarea {
   max-width: 760px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 8px 18px 136px;
+  padding: 8px 18px var(--bottom-nav-clearance);
 }
 
 .topbar {
@@ -130,6 +131,7 @@ textarea {
 
 .screen.active {
   display: block;
+  padding-bottom: 8px;
 }
 
 [hidden] {
@@ -2207,9 +2209,12 @@ textarea:focus {
 }
 
 @media (max-width: 760px) {
+  :root {
+    --bottom-nav-clearance: 220px;
+  }
+
   .mobile-app {
     padding-inline: 14px;
-    padding-bottom: 148px;
   }
 
   .topbar {
