@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.10.126";
+const APP_VERSION = "2026.07.10.127";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -376,7 +376,13 @@ function mergeChecksWithDefaults(existingChecks, expectedChecks) {
 
   return expectedChecks.map((check) => {
     const existing = existingByCode.get(check.code);
-    return existing ? { ...check, ...existing, id: existing.id || check.id } : check;
+    return existing
+      ? {
+          ...existing,
+          ...check,
+          id: existing.id || check.id
+        }
+      : check;
   });
 }
 
