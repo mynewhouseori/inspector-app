@@ -44,8 +44,8 @@ const baseChecks = {
     { code: "4.1.4", name: "ניקוזים ותפקוד מערכות", category: "אינסטלציה וניקוז" }
   ],
   electricityCommunication: [
-    { code: "5.1.1", name: "שקעים", category: "חשמל ותקשורת" },
-    { code: "5.1.2", name: "מפסקים", category: "חשמל ותקשורת" },
+    { code: "5.1.1", name: "סורגים", category: "חשמל ותקשורת" },
+    { code: "5.1.2", name: "ספק תקשורת", category: "חשמל ותקשורת" },
     { code: "5.1.3", name: "נקודות תאורה", category: "חשמל ותקשורת" }
   ],
   dryRoomSystems: [
@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.10.125";
+const APP_VERSION = "2026.07.10.126";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
