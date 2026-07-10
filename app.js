@@ -175,7 +175,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.09.120";
+const APP_VERSION = "2026.07.10.121";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -861,48 +861,13 @@ function classifyDelta(planValue, actualValue) {
   return "issue";
 }
 
-function getDimensionStatus(area) {
-  const dims = area.dimensions || createDimensions();
-  const widthStatus = classifyDelta(normalizeNumber(dims.planWidth), normalizeNumber(dims.actualWidth));
-  const lengthStatus = classifyDelta(normalizeNumber(dims.planLength), normalizeNumber(dims.actualLength));
-  if (widthStatus === "empty" || lengthStatus === "empty") return { label: "ממתין להזנה", badgeClass: "", widthStatus, lengthStatus };
-  if (widthStatus === "issue" || lengthStatus === "issue") return { label: "פער במידות", badgeClass: "status-issue", widthStatus, lengthStatus };
-  if (widthStatus === "warn" || lengthStatus === "warn") return { label: "סטייה קלה במידות", badgeClass: "status-warn", widthStatus, lengthStatus };
-  return { label: "תואם לתכנית", badgeClass: "status-ok", widthStatus, lengthStatus };
-}
-
 function getAreaProgress(area) {
   if (area.locked) return { key: "locked", label: "הושלם וננעל" };
   const total = area.checks.length;
   const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
-  const touchedDimensions = hasDimensionInput(area) ? 1 : 0;
-  const touched = touchedChecks + touchedDimensions;
-  if (touched === 0) return { key: "pending", label: "לא נבדק" };
+  if (touchedChecks === 0) return { key: "pending", label: "לא נבדק" };
   if (touchedChecks >= total && total > 0) return { key: "complete", label: "הושלם" };
   return { key: "progress", label: "בבדיקה" };
-}
-
-function applyDimensionStateToCard(cardNode, area) {
-  if (!cardNode.querySelector(".dimension-badge")) return;
-  const dimensionState = getDimensionStatus(area);
-  const badge = cardNode.querySelector(".dimension-badge");
-  badge.textContent = dimensionState.label;
-  badge.classList.remove("status-ok", "status-warn", "status-issue");
-  if (dimensionState.badgeClass) {
-    badge.classList.add(dimensionState.badgeClass);
-  }
-
-  cardNode.querySelectorAll(".dimension-input").forEach((input) => {
-    input.classList.remove("match-ok", "match-warn", "match-issue");
-    const field = input.dataset.dimensionField;
-    const group = input.dataset.dimensionGroup;
-    const pairStatus = field === "width" ? dimensionState.widthStatus : dimensionState.lengthStatus;
-    if (group === "actual") {
-      if (pairStatus === "ok") input.classList.add("match-ok");
-      if (pairStatus === "warn") input.classList.add("match-warn");
-      if (pairStatus === "issue") input.classList.add("match-issue");
-    }
-  });
 }
 
 function refreshProgressAndSummary() {
@@ -928,13 +893,8 @@ function getTouchedChecksCount(area) {
   return area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
 }
 
-function hasDimensionInput(area) {
-  const dims = area.dimensions || createDimensions();
-  return ["planWidth", "planLength", "actualWidth", "actualLength"].some((key) => String(dims[key] || "").trim() !== "");
-}
-
 function isAreaInspected(area) {
-  return getTouchedChecksCount(area) > 0 || hasDimensionInput(area) || area.locked;
+  return getTouchedChecksCount(area) > 0 || area.locked;
 }
 
 function getInspectedAreas() {
@@ -1175,9 +1135,7 @@ function renderReportDocument(summary, issues) {
     const issuesInArea = area.checks.filter((check) => check.status === "issue");
     const okCount = area.checks.filter((check) => check.status === "ok").length;
     const pendingCount = area.checks.filter((check) => check.status === "pending").length;
-    const dimensionStatus = getDimensionStatus(area);
     const progress = getAreaProgress(area);
-    const dims = area.dimensions || createDimensions();
     const completion = computeAreaCompletion(area);
     const areaIssuesMarkup = issuesInArea.length
       ? issuesInArea.map((check) => `
@@ -1203,16 +1161,7 @@ function renderReportDocument(summary, issues) {
           </div>
           <span class="report-area-status">${escapeHtml(completion)}% הושלם</span>
         </div>
-        <div class="report-area-dimensions">
-          <strong>נתוני שטח</strong>
-          <div class="report-dimensions-row">
-            <span>תכנית רוחב: ${escapeHtml(formatDimensionValue(dims.planWidth) || "-")}</span>
-            <span>תכנית אורך: ${escapeHtml(formatDimensionValue(dims.planLength) || "-")}</span>
-            <span>בפועל רוחב: ${escapeHtml(formatDimensionValue(dims.actualWidth) || "-")}</span>
-            <span>בפועל אורך: ${escapeHtml(formatDimensionValue(dims.actualLength) || "-")}</span>
-          </div>
-        </div>
-        <div class="report-area-meta">סטטוס מידות: ${escapeHtml(dimensionStatus.label)} | תקין: ${escapeHtml(okCount)} | ליקויים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
+        <div class="report-area-meta">תקין: ${escapeHtml(okCount)} | ליקויים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
         ${area.photoCaptures?.length ? `
           <div class="report-area-photos">
             ${area.photoCaptures.map((photo) => {
@@ -1927,34 +1876,6 @@ function renderAreas() {
     node.querySelector(".area-photo-count").textContent = `תמונות חדר: ${getAreaPhotoCount(area)}/${MAX_AREA_PHOTOS}`;
     if (area.locked) node.classList.add("is-locked");
 
-    const dimensionFields = {
-      planWidth: node.querySelector('[data-dimension-key="planWidth"]'),
-      planLength: node.querySelector('[data-dimension-key="planLength"]'),
-      actualWidth: node.querySelector('[data-dimension-key="actualWidth"]'),
-      actualLength: node.querySelector('[data-dimension-key="actualLength"]')
-    };
-
-    Object.entries(dimensionFields).forEach(([key, input]) => {
-      if (!input) return;
-      input.value = area.dimensions?.[key] || "";
-      input.disabled = area.locked;
-      if (area.locked) input.classList.add("field-locked");
-      input.addEventListener("input", (event) => {
-        area.dimensions[key] = event.target.value.replace(",", ".");
-        applyDimensionStateToCard(node, area);
-        refreshProgressAndSummary();
-      });
-      input.addEventListener("blur", (event) => {
-        const formatted = formatDimensionValue(event.target.value);
-        area.dimensions[key] = formatted;
-        event.target.value = formatted;
-        applyDimensionStateToCard(node, area);
-        refreshProgressAndSummary();
-      });
-    });
-
-    applyDimensionStateToCard(node, area);
-
     node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
       lockBtn.textContent = area.locked ? "לחץ לפתיחה לעריכה" : "לחץ לשמירה ונעילה";
       if (area.locked) lockBtn.classList.add("locked");
@@ -2096,13 +2017,12 @@ function renderSummaryReports() {
     const total = area.checks.length;
     const issuesCount = area.checks.filter((check) => check.status === "issue").length;
     const done = area.checks.filter((check) => check.status !== "pending").length;
-    const dims = getDimensionStatus(area);
     const progress = getAreaProgress(area);
     return `
       <div class="summary-card">
         <strong>${area.name}</strong>
         <p>${areaTypeLabels[area.type]} | ${progress.label}</p>
-        <p>הושלמו ${done} מתוך ${total} | ליקויים: ${issuesCount} | מצב מידות: ${dims.label}</p>
+        <p>הושלמו ${done} מתוך ${total} | ליקויים: ${issuesCount}</p>
       </div>
     `;
   }).join("");
