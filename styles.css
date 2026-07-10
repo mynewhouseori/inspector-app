@@ -794,6 +794,12 @@ select {
   transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.status-select {
+  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: 15px;
+}
+
 .status-select.status-pending {
   border-color: rgba(194, 120, 79, 0.45);
   background: rgba(194, 120, 79, 0.1);
