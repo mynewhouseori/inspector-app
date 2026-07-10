@@ -45,8 +45,7 @@ const baseChecks = {
   ],
   electricityCommunication: [
     { code: "5.1.1", name: "סורגים", category: "חשמל ותקשורת" },
-    { code: "5.1.2", name: "ספק תקשורת", category: "חשמל ותקשורת" },
-    { code: "5.1.3", name: "נקודות תאורה", category: "חשמל ותקשורת" }
+    { code: "5.1.2", name: "ספק תקשורת", category: "חשמל ותקשורת" }
   ],
   dryRoomSystems: [
     { code: "5.1.5", name: "מזגן", category: "חשמל ותקשורת" }
@@ -175,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.10.127";
+const APP_VERSION = "2026.07.10.128";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
