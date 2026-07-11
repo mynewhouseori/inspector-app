@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.155";
+const APP_VERSION = "2026.07.11.156";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -606,8 +606,8 @@ function mergeChecksWithDefaults(existingChecks, expectedChecks) {
     const existing = existingByCode.get(check.code);
     return existing
       ? {
-          ...existing,
           ...check,
+          ...existing,
           id: existing.id || check.id
         }
       : check;
@@ -1128,7 +1128,8 @@ function getTouchedChecksCount(area) {
 }
 
 function isAreaInspected(area) {
-  return getTouchedChecksCount(area) > 0 || area.locked;
+  const hasPhotos = Array.isArray(area.photoCaptures) && area.photoCaptures.length > 0;
+  return getTouchedChecksCount(area) > 0 || hasPhotos || area.locked;
 }
 
 function getInspectedAreas() {
