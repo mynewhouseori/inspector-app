@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.171";
+const APP_VERSION = "2026.07.11.172";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2361,18 +2361,8 @@ function renderOwnerApartments() {
 function renderSummaryReports() {
   const summary = computeSummary();
   const issues = getAllIssues();
-  const stats = [
-    { key: "checks", label: "בדיקות", value: summary.totalChecks },
-    { key: "issues", label: "ליקויים", value: summary.issues }
-  ];
   if (els.summaryStats) {
-    els.summaryStats.innerHTML = stats.map((item) => `
-      <div class="summary-card stat-${item.key}">
-        <span class="summary-card-icon" aria-hidden="true">${getSummaryStatVisual(item.key)}</span>
-        <strong>${item.value}</strong>
-        <p>${item.label}</p>
-      </div>
-    `).join("");
+    els.summaryStats.innerHTML = "";
   }
 
   if (!issues.length) {
