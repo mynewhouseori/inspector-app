@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inspector</title>
-  <link rel="stylesheet" href="./styles.css?v=20260711-41">
+  <link rel="stylesheet" href="./styles.css?v=20260711-42">
 </head>
 <body>
   <main class="mobile-app">
@@ -70,35 +70,42 @@
           <button id="newProjectBtn" class="ghost-btn" type="button">בדיקה חדשה</button>
         </div>
 
-        <label>
-          <span>שם הנכס</span>
-          <input id="propertyName" type="text" placeholder="למשל: דירה 7">
-        </label>
+        <div class="intro-form-grid">
+          <label class="field-span-2">
+            <span>שם הנכס</span>
+            <input id="propertyName" type="text" placeholder="למשל: דירה 7">
+          </label>
 
-        <label id="propertyAddressField">
-          <span>כתובת</span>
-          <input id="propertyAddress" type="text" placeholder="רחוב, עיר">
-        </label>
+          <label id="propertyAddressField" class="field-span-2">
+            <span>כתובת</span>
+            <input id="propertyAddress" type="text" placeholder="רחוב, עיר">
+          </label>
 
-        <label>
-          <span id="clientNameLabel">שם הלקוח</span>
-          <input id="clientName" type="text" placeholder="הזן שם לקוח">
-        </label>
+          <label>
+            <span id="clientNameLabel">שם הלקוח</span>
+            <input id="clientName" type="text" placeholder="הזן שם לקוח">
+          </label>
 
-        <label>
-          <span>טלפון</span>
-          <input id="clientPhone" type="tel" placeholder="050-0000000">
-        </label>
+          <label>
+            <span>תאריך בדיקה</span>
+            <input id="inspectionDate" type="date">
+          </label>
 
-        <label>
-          <span>אימייל</span>
-          <input id="clientEmail" type="email" placeholder="name@example.com">
-        </label>
+          <label>
+            <span>טלפון</span>
+            <input id="clientPhone" type="tel" placeholder="050-0000000">
+          </label>
 
-        <label id="inspectorNameField">
-          <span>שם הבודק</span>
-          <input id="inspectorName" type="text" placeholder="הזן שם בודק">
-        </label>
+          <label>
+            <span>אימייל</span>
+            <input id="clientEmail" type="email" placeholder="name@example.com">
+          </label>
+
+          <label id="inspectorNameField" class="field-span-2">
+            <span>שם הבודק</span>
+            <input id="inspectorName" type="text" placeholder="הזן שם בודק">
+          </label>
+        </div>
 
         <button id="welcomeNavBtn" class="primary-btn" type="button">המשך לחדרים</button>
         <button id="saveProjectBtn" class="ghost-btn full-width" type="button">שמור בדיקת דירה</button>
@@ -330,8 +337,8 @@
     </article>
   </template>
 
-  <script src="./config.demo.js?v=20260711-41"></script>
-  <script type="module" src="./app.js?v=20260711-41"></script>
+  <script src="./config.demo.js?v=20260711-42"></script>
+  <script type="module" src="./app.js?v=20260711-42"></script>
 </body>
 </html>
 

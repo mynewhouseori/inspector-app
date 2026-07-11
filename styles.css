@@ -361,11 +361,21 @@ textarea {
 
 .intro-panel {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .intro-panel label {
   margin-top: 0;
+}
+
+.intro-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+.field-span-2 {
+  grid-column: 1 / -1;
 }
 
 .hero-card {
@@ -413,21 +423,21 @@ textarea {
 
 label {
   display: block;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 label span {
   display: block;
-  margin-bottom: 6px;
-  font-size: 14px;
+  margin-bottom: 4px;
+  font-size: 13px;
   color: var(--muted);
 }
 
 input,
 select {
   width: 100%;
-  padding: 13px 14px;
-  border-radius: 15px;
+  padding: 11px 12px;
+  border-radius: 13px;
   border: 1px solid var(--line);
   background: white;
 }
@@ -453,14 +463,14 @@ select {
 
 .primary-btn,
 .ghost-btn {
-  padding: 14px 16px;
+  padding: 12px 14px;
 }
 
 .primary-btn {
   width: 100%;
   background: linear-gradient(135deg, var(--accent), #143f46);
   color: white;
-  margin-top: 14px;
+  margin-top: 8px;
 }
 
 .ghost-btn {
@@ -469,7 +479,7 @@ select {
 }
 
 #saveProjectBtn {
-  margin-top: 14px;
+  margin-top: 8px;
   background: linear-gradient(135deg, rgba(42, 127, 98, 0.16), rgba(42, 127, 98, 0.24));
   color: var(--ok);
   border: 1px solid rgba(42, 127, 98, 0.35);
@@ -481,7 +491,7 @@ select {
 }
 
 .quick-switch-btn {
-  margin-top: 14px;
+  margin-top: 8px;
   background: linear-gradient(135deg, rgba(194, 120, 79, 0.14), rgba(194, 120, 79, 0.24));
   color: #8a5535;
   border: 1px solid rgba(194, 120, 79, 0.34);
@@ -2544,6 +2554,14 @@ textarea:focus {
 @media (max-width: 760px) {
   :root {
     --bottom-nav-clearance: 220px;
+  }
+
+  .intro-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-span-2 {
+    grid-column: auto;
   }
 
   .mobile-app {

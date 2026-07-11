@@ -174,11 +174,20 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.160";
+const APP_VERSION = "2026.07.11.161";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
 const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם-יפו";
+
+function getTodayInputValue() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function normalizeInspectionDate(value) {
+  const normalized = String(value || "").trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(normalized) ? normalized : getTodayInputValue();
+}
 
 function normalizePropertyAddress(value) {
   const normalized = String(value || "").trim();
@@ -472,6 +481,7 @@ const state = {
   inspectionMode: "new",
   propertyName: "",
   propertyAddress: DEFAULT_PROPERTY_ADDRESS,
+  inspectionDate: getTodayInputValue(),
   clientName: "",
   clientPhone: "",
   clientEmail: "",
@@ -497,6 +507,7 @@ const els = {
   welcomeNavBtn: document.querySelector("#welcomeNavBtn"),
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
+  inspectionDate: document.querySelector("#inspectionDate"),
   clientName: document.querySelector("#clientName"),
   clientPhone: document.querySelector("#clientPhone"),
   clientEmail: document.querySelector("#clientEmail"),
@@ -650,6 +661,7 @@ function applyProjectData(projectData) {
   state.inspectionMode = projectData.inspectionMode || state.inspectionMode || "new";
   state.propertyName = projectData.propertyName || "";
   state.propertyAddress = normalizePropertyAddress(projectData.propertyAddress);
+  state.inspectionDate = normalizeInspectionDate(projectData.inspectionDate);
   state.clientName = projectData.clientName || "";
   state.clientPhone = projectData.clientPhone || "";
   state.clientEmail = projectData.clientEmail || "";
@@ -661,6 +673,7 @@ function applyProjectData(projectData) {
   if (!state.areas.length) state.areas = buildPresetAreas();
   els.propertyName.value = state.propertyName;
   els.propertyAddress.value = state.propertyAddress;
+  els.inspectionDate.value = state.inspectionDate;
   els.clientName.value = state.clientName;
   els.clientPhone.value = state.clientPhone;
   els.clientEmail.value = state.clientEmail;
@@ -1173,14 +1186,15 @@ function escapeHtml(value) {
 }
 
 function formatGeneratedAt() {
-  return new Date().toLocaleString("he-IL", {
-    dateStyle: "short",
-    timeStyle: "short"
+  return new Date(normalizeInspectionDate(state.inspectionDate)).toLocaleDateString("he-IL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
   });
 }
 
 function formatGeneratedDateOnly() {
-  return new Date().toLocaleDateString("he-IL", {
+  return new Date(normalizeInspectionDate(state.inspectionDate)).toLocaleDateString("he-IL", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric"
@@ -1581,6 +1595,7 @@ function buildPrintPages() {
 function updateProjectFields() {
   state.propertyName = els.propertyName.value.trim();
   state.propertyAddress = normalizePropertyAddress(els.propertyAddress.value);
+  state.inspectionDate = normalizeInspectionDate(els.inspectionDate.value);
   state.clientName = els.clientName.value.trim();
   state.clientPhone = els.clientPhone.value.trim();
   state.clientEmail = els.clientEmail.value.trim();
@@ -1596,6 +1611,7 @@ function projectDataSignature(projectData = {}) {
     inspectionMode: projectData.inspectionMode || "new",
     propertyName: projectData.propertyName || "",
     propertyAddress: normalizePropertyAddress(projectData.propertyAddress),
+    inspectionDate: normalizeInspectionDate(projectData.inspectionDate),
     clientName: projectData.clientName || "",
     clientPhone: projectData.clientPhone || "",
     clientEmail: projectData.clientEmail || "",
@@ -1646,6 +1662,7 @@ function serializeCurrentProject() {
     inspectionMode: state.inspectionMode,
     propertyName: state.propertyName,
     propertyAddress: normalizePropertyAddress(state.propertyAddress),
+    inspectionDate: normalizeInspectionDate(state.inspectionDate),
     clientName: state.clientName,
     clientPhone: state.clientPhone,
     clientEmail: state.clientEmail,
@@ -1924,6 +1941,7 @@ function startNewProject() {
   state.currentScreen = "welcome";
   state.propertyName = "";
   state.propertyAddress = DEFAULT_PROPERTY_ADDRESS;
+  state.inspectionDate = getTodayInputValue();
   state.clientName = "";
   state.clientPhone = "";
   state.clientEmail = "";
@@ -1932,6 +1950,7 @@ function startNewProject() {
   state.areas = buildPresetAreas();
   els.propertyName.value = "";
   els.propertyAddress.value = DEFAULT_PROPERTY_ADDRESS;
+  els.inspectionDate.value = state.inspectionDate;
   els.clientName.value = "";
   els.clientPhone.value = "";
   els.clientEmail.value = "";
@@ -1964,6 +1983,7 @@ function openOwnerApartment(apartmentName) {
     state.currentProjectId = getOwnerApartmentProjectId(apartmentName);
     state.propertyName = apartmentName;
     state.propertyAddress = DEFAULT_PROPERTY_ADDRESS;
+    state.inspectionDate = getTodayInputValue();
     state.clientName = "";
     state.clientPhone = "";
     state.clientEmail = "";
@@ -1972,6 +1992,7 @@ function openOwnerApartment(apartmentName) {
     state.areas = buildPresetAreas();
     els.propertyName.value = apartmentName;
     els.propertyAddress.value = DEFAULT_PROPERTY_ADDRESS;
+    els.inspectionDate.value = state.inspectionDate;
     els.clientName.value = "";
     els.clientPhone.value = "";
     els.clientEmail.value = "";
@@ -2340,6 +2361,7 @@ function loadState() {
     inspectionMode: parsed.inspectionMode || "new",
     propertyName: parsed.propertyName || "",
     propertyAddress: normalizePropertyAddress(parsed.propertyAddress),
+    inspectionDate: parsed.inspectionDate || getTodayInputValue(),
     clientName: parsed.clientName || "",
     clientPhone: parsed.clientPhone || "",
     clientEmail: parsed.clientEmail || "",
@@ -2446,7 +2468,7 @@ if (els.addAreaBtn && els.areaName && els.areaType) {
   els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
 }
 
-[els.propertyName, els.propertyAddress, els.clientName, els.clientPhone, els.clientEmail, els.inspectorName].forEach((input) => {
+[els.propertyName, els.propertyAddress, els.inspectionDate, els.clientName, els.clientPhone, els.clientEmail, els.inspectorName].forEach((input) => {
   input.addEventListener("input", () => {
     updateProjectFields();
     saveState();
