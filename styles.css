@@ -1889,10 +1889,25 @@ textarea:focus {
   justify-self: stretch;
   border-radius: 18px 0 0 18px;
   border: 0;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset -1px 0 0 rgba(255, 255, 255, 0.72),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    8px 0 18px rgba(18, 40, 46, 0.08);
   padding: 12px 6px;
   color: var(--accent);
   position: relative;
+  isolation: isolate;
+}
+
+.check-icon-badge::before {
+  content: "";
+  position: absolute;
+  inset: 6px 8px 6px 6px;
+  border-radius: 16px 0 0 16px;
+  background: radial-gradient(circle at 25% 22%, rgba(255, 255, 255, 0.55), transparent 42%);
+  opacity: 0.72;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .check-icon-badge::after {
@@ -1900,14 +1915,18 @@ textarea:focus {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.02)),
-    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.42), transparent 48%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.01)),
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.5), transparent 42%);
   pointer-events: none;
+  z-index: 1;
 }
 
 .check-icon-badge svg {
   width: 46px;
   height: 46px;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 6px 10px rgba(24, 38, 44, 0.16));
 }
 
 .check-title-copy {
@@ -1961,43 +1980,43 @@ textarea:focus {
 
 .tone-structure::before,
 .tone-structure .check-icon-badge {
-  background: linear-gradient(180deg, #ff8f7f 0%, #ffc7bd 52%, #fff2ee 100%);
+  background: linear-gradient(180deg, #ff7867 0%, #ffb7ab 52%, #fff0eb 100%);
   color: #d94d3b;
 }
 
 .tone-finishes::before,
 .tone-finishes .check-icon-badge {
-  background: linear-gradient(180deg, #ffbc2a 0%, #ffd978 52%, #fff6df 100%);
+  background: linear-gradient(180deg, #ffb10f 0%, #ffd15c 52%, #fff5db 100%);
   color: #dd8400;
 }
 
 .tone-openings::before,
 .tone-openings .check-icon-badge {
-  background: linear-gradient(180deg, #8ec2ff 0%, #c7e0ff 52%, #f1f7ff 100%);
+  background: linear-gradient(180deg, #73b4ff 0%, #b8d8ff 52%, #eff6ff 100%);
   color: #3d84e8;
 }
 
 .tone-plumbing::before,
 .tone-plumbing .check-icon-badge {
-  background: linear-gradient(180deg, #58e0dc 0%, #a9f0ee 52%, #eefcfb 100%);
+  background: linear-gradient(180deg, #38d7d2 0%, #93ece8 52%, #ebfcfb 100%);
   color: #129fb0;
 }
 
 .tone-electric::before,
 .tone-electric .check-icon-badge {
-  background: linear-gradient(180deg, #bde95d 0%, #dbf59d 52%, #f4fde3 100%);
+  background: linear-gradient(180deg, #b2e33f 0%, #d2f07d 52%, #f2fddf 100%);
   color: #5f9712;
 }
 
 .tone-safety::before,
 .tone-safety .check-icon-badge {
-  background: linear-gradient(180deg, #ffb38e 0%, #ffd6c1 52%, #fff2eb 100%);
+  background: linear-gradient(180deg, #ff9d70 0%, #ffcbb0 52%, #fff0e7 100%);
   color: #c25328;
 }
 
 .tone-outdoor::before,
 .tone-outdoor .check-icon-badge {
-  background: linear-gradient(180deg, #ffbf7a 0%, #ffd9ae 52%, #fff5e8 100%);
+  background: linear-gradient(180deg, #ffae52 0%, #ffd098 52%, #fff3e4 100%);
   color: #d4771c;
 }
 
