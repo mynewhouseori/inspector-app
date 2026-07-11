@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.169";
+const APP_VERSION = "2026.07.11.170";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2363,10 +2363,8 @@ function renderSummaryReports() {
   const issues = getAllIssues();
   const stats = [
     { key: "checks", label: "בדיקות", value: summary.totalChecks },
-    { key: "ok", label: "תקין", value: summary.ok },
     { key: "issues", label: "ליקויים", value: summary.issues },
-    { key: "pending", label: "לבדיקה", value: summary.pending },
-    { key: "high", label: "ליקוי גבוה", value: summary.highIssues }
+    { key: "pending", label: "לבדיקה", value: summary.pending }
   ];
   if (els.summaryStats) {
     els.summaryStats.innerHTML = stats.map((item) => `
