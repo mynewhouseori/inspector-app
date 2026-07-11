@@ -62,10 +62,10 @@
       </article>
 
       <article class="panel intro-panel">
-        <div class="section-head">
-          <div>
+        <div class="section-head intro-panel-head">
+          <div class="intro-panel-heading">
             <h3>פרטי בדיקה</h3>
-            <p class="section-text">הנתונים נשמרים אוטומטית ומסונכרנים לענן כשאפשר.</p>
+            <span class="intro-date-pill">תאריך: <strong id="inspectionDateBadge">--/--/----</strong></span>
           </div>
           <button id="newProjectBtn" class="ghost-btn" type="button">בדיקה חדשה</button>
         </div>
@@ -86,7 +86,7 @@
             <input id="clientName" type="text" placeholder="הזן שם לקוח">
           </label>
 
-          <label>
+          <label class="compact-date-field">
             <span>תאריך בדיקה</span>
             <input id="inspectionDate" type="date">
           </label>

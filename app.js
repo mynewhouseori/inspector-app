@@ -508,6 +508,7 @@ const els = {
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
   inspectionDate: document.querySelector("#inspectionDate"),
+  inspectionDateBadge: document.querySelector("#inspectionDateBadge"),
   clientName: document.querySelector("#clientName"),
   clientPhone: document.querySelector("#clientPhone"),
   clientEmail: document.querySelector("#clientEmail"),
@@ -678,6 +679,7 @@ function applyProjectData(projectData) {
   els.clientPhone.value = state.clientPhone;
   els.clientEmail.value = state.clientEmail;
   els.inspectorName.value = state.inspectorName;
+  updateInspectionDateBadge();
 }
 
 function updateAppVersionLabel() {
@@ -1201,6 +1203,11 @@ function formatGeneratedDateOnly() {
   });
 }
 
+function updateInspectionDateBadge() {
+  if (!els.inspectionDateBadge) return;
+  els.inspectionDateBadge.textContent = formatGeneratedDateOnly();
+}
+
 function getAllIssues() {
   return selectedAreas().flatMap((area) =>
     area.checks
@@ -1600,6 +1607,7 @@ function updateProjectFields() {
   state.clientPhone = els.clientPhone.value.trim();
   state.clientEmail = els.clientEmail.value.trim();
   state.inspectorName = els.inspectorName.value.trim();
+  updateInspectionDateBadge();
 }
 
 function getProjectTitle(project = state) {
@@ -1955,6 +1963,7 @@ function startNewProject() {
   els.clientPhone.value = "";
   els.clientEmail.value = "";
   els.inspectorName.value = "";
+  updateInspectionDateBadge();
   render({ preserveScroll: false });
   setScreen("welcome", { scroll: true });
 }
@@ -1997,6 +2006,7 @@ function openOwnerApartment(apartmentName) {
     els.clientPhone.value = "";
     els.clientEmail.value = "";
     els.inspectorName.value = "";
+    updateInspectionDateBadge();
     saveState({ immediateCloud: true });
   }
 

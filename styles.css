@@ -361,7 +361,25 @@ textarea {
 
 .intro-panel {
   display: grid;
-  gap: 8px;
+  gap: 6px;
+  padding: 16px 18px;
+}
+
+.intro-panel-head {
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.intro-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.intro-panel-heading h3 {
+  margin: 0;
 }
 
 .intro-panel label {
@@ -370,12 +388,36 @@ textarea {
 
 .intro-form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 8px;
 }
 
 .field-span-2 {
   grid-column: 1 / -1;
+}
+
+.compact-date-field {
+  min-width: 0;
+}
+
+.intro-date-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid rgba(22, 95, 102, 0.14);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(70, 176, 159, 0.14), rgba(255, 255, 255, 0.96));
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.intro-date-pill strong {
+  color: var(--ink);
+  font-weight: 800;
 }
 
 .hero-card {
@@ -2562,6 +2604,18 @@ textarea:focus {
 
   .field-span-2 {
     grid-column: auto;
+  }
+
+  .intro-panel {
+    padding: 14px;
+  }
+
+  .intro-panel-head {
+    align-items: flex-start;
+  }
+
+  .intro-panel-heading {
+    gap: 8px;
   }
 
   .mobile-app {
