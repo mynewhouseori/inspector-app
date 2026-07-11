@@ -1899,7 +1899,7 @@ textarea:focus {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.04));
   pointer-events: none;
 }
 
@@ -1933,31 +1933,31 @@ textarea:focus {
 
 .tone-structure::before,
 .tone-structure .check-icon-badge {
-  background: linear-gradient(180deg, #ffe4de 0%, #fff6f3 100%);
+  background: linear-gradient(180deg, #ffb0a2 0%, #ffe5de 48%, #fff6f3 100%);
   color: #de6a57;
 }
 
 .tone-finishes::before,
 .tone-finishes .check-icon-badge {
-  background: linear-gradient(180deg, #ffe5b7 0%, #fff8eb 100%);
+  background: linear-gradient(180deg, #ffc34c 0%, #ffe3ac 48%, #fff8eb 100%);
   color: #d48816;
 }
 
 .tone-openings::before,
 .tone-openings .check-icon-badge {
-  background: linear-gradient(180deg, #d6ebff 0%, #f4f9ff 100%);
+  background: linear-gradient(180deg, #b8d7ff 0%, #dcecff 48%, #f4f9ff 100%);
   color: #5f96e8;
 }
 
 .tone-plumbing::before,
 .tone-plumbing .check-icon-badge {
-  background: linear-gradient(180deg, #c9f2f1 0%, #f3fcfc 100%);
+  background: linear-gradient(180deg, #89ece7 0%, #c9f2f1 48%, #f3fcfc 100%);
   color: #2cb7c7;
 }
 
 .tone-electric::before,
 .tone-electric .check-icon-badge {
-  background-color: rgba(228, 249, 214, 0.96);
+  background: linear-gradient(180deg, #c9ef91 0%, #e4f9d6 50%, #f6fdea 100%);
   color: #5f8f1a;
 }
 
@@ -2093,6 +2093,10 @@ textarea:focus {
   width: 30px;
   height: 30px;
   border-radius: 8px;
+}
+
+.check-photo-list:empty {
+  display: none;
 }
 
 .tone-structure::after {
