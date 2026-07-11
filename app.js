@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.145";
+const APP_VERSION = "2026.07.11.146";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -234,48 +234,56 @@ function getCheckVisual(check) {
   if (category.includes("שלד")) {
     return {
       tone: "tone-structure",
-      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="crackGlow" x1="0" x2="1"><stop offset="0" stop-color="#ff9f90"/><stop offset="1" stop-color="#ff6b59"/></linearGradient></defs><path d="M34 8 22 24l8 2-10 13 7 3-8 13" fill="none" stroke="url(#crackGlow)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M31 10 24 22l8 2-9 12 7 3-6 11" fill="none" stroke="#8e2f2a" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 16h10M44 19h11M15 36h8M44 41h10M18 56h12" fill="none" stroke="#f6b7ae" stroke-width="3.2" stroke-linecap="round"></path></svg>`
+      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="crackGlow" x1="0" x2="1"><stop offset="0" stop-color="#ff9f90"/><stop offset="1" stop-color="#ff6b59"/></linearGradient></defs><path d="M34 8 22 24l8 2-10 13 7 3-8 13" fill="none" stroke="url(#crackGlow)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M31 10 24 22l8 2-9 12 7 3-6 11" fill="none" stroke="#8e2f2a" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 16h10M44 19h11M15 36h8M44 41h10M18 56h12" fill="none" stroke="#f6b7ae" stroke-width="3.2" stroke-linecap="round"></path></svg>`,
+      badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 8 10h4l-3 11 7-10h-4l1-8Z" fill="currentColor"></path></svg>`
     };
   }
   if (category.includes("גמר")) {
     return {
       tone: "tone-finishes",
-      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="m18 20 17-9 18 10-17 9z" fill="#ffd48d" stroke="#9b5b13" stroke-width="2.8" stroke-linejoin="round"></path><path d="M18 20v21l17 10V30z" fill="#ffc15a" stroke="#9b5b13" stroke-width="2.8" stroke-linejoin="round"></path><path d="M53 21v20L35 51V30z" fill="#ffdeab" stroke="#9b5b13" stroke-width="2.8" stroke-linejoin="round"></path><path d="m23 31 12 7 13-7" fill="none" stroke="#8f5a23" stroke-opacity="0.45" stroke-width="2.4" stroke-linecap="round"></path><path d="M35 11v19" fill="none" stroke="#fff1cf" stroke-width="2" stroke-linecap="round"></path></svg>`
+      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="m18 20 17-9 18 10-17 9z" fill="#ffd48d" stroke="#9b5b13" stroke-width="2.8" stroke-linejoin="round"></path><path d="M18 20v21l17 10V30z" fill="#ffc15a" stroke="#9b5b13" stroke-width="2.8" stroke-linejoin="round"></path><path d="M53 21v20L35 51V30z" fill="#ffdeab" stroke="#9b5b13" stroke-width="2.8" stroke-linejoin="round"></path><path d="m23 31 12 7 13-7" fill="none" stroke="#8f5a23" stroke-opacity="0.45" stroke-width="2.4" stroke-linecap="round"></path><path d="M35 11v19" fill="none" stroke="#fff1cf" stroke-width="2" stroke-linecap="round"></path></svg>`,
+      badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h12a2 2 0 0 1 2 2v2h2v2h-2v4h-3V9H4zM6 17h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`
     };
   }
   if (category.includes("פתחים")) {
     return {
       tone: "tone-openings",
-      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="glassFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#dff6ff"/><stop offset="1" stop-color="#b7dcff"/></linearGradient></defs><path d="M14 13h44v46H14z" fill="#eef7ff" stroke="#375a76" stroke-width="3"></path><path d="M19 18h16v36H19zM37 18h16v36H37z" fill="url(#glassFill)" stroke="#5a80a0" stroke-width="2.5"></path><path d="M36 13v46" fill="none" stroke="#32526d" stroke-width="3"></path><path d="M24 24c3 2 4 5 5 8M44 21c-2 2-4 6-5 10" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path><path d="M18 54h36" fill="none" stroke="#6a8dab" stroke-width="2.5" stroke-linecap="round"></path></svg>`
+      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="glassFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#dff6ff"/><stop offset="1" stop-color="#b7dcff"/></linearGradient></defs><path d="M14 13h44v46H14z" fill="#eef7ff" stroke="#375a76" stroke-width="3"></path><path d="M19 18h16v36H19zM37 18h16v36H37z" fill="url(#glassFill)" stroke="#5a80a0" stroke-width="2.5"></path><path d="M36 13v46" fill="none" stroke="#32526d" stroke-width="3"></path><path d="M24 24c3 2 4 5 5 8M44 21c-2 2-4 6-5 10" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path><path d="M18 54h36" fill="none" stroke="#6a8dab" stroke-width="2.5" stroke-linecap="round"></path></svg>`,
+      badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM12 4v16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>`
     };
   }
   if (category.includes("אינסטלציה")) {
     return {
       tone: "tone-plumbing",
-      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="dropFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#78e7ff"/><stop offset="1" stop-color="#00a9d8"/></linearGradient></defs><path d="M36 10c8 10 14 17 14 26a14 14 0 0 1-28 0c0-9 6-16 14-26Z" fill="url(#dropFill)" stroke="#0c78b1" stroke-width="3"></path><path d="M32 24c-2 2-4 5-5 8" fill="none" stroke="#e9ffff" stroke-width="3" stroke-linecap="round"></path><path d="M15 52c5-2 10-2 15 .2 4 2 8 2 12 0 5-2.2 10-2.2 15-.2" fill="none" stroke="#0c5f98" stroke-width="3" stroke-linecap="round"></path><path d="M18 59c4-1.7 8-1.7 12 0 4 1.7 8 1.7 12 0 4-1.7 8-1.7 12 0" fill="none" stroke="#37a9d8" stroke-width="2.5" stroke-linecap="round"></path></svg>`
+      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="dropFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#78e7ff"/><stop offset="1" stop-color="#00a9d8"/></linearGradient></defs><path d="M36 10c8 10 14 17 14 26a14 14 0 0 1-28 0c0-9 6-16 14-26Z" fill="url(#dropFill)" stroke="#0c78b1" stroke-width="3"></path><path d="M32 24c-2 2-4 5-5 8" fill="none" stroke="#e9ffff" stroke-width="3" stroke-linecap="round"></path><path d="M15 52c5-2 10-2 15 .2 4 2 8 2 12 0 5-2.2 10-2.2 15-.2" fill="none" stroke="#0c5f98" stroke-width="3" stroke-linecap="round"></path><path d="M18 59c4-1.7 8-1.7 12 0 4 1.7 8 1.7 12 0 4-1.7 8-1.7 12 0" fill="none" stroke="#37a9d8" stroke-width="2.5" stroke-linecap="round"></path></svg>`,
+      badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4 6 7 6 11a6 6 0 1 1-12 0c0-4 3-7 6-11Z" fill="currentColor"></path></svg>`
     };
   }
   if (category.includes("חשמל")) {
     return {
       tone: "tone-electric",
-      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M23 18h8v14h9V18h8v15a4 4 0 0 1-4 4h-5v6h4a10 10 0 1 1 0 4h-16V37h-4a4 4 0 0 1-4-4z" fill="#7fb82a"></path><path d="M29 22v14M43 22v14" fill="none" stroke="#edf9c5" stroke-width="3" stroke-linecap="round"></path><circle cx="52" cy="49" r="6" fill="#9bd03f" stroke="#5c8620" stroke-width="2.6"></circle></svg>`
+      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M23 18h8v14h9V18h8v15a4 4 0 0 1-4 4h-5v6h4a10 10 0 1 1 0 4h-16V37h-4a4 4 0 0 1-4-4z" fill="#7fb82a"></path><path d="M29 22v14M43 22v14" fill="none" stroke="#edf9c5" stroke-width="3" stroke-linecap="round"></path><circle cx="52" cy="49" r="6" fill="#9bd03f" stroke="#5c8620" stroke-width="2.6"></circle></svg>`,
+      badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v6m10-6v6M8 7h8v6H8zm4 6v6M8 19h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`
     };
   }
   if (category.includes("בטיחות")) {
     return {
       tone: "tone-safety",
-      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M36 10 53 16v13c0 12-7 22-17 27-10-5-17-15-17-27V16z" fill="#ffcfbf" stroke="#bd6545" stroke-width="3"></path><path d="M36 18v17" fill="none" stroke="#914227" stroke-width="4" stroke-linecap="round"></path><circle cx="36" cy="44" r="3.8" fill="#914227"></circle><path d="M28 12h16" fill="none" stroke="#fff0e7" stroke-width="2.2" stroke-linecap="round"></path></svg>`
+      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M36 10 53 16v13c0 12-7 22-17 27-10-5-17-15-17-27V16z" fill="#ffcfbf" stroke="#bd6545" stroke-width="3"></path><path d="M36 18v17" fill="none" stroke="#914227" stroke-width="4" stroke-linecap="round"></path><circle cx="36" cy="44" r="3.8" fill="#914227"></circle><path d="M28 12h16" fill="none" stroke="#fff0e7" stroke-width="2.2" stroke-linecap="round"></path></svg>`,
+      badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 5-3 8-7 10-4-2-7-5-7-10V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M12 8v5m0 3h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
     };
   }
   if (category.includes("גג") || code.startsWith("6.")) {
     return {
       tone: "tone-outdoor",
-      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="m15 33 21-17 21 17v18H42v-11H30v11H15z" fill="#e6b38a" stroke="#9a6039" stroke-width="3" stroke-linejoin="round"></path><path d="M24 30h24" fill="none" stroke="#fff2e7" stroke-width="2.2" stroke-linecap="round"></path><path d="M21 52h30" fill="none" stroke="#b2774d" stroke-width="2.6" stroke-linecap="round"></path></svg>`
+      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="m15 33 21-17 21 17v18H42v-11H30v11H15z" fill="#e6b38a" stroke="#9a6039" stroke-width="3" stroke-linejoin="round"></path><path d="M24 30h24" fill="none" stroke="#fff2e7" stroke-width="2.2" stroke-linecap="round"></path><path d="M21 52h30" fill="none" stroke="#b2774d" stroke-width="2.6" stroke-linecap="round"></path></svg>`,
+      badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 8-6 8 6M7 10v8h10v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`
     };
   }
   return {
     tone: "tone-neutral",
-    icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v2H5zm0 5h14v2H5zm0 5h9v2H5z"></path></svg>`
+    icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v2H5zm0 5h14v2H5zm0 5h9v2H5z"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12M6 12h12M6 18h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
   };
 }
 
@@ -1992,7 +2000,7 @@ function renderAreas() {
       const checkVisual = getCheckVisual(check);
       checkNode.classList.add(checkVisual.tone);
       checkNode.querySelector(".check-icon-badge").innerHTML = checkVisual.icon;
-      checkNode.querySelector(".check-title-badge").innerHTML = checkVisual.icon;
+      checkNode.querySelector(".check-title-badge").innerHTML = checkVisual.badgeIcon || checkVisual.icon;
       checkNode.querySelector(".check-name").textContent = check.name;
       checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
       const statusSelect = checkNode.querySelector(".status-select");
