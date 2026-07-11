@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.157";
+const APP_VERSION = "2026.07.11.158";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1427,7 +1427,7 @@ function createPrintPage(pageNumber) {
   page.innerHTML = `
     <div class="print-page-header">
       <div class="print-page-brand">
-        <img class="print-page-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
+        <img class="print-page-logo report-brand-logo" src="assets/logo-report.png" alt="לוגו קבוצת משה חדיף">
         <div>
           <strong>אורי לוין</strong>
           <span>ביצוע ופיקוח בבנייה</span>

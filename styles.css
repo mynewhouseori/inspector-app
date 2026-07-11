@@ -1030,6 +1030,16 @@ select {
   box-shadow: 0 10px 22px rgba(15, 31, 42, 0.16);
 }
 
+.report-brand-logo {
+  width: min(240px, 42vw);
+  height: auto;
+  min-height: 56px;
+  max-height: 92px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 10px 14px;
+}
+
 .report-page-meta,
 .report-cover-meta {
   display: flex;
@@ -1094,6 +1104,15 @@ select {
   object-fit: contain;
   background: white;
   padding: 4px;
+}
+
+.print-page-logo.report-brand-logo {
+  width: 160px;
+  height: auto;
+  min-height: 36px;
+  max-height: 60px;
+  padding: 6px 10px;
+  border-radius: 12px;
 }
 
 .print-page-meta {
