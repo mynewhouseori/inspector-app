@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.168";
+const APP_VERSION = "2026.07.11.169";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2362,7 +2362,6 @@ function renderSummaryReports() {
   const summary = computeSummary();
   const issues = getAllIssues();
   const stats = [
-    { key: "areas", label: "אזורים", value: summary.totalAreas },
     { key: "checks", label: "בדיקות", value: summary.totalChecks },
     { key: "ok", label: "תקין", value: summary.ok },
     { key: "issues", label: "ליקויים", value: summary.issues },
