@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.153";
+const APP_VERSION = "2026.07.11.155";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1447,6 +1447,15 @@ function buildCompactPrintBody() {
   const reportAreas = getInspectedAreas();
   const reportSummary = computeReportSummary(reportAreas);
   const reportIssues = getReportIssues(reportAreas).slice(0, 5);
+  const reportPhotos = reportAreas.flatMap((area) => (
+    (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
+      .map((photo) => ({
+        areaName: area.name,
+        checkName: photo.checkName || "",
+        src: photo.downloadURL || photo.previewDataUrl || ""
+      }))
+      .filter((photo) => photo.src)
+  ));
   const topAreaLines = reportAreas.slice(0, 4).map((area) => {
     const issuesCount = area.checks.filter((check) => check.status === "issue").length;
     const completion = computeAreaCompletion(area);
@@ -1465,6 +1474,22 @@ function buildCompactPrintBody() {
   const areaMarkup = topAreaLines.length
     ? topAreaLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")
     : `<li>׳׳™׳ ׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳• ׳‘׳₪׳•׳¢׳.</li>`;
+
+  const photoMarkup = reportPhotos.length
+    ? `
+      <section class="report-section compact-print-photos">
+        <h3>תמונות מהבדיקה</h3>
+        <div class="compact-photo-grid">
+          ${reportPhotos.map((photo) => `
+            <figure class="compact-photo-card">
+              <img src="${escapeHtml(photo.src)}" alt="${escapeHtml(`${photo.areaName} - ${photo.checkName}`)}">
+              <figcaption>${escapeHtml(photo.areaName)}${photo.checkName ? ` | ${escapeHtml(photo.checkName)}` : ""}</figcaption>
+            </figure>
+          `).join("")}
+        </div>
+      </section>
+    `
+    : "";
 
   return `
     <section class="report-section compact-print-intro">
@@ -1527,6 +1552,7 @@ function buildCompactPrintBody() {
         <ul class="compact-print-list">${areaMarkup}</ul>
       </div>
     </section>
+    ${photoMarkup}
     <section class="report-section">
       <h3>׳¡׳™׳›׳•׳ ׳•׳”׳׳׳¦׳•׳×</h3>
       <div class="report-text-block">

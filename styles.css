@@ -1143,6 +1143,33 @@ select {
   gap: 12px;
 }
 
+.compact-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.compact-photo-card {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.compact-photo-card img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #e4ddd1;
+  background: #fffdfa;
+}
+
+.compact-photo-card figcaption {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 .compact-print-list {
   margin: 0;
   padding-inline-start: 18px;
@@ -2670,5 +2697,9 @@ textarea:focus {
 
   .compact-print-stats {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .compact-photo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
