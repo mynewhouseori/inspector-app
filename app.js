@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.165";
+const APP_VERSION = "2026.07.11.166";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -552,6 +552,7 @@ const els = {
   reportExecutiveSummary: document.querySelector("#reportExecutiveSummary"),
   reportSummaryStats: document.querySelector("#reportSummaryStats"),
   reportCriticalFindings: document.querySelector("#reportCriticalFindings"),
+  reportAreaDetails: document.querySelector("#reportAreaDetails"),
   reportClosingNote: document.querySelector("#reportClosingNote"),
   reportTitle: document.querySelector("#reportTitle"),
   reportMeta: document.querySelector("#reportMeta"),
@@ -1260,6 +1261,13 @@ function buildIssueRecommendation(issue) {
   return `מומלץ לבדוק את הממצא בשטח, לבצע תיקון מתאים ולאשר השלמה בבדיקה חוזרת.`;
 }
 
+function getCheckStatusLabel(status) {
+  if (status === "ok") return "תקין";
+  if (status === "issue") return "ליקוי";
+  if (status === "na") return "לא רלוונטי";
+  return "טרם נבדק";
+}
+
 function buildExecutiveSummary(summary) {
   if (!summary.inspectedAreas) {
     return "טרם הושלמו נתוני בדיקה להצגה בדוח לקוח. לאחר הזנת ממצאים באזורים שנבדקו, יופיע כאן תקציר מקצועי ומוכן למשלוח.";
@@ -1396,20 +1404,27 @@ function renderReportDocument(summary, issues) {
     const pendingCount = area.checks.filter((check) => check.status === "pending").length;
     const progress = getAreaProgress(area);
     const completion = computeAreaCompletion(area);
-    const areaIssuesMarkup = issuesInArea.length
-      ? issuesInArea.map((check) => `
+    const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim());
+    const areaChecksMarkup = touchedChecks.length
+      ? touchedChecks.map((check) => `
           <div class="report-check-item">
             <strong>${escapeHtml(check.name)}</strong>
-            <div class="report-check-meta">${escapeHtml(check.category)}</div>
-            <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(check.note || "נדרש פירוט נוסף מצד הבודק.")}</p>
-            <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
-              category: check.category,
-              note: check.note.trim(),
-              name: check.name
-            }))}</p>
+            <div class="report-check-meta">${escapeHtml(check.category)} | ${escapeHtml(getCheckStatusLabel(check.status))}</div>
+            ${check.note.trim()
+              ? `<p class="report-check-note"><strong>הערה:</strong> ${escapeHtml(check.note.trim())}</p>`
+              : ""
+            }
+            ${check.status === "issue"
+              ? `<p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
+                  category: check.category,
+                  note: check.note.trim(),
+                  name: check.name
+                }))}</p>`
+              : ""
+            }
           </div>
         `).join("")
-      : `<div class="report-empty">לא זוהו ליקויים באזור זה.</div>`;
+      : `<div class="report-empty">אין הערות או סטטוסים שנשמרו לחדר זה.</div>`;
 
     return `
       <article class="report-area-card">
@@ -1429,10 +1444,16 @@ function renderReportDocument(summary, issues) {
             }).join("")}
           </div>
         ` : ""}
-        <div class="report-area-checks">${areaIssuesMarkup}</div>
+        <div class="report-area-checks">${areaChecksMarkup}</div>
       </article>
     `;
   });
+
+  if (els.reportAreaDetails) {
+    els.reportAreaDetails.innerHTML = areaCards.length
+      ? areaCards.join("")
+      : `<div class="report-empty">אין חדרים שנבדקו להצגה בדוח זה.</div>`;
+  }
 
   els.reportClosingNote.innerHTML = `<p>${escapeHtml(buildClosingNote(reportSummary))}</p>`;
 }
@@ -1508,6 +1529,47 @@ function buildCompactPrintBody() {
     `
     : "";
 
+  const roomMarkup = reportAreas.length
+    ? `
+      <section class="report-section compact-print-rooms">
+        <h3>חדרים שנבדקו</h3>
+        <div class="report-area-details">
+          ${reportAreas.map((area) => {
+            const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim());
+            const checkMarkup = touchedChecks.length
+              ? touchedChecks.map((check) => `
+                  <div class="report-check-item">
+                    <strong>${escapeHtml(check.name)}</strong>
+                    <div class="report-check-meta">${escapeHtml(check.category)} | ${escapeHtml(getCheckStatusLabel(check.status))}</div>
+                    ${check.note.trim() ? `<p class="report-check-note"><strong>הערה:</strong> ${escapeHtml(check.note.trim())}</p>` : ""}
+                  </div>
+                `).join("")
+              : `<div class="report-empty">אין הערות או סטטוסים שנשמרו לחדר זה.</div>`;
+            return `
+              <article class="report-area-card">
+                <div class="report-area-head">
+                  <div>
+                    <strong>${escapeHtml(area.name)}</strong>
+                    <div class="report-area-meta">${escapeHtml(areaTypeLabels[area.type])} | ${escapeHtml(getAreaProgress(area).label)}</div>
+                  </div>
+                </div>
+                ${area.photoCaptures?.length ? `
+                  <div class="report-area-photos">
+                    ${area.photoCaptures.map((photo) => {
+                      const src = photo.downloadURL || photo.previewDataUrl || "";
+                      return src ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(photo.checkName || area.name)}">` : "";
+                    }).join("")}
+                  </div>
+                ` : ""}
+                <div class="report-area-checks">${checkMarkup}</div>
+              </article>
+            `;
+          }).join("")}
+        </div>
+      </section>
+    `
+    : "";
+
   return `
     <section class="report-section compact-print-intro">
       <div class="report-inline-brand">
@@ -1568,6 +1630,7 @@ function buildCompactPrintBody() {
         <ul class="compact-print-list">${issueMarkup}</ul>
       </div>
     </section>
+    ${roomMarkup}
     ${photoMarkup}
     <section class="report-section">
       <h3>סיכום והמלצות</h3>
