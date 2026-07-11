@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.163";
+const APP_VERSION = "2026.07.11.164";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -552,7 +552,6 @@ const els = {
   reportExecutiveSummary: document.querySelector("#reportExecutiveSummary"),
   reportSummaryStats: document.querySelector("#reportSummaryStats"),
   reportCriticalFindings: document.querySelector("#reportCriticalFindings"),
-  reportAreaDetails: document.querySelector("#reportAreaDetails"),
   reportClosingNote: document.querySelector("#reportClosingNote"),
   reportTitle: document.querySelector("#reportTitle"),
   reportMeta: document.querySelector("#reportMeta"),
@@ -1434,10 +1433,6 @@ function renderReportDocument(summary, issues) {
       </article>
     `;
   });
-
-  els.reportAreaDetails.innerHTML = areaCards.length
-    ? areaCards.join("")
-    : `<div class="report-empty">אין אזורים עם נתוני בדיקה להצגה במסמך זה.</div>`;
 
   els.reportClosingNote.innerHTML = `<p>${escapeHtml(buildClosingNote(reportSummary))}</p>`;
 }
