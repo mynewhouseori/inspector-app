@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.141";
+const APP_VERSION = "2026.07.11.142";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1994,7 +1994,7 @@ function renderAreas() {
       checkNode.querySelector(".check-icon-badge").innerHTML = checkVisual.icon;
       checkNode.querySelector(".check-title-badge").innerHTML = checkVisual.icon;
       checkNode.querySelector(".check-name").textContent = check.name;
-      checkNode.querySelector(".check-category").textContent = `${check.code} � ${check.category}`;
+      checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
       const statusSelect = checkNode.querySelector(".status-select");
       const cameraBtn = checkNode.querySelector(".camera-btn");
       const cameraInput = checkNode.querySelector(".camera-input");
