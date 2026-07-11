@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.172";
+const APP_VERSION = "2026.07.11.173";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1367,7 +1367,7 @@ function renderReportDocument(summary, issues) {
   }
 
   const statItems = [
-    ["אזורים שנבדקו", reportSummary.inspectedAreas],
+    ["חדרים שנבדקו", reportSummary.inspectedAreas],
     ["סעיפים שנבדקו", reportSummary.completedChecks],
     ["תקין", reportSummary.ok],
     ["ליקויים", reportSummary.issues],
@@ -1608,7 +1608,7 @@ function buildCompactPrintBody() {
         <span>${escapeHtml(state.inspectorName || "לא הוזן")}</span>
       </div>
       <div class="compact-print-card">
-        <strong>אזורים שנבדקו</strong>
+        <strong>חדרים שנבדקו</strong>
         <span>${escapeHtml(reportSummary.inspectedAreas)}</span>
       </div>
       <div class="compact-print-card">
