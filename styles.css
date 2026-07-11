@@ -1918,6 +1918,30 @@ textarea:focus {
   align-self: start;
 }
 
+.check-name-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.check-title-badge {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 6px rgba(18, 40, 46, 0.08);
+  color: currentColor;
+  flex: 0 0 auto;
+}
+
+.check-title-badge svg {
+  width: 13px;
+  height: 13px;
+}
+
 .check-row .check-name {
   font-size: 14px;
   line-height: 1.12;
@@ -2070,6 +2094,31 @@ textarea:focus {
 
 .tone-openings .check-category {
   color: #5c96ea;
+}
+
+.tone-structure .check-title-badge {
+  background: rgba(255, 234, 230, 0.92);
+  color: #d95d4d;
+}
+
+.tone-plumbing .check-title-badge {
+  background: rgba(228, 253, 252, 0.96);
+  color: #19aebb;
+}
+
+.tone-finishes .check-title-badge {
+  background: rgba(255, 246, 223, 0.96);
+  color: #e09b1d;
+}
+
+.tone-openings .check-title-badge {
+  background: rgba(235, 244, 255, 0.96);
+  color: #6399e8;
+}
+
+.tone-electric .check-title-badge {
+  background: rgba(240, 250, 219, 0.96);
+  color: #6eaa2c;
 }
 
 .tone-structure::after,
@@ -2324,6 +2373,20 @@ textarea:focus {
 
   .check-title-copy {
     padding: 9px 6px 0 8px;
+  }
+
+  .check-name-line {
+    gap: 5px;
+  }
+
+  .check-title-badge {
+    width: 16px;
+    height: 16px;
+  }
+
+  .check-title-badge svg {
+    width: 11px;
+    height: 11px;
   }
 
   .check-controls-top {
