@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.167";
+const APP_VERSION = "2026.07.11.168";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1397,16 +1397,17 @@ function renderReportDocument(summary, issues) {
       `).join("");
   }
 
-  const areaCards = reportAreas.map((area) => {
+  const areaCards = reportAreas
+    .filter((area) => area.checks.some((check) => check.status === "issue"))
+    .map((area) => {
     const total = area.checks.length;
     const issuesInArea = area.checks.filter((check) => check.status === "issue");
     const okCount = area.checks.filter((check) => check.status === "ok").length;
     const pendingCount = area.checks.filter((check) => check.status === "pending").length;
     const progress = getAreaProgress(area);
     const completion = computeAreaCompletion(area);
-    const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim());
-    const areaChecksMarkup = touchedChecks.length
-      ? touchedChecks.map((check) => `
+    const areaChecksMarkup = issuesInArea.length
+      ? issuesInArea.map((check) => `
           <div class="report-check-item">
             <strong>${escapeHtml(check.name)}</strong>
             <div class="report-check-meta">${escapeHtml(check.category)} | ${escapeHtml(getCheckStatusLabel(check.status))}</div>
@@ -1414,17 +1415,14 @@ function renderReportDocument(summary, issues) {
               ? `<p class="report-check-note"><strong>הערה:</strong> ${escapeHtml(check.note.trim())}</p>`
               : ""
             }
-            ${check.status === "issue"
-              ? `<p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
-                  category: check.category,
-                  note: check.note.trim(),
-                  name: check.name
-                }))}</p>`
-              : ""
-            }
+            <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
+              category: check.category,
+              note: check.note.trim(),
+              name: check.name
+            }))}</p>
           </div>
         `).join("")
-      : `<div class="report-empty">אין הערות או סטטוסים שנשמרו לחדר זה.</div>`;
+      : `<div class="report-empty">לא זוהו ליקויים בחדר זה.</div>`;
 
     return `
       <article class="report-area-card">
@@ -1446,13 +1444,13 @@ function renderReportDocument(summary, issues) {
         ` : ""}
         <div class="report-area-checks">${areaChecksMarkup}</div>
       </article>
-    `;
+      `;
   });
 
   if (els.reportAreaDetails) {
     els.reportAreaDetails.innerHTML = areaCards.length
       ? areaCards.join("")
-      : `<div class="report-empty">אין חדרים שנבדקו להצגה בדוח זה.</div>`;
+      : `<div class="report-empty">לא זוהו ליקויים בחדרים שנבדקו.</div>`;
   }
 
   els.reportClosingNote.innerHTML = `<p>${escapeHtml(buildClosingNote(reportSummary))}</p>`;
@@ -1529,22 +1527,29 @@ function buildCompactPrintBody() {
     `
     : "";
 
-  const roomMarkup = reportAreas.length
+  const roomMarkup = reportAreas.some((area) => area.checks.some((check) => check.status === "issue"))
     ? `
       <section class="report-section compact-print-rooms">
         <h3>חדרים שנבדקו</h3>
         <div class="report-area-details">
-          ${reportAreas.map((area) => {
-            const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim());
-            const checkMarkup = touchedChecks.length
-              ? touchedChecks.map((check) => `
+          ${reportAreas
+            .filter((area) => area.checks.some((check) => check.status === "issue"))
+            .map((area) => {
+            const issuesInArea = area.checks.filter((check) => check.status === "issue");
+            const checkMarkup = issuesInArea.length
+              ? issuesInArea.map((check) => `
                   <div class="report-check-item">
                     <strong>${escapeHtml(check.name)}</strong>
                     <div class="report-check-meta">${escapeHtml(check.category)} | ${escapeHtml(getCheckStatusLabel(check.status))}</div>
                     ${check.note.trim() ? `<p class="report-check-note"><strong>הערה:</strong> ${escapeHtml(check.note.trim())}</p>` : ""}
+                    <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
+                      category: check.category,
+                      note: check.note.trim(),
+                      name: check.name
+                    }))}</p>
                   </div>
                 `).join("")
-              : `<div class="report-empty">אין הערות או סטטוסים שנשמרו לחדר זה.</div>`;
+              : `<div class="report-empty">לא זוהו ליקויים בחדר זה.</div>`;
             return `
               <article class="report-area-card">
                 <div class="report-area-head">
@@ -1568,7 +1573,12 @@ function buildCompactPrintBody() {
         </div>
       </section>
     `
-    : "";
+    : `
+      <section class="report-section compact-print-rooms">
+        <h3>חדרים שנבדקו</h3>
+        <div class="report-empty">לא זוהו ליקויים בחדרים שנבדקו.</div>
+      </section>
+    `;
 
   return `
     <section class="report-section compact-print-intro">
