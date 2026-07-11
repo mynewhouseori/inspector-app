@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.158";
+const APP_VERSION = "2026.07.11.159";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1494,6 +1494,9 @@ function buildCompactPrintBody() {
 
   return `
     <section class="report-section compact-print-intro">
+      <div class="report-inline-brand">
+        <img class="report-inline-logo" src="assets/logo-report.png" alt="לוגו קבוצת משה חדיף">
+      </div>
       <h3>מהות המסמך</h3>
       <div class="report-text-block">
         <p>דוח זה מרכז ממצאים עיקריים, תמונת מצב תמציתית והמלצות פעולה להמשך טיפול, לצורך מסירה ללקוח ותיעוד מקצועי מסודר.</p>

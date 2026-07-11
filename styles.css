@@ -1040,6 +1040,27 @@ select {
   padding: 10px 14px;
 }
 
+.report-inline-brand {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.report-inline-brand-main {
+  margin-bottom: 18px;
+}
+
+.report-inline-logo {
+  width: min(260px, 100%);
+  max-width: 260px;
+  height: auto;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(17, 53, 61, 0.08);
+  border-radius: 16px;
+  padding: 8px 12px;
+  box-shadow: 0 10px 24px rgba(15, 55, 61, 0.12);
+}
+
 .report-page-meta,
 .report-cover-meta {
   display: flex;
