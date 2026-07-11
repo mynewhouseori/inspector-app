@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.159";
+const APP_VERSION = "2026.07.11.160";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -543,7 +543,8 @@ const els = {
   reportAreaDetails: document.querySelector("#reportAreaDetails"),
   reportClosingNote: document.querySelector("#reportClosingNote"),
   reportTitle: document.querySelector("#reportTitle"),
-  reportMeta: document.querySelector("#reportMeta")
+  reportMeta: document.querySelector("#reportMeta"),
+  reportInlineDate: document.querySelector("#reportInlineDate")
 };
 
 function uid() {
@@ -1285,6 +1286,9 @@ function renderReportDocument(summary, issues) {
   els.reportPageHeaderInspector.textContent = headerBrandSubtitle;
   els.reportPageHeaderStatus.textContent = reportStatus;
   els.reportPageHeaderDate.textContent = formatGeneratedDateOnly();
+  if (els.reportInlineDate) {
+    els.reportInlineDate.textContent = `תאריך הפקה: ${formatGeneratedAt()}`;
+  }
 
   if (els.reportIntroTitle && els.reportIntroBlock) {
     if (state.inspectionMode === "owner") {
