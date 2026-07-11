@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.164";
+const APP_VERSION = "2026.07.11.165";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1492,10 +1492,6 @@ function buildCompactPrintBody() {
       `).join("")
     : `<li>לא זוהו ליקויים באזורים שנבדקו.</li>`;
 
-  const areaMarkup = topAreaLines.length
-    ? topAreaLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")
-    : `<li>אין אזורים שנבדקו בפועל.</li>`;
-
   const photoMarkup = reportPhotos.length
     ? `
       <section class="report-section compact-print-photos">
@@ -1570,10 +1566,6 @@ function buildCompactPrintBody() {
       <div>
         <h3>ממצאים מרכזיים</h3>
         <ul class="compact-print-list">${issueMarkup}</ul>
-      </div>
-      <div>
-        <h3>תמונת מצב אזורים</h3>
-        <ul class="compact-print-list">${areaMarkup}</ul>
       </div>
     </section>
     ${photoMarkup}
