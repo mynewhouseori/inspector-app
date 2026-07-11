@@ -17,49 +17,49 @@ import {
 
 const baseChecks = {
   structureEnvelope: [
-    { code: "1.1.1", name: "בדיקת סדקים", category: "שלד ומעטפת" },
-    { code: "1.1.5", name: "איטומים", category: "שלד ומעטפת" },
-    { code: "1.1.6", name: "איתור סימני חדירת מים", category: "שלד ומעטפת" }
+    { code: "1.1.1", name: "׳‘׳“׳™׳§׳× ׳¡׳“׳§׳™׳", category: "׳©׳׳“ ׳•׳׳¢׳˜׳₪׳×" },
+    { code: "1.1.5", name: "׳׳™׳˜׳•׳׳™׳", category: "׳©׳׳“ ׳•׳׳¢׳˜׳₪׳×" },
+    { code: "1.1.6", name: "׳׳™׳×׳•׳¨ ׳¡׳™׳׳ ׳™ ׳—׳“׳™׳¨׳× ׳׳™׳", category: "׳©׳׳“ ׳•׳׳¢׳˜׳₪׳×" }
   ],
   interiorFinishes: [
-    { code: "2.1.1", name: "בדיקות ריצוף (שיפועים, חללים, הפרשי גובה)", category: "גמר פנים" },
-    { code: "2.1.2", name: "צבע", category: "גמר פנים" },
-    { code: "2.1.2R", name: "רשתות", category: "גמר פנים" },
-    { code: "2.1.3", name: "טיח", category: "גמר פנים" },
-    { code: "2.1.4", name: "גבס", category: "גמר פנים" },
-    { code: "2.1.5", name: "מדרגות וגמרים", category: "גמר פנים" }
+    { code: "2.1.1", name: "׳‘׳“׳™׳§׳•׳× ׳¨׳™׳¦׳•׳£ (׳©׳™׳₪׳•׳¢׳™׳, ׳—׳׳׳™׳, ׳”׳₪׳¨׳©׳™ ׳’׳•׳‘׳”)", category: "׳’׳׳¨ ׳₪׳ ׳™׳" },
+    { code: "2.1.2", name: "׳¦׳‘׳¢", category: "׳’׳׳¨ ׳₪׳ ׳™׳" },
+    { code: "2.1.2R", name: "׳¨׳©׳×׳•׳×", category: "׳’׳׳¨ ׳₪׳ ׳™׳" },
+    { code: "2.1.3", name: "׳˜׳™׳—", category: "׳’׳׳¨ ׳₪׳ ׳™׳" },
+    { code: "2.1.4", name: "׳’׳‘׳¡", category: "׳’׳׳¨ ׳₪׳ ׳™׳" },
+    { code: "2.1.5", name: "׳׳“׳¨׳’׳•׳× ׳•׳’׳׳¨׳™׳", category: "׳’׳׳¨ ׳₪׳ ׳™׳" }
   ],
   wetRoomFinishes: [
-    { code: "2.1.4W", name: "חיפוי", category: "גמר פנים" }
+    { code: "2.1.4W", name: "׳—׳™׳₪׳•׳™", category: "׳’׳׳¨ ׳₪׳ ׳™׳" }
   ],
   openingsDoors: [
-    { code: "3.1.1", name: "זיגוג", category: "פתחים ודלתות" },
-    { code: "3.1.2", name: "דלתות", category: "פתחים ודלתות" },
-    { code: "3.1.3", name: "אלומיניום", category: "פתחים ודלתות" },
-    { code: "3.1.4", name: "איטומים", category: "פתחים ודלתות" }
+    { code: "3.1.1", name: "׳–׳™׳’׳•׳’", category: "׳₪׳×׳—׳™׳ ׳•׳“׳׳×׳•׳×" },
+    { code: "3.1.2", name: "׳“׳׳×׳•׳×", category: "׳₪׳×׳—׳™׳ ׳•׳“׳׳×׳•׳×" },
+    { code: "3.1.3", name: "׳׳׳•׳׳™׳ ׳™׳•׳", category: "׳₪׳×׳—׳™׳ ׳•׳“׳׳×׳•׳×" },
+    { code: "3.1.4", name: "׳׳™׳˜׳•׳׳™׳", category: "׳₪׳×׳—׳™׳ ׳•׳“׳׳×׳•׳×" }
   ],
   plumbingDrainage: [
-    { code: "4.1.2", name: "נזילות", category: "אינסטלציה וניקוז" },
-    { code: "4.1.3", name: "שיפועים", category: "אינסטלציה וניקוז" },
-    { code: "4.1.4", name: "ניקוזים ותפקוד מערכות", category: "אינסטלציה וניקוז" }
+    { code: "4.1.2", name: "׳ ׳–׳™׳׳•׳×", category: "׳׳™׳ ׳¡׳˜׳׳¦׳™׳” ׳•׳ ׳™׳§׳•׳–" },
+    { code: "4.1.3", name: "׳©׳™׳₪׳•׳¢׳™׳", category: "׳׳™׳ ׳¡׳˜׳׳¦׳™׳” ׳•׳ ׳™׳§׳•׳–" },
+    { code: "4.1.4", name: "׳ ׳™׳§׳•׳–׳™׳ ׳•׳×׳₪׳§׳•׳“ ׳׳¢׳¨׳›׳•׳×", category: "׳׳™׳ ׳¡׳˜׳׳¦׳™׳” ׳•׳ ׳™׳§׳•׳–" }
   ],
   electricityCommunication: [
-    { code: "5.1.1", name: "סורגים", category: "חשמל ותקשורת" },
-    { code: "5.1.2", name: "ספק תקשורת", category: "חשמל ותקשורת" }
+    { code: "5.1.1", name: "׳¡׳•׳¨׳’׳™׳", category: "׳—׳©׳׳ ׳•׳×׳§׳©׳•׳¨׳×" },
+    { code: "5.1.2", name: "׳¡׳₪׳§ ׳×׳§׳©׳•׳¨׳×", category: "׳—׳©׳׳ ׳•׳×׳§׳©׳•׳¨׳×" }
   ],
   dryRoomSystems: [
-    { code: "5.1.5", name: "מזגן", category: "חשמל ותקשורת" }
+    { code: "5.1.5", name: "׳׳–׳’׳", category: "׳—׳©׳׳ ׳•׳×׳§׳©׳•׳¨׳×" }
   ],
   outdoorRoof: [
-    { code: "6.1.1", name: "בדיקות איטום", category: "גג, מרפסות ופיתוח חוץ" },
-    { code: "6.1.2", name: "שיפועים", category: "גג, מרפסות ופיתוח חוץ" },
-    { code: "6.1.3", name: "ניקוזים", category: "גג, מרפסות ופיתוח חוץ" },
-    { code: "6.1.4", name: "חצר", category: "גג, מרפסות ופיתוח חוץ" },
-    { code: "6.1.5", name: "שבילים", category: "גג, מרפסות ופיתוח חוץ" },
-    { code: "6.1.6", name: "גדרות ומעקות", category: "גג, מרפסות ופיתוח חוץ" }
+    { code: "6.1.1", name: "׳‘׳“׳™׳§׳•׳× ׳׳™׳˜׳•׳", category: "׳’׳’, ׳׳¨׳₪׳¡׳•׳× ׳•׳₪׳™׳×׳•׳— ׳—׳•׳¥" },
+    { code: "6.1.2", name: "׳©׳™׳₪׳•׳¢׳™׳", category: "׳’׳’, ׳׳¨׳₪׳¡׳•׳× ׳•׳₪׳™׳×׳•׳— ׳—׳•׳¥" },
+    { code: "6.1.3", name: "׳ ׳™׳§׳•׳–׳™׳", category: "׳’׳’, ׳׳¨׳₪׳¡׳•׳× ׳•׳₪׳™׳×׳•׳— ׳—׳•׳¥" },
+    { code: "6.1.4", name: "׳—׳¦׳¨", category: "׳’׳’, ׳׳¨׳₪׳¡׳•׳× ׳•׳₪׳™׳×׳•׳— ׳—׳•׳¥" },
+    { code: "6.1.5", name: "׳©׳‘׳™׳׳™׳", category: "׳’׳’, ׳׳¨׳₪׳¡׳•׳× ׳•׳₪׳™׳×׳•׳— ׳—׳•׳¥" },
+    { code: "6.1.6", name: "׳’׳“׳¨׳•׳× ׳•׳׳¢׳§׳•׳×", category: "׳’׳’, ׳׳¨׳₪׳¡׳•׳× ׳•׳₪׳™׳×׳•׳— ׳—׳•׳¥" }
   ],
   safetyRegulations: [
-    { code: "7.1.2", name: "מעקות", category: "בטיחות ותקנות" }
+    { code: "7.1.2", name: "׳׳¢׳§׳•׳×", category: "׳‘׳˜׳™׳—׳•׳× ׳•׳×׳§׳ ׳•׳×" }
   ]
 };
 
@@ -90,45 +90,45 @@ const checkSets = {
 };
 
 const areaTypeLabels = {
-  dry: "חדר יבש",
-  wet: "חדר רטוב",
-  outdoor: "אזור חוץ"
+  dry: "׳—׳“׳¨ ׳™׳‘׳©",
+  wet: "׳—׳“׳¨ ׳¨׳˜׳•׳‘",
+  outdoor: "׳׳–׳•׳¨ ׳—׳•׳¥"
 };
 
 const defaultAreaPreset = [
-  "חדר שינה 01",
-  "חדר שינה 02",
-  "חדר שינה 03",
-  "חדר שינה 04",
-  "רחצה הורים",
-  "רחצה כללי",
-  "מבואה 01",
-  "מבואה 02",
-  "מרפסת שרות",
-  "סלון",
-  "מטבח",
-  "ש.אורחים",
-  "ממד",
-  "מרפסת",
-  "חלל 05",
-  "חלל 06",
-  "מדרגות",
-  "גג"
+  "׳—׳“׳¨ ׳©׳™׳ ׳” 01",
+  "׳—׳“׳¨ ׳©׳™׳ ׳” 02",
+  "׳—׳“׳¨ ׳©׳™׳ ׳” 03",
+  "׳—׳“׳¨ ׳©׳™׳ ׳” 04",
+  "׳¨׳—׳¦׳” ׳”׳•׳¨׳™׳",
+  "׳¨׳—׳¦׳” ׳›׳׳׳™",
+  "׳׳‘׳•׳׳” 01",
+  "׳׳‘׳•׳׳” 02",
+  "׳׳¨׳₪׳¡׳× ׳©׳¨׳•׳×",
+  "׳¡׳׳•׳",
+  "׳׳˜׳‘׳—",
+  "׳©.׳׳•׳¨׳—׳™׳",
+  "׳׳׳“",
+  "׳׳¨׳₪׳¡׳×",
+  "׳—׳׳ 05",
+  "׳—׳׳ 06",
+  "׳׳“׳¨׳’׳•׳×",
+  "׳’׳’"
 ];
 
 const ownerAreaPreset = [
-  "חדר שינה 01",
-  "חדר שינה 02",
-  "חדר שינה 03",
-  "רחצה הורים",
-  "רחצה כללי",
-  "מבואה 01",
-  "מטבח",
-  "סלון",
-  "מרפסת שרות",
-  "מרפסת",
-  "ממד",
-  "ש.אורחים"
+  "׳—׳“׳¨ ׳©׳™׳ ׳” 01",
+  "׳—׳“׳¨ ׳©׳™׳ ׳” 02",
+  "׳—׳“׳¨ ׳©׳™׳ ׳” 03",
+  "׳¨׳—׳¦׳” ׳”׳•׳¨׳™׳",
+  "׳¨׳—׳¦׳” ׳›׳׳׳™",
+  "׳׳‘׳•׳׳” 01",
+  "׳׳˜׳‘׳—",
+  "׳¡׳׳•׳",
+  "׳׳¨׳₪׳¡׳× ׳©׳¨׳•׳×",
+  "׳׳¨׳₪׳¡׳×",
+  "׳׳׳“",
+  "׳©.׳׳•׳¨׳—׳™׳"
 ];
 
 const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5", "7.1.3"]);
@@ -150,44 +150,44 @@ let pendingCloudSync = false;
 let pendingFocusAreaId = null;
 
 const inspectionModeLabels = {
-  new: "בדיקת נכס חדש",
-  owner: "תסקיר דירות בעלים"
+  new: "׳‘׳“׳™׳§׳× ׳ ׳›׳¡ ׳—׳“׳©",
+  owner: "׳×׳¡׳§׳™׳¨ ׳“׳™׳¨׳•׳× ׳‘׳¢׳׳™׳"
 };
 
 const ownerApartmentLabels = [
-  "כניסה-17 דירה-01",
-  "כניסה-17 דירה-02",
-  "כניסה-17 דירה-03",
-  "כניסה-17 דירה-04",
-  "כניסה-17 דירה-05",
-  "כניסה-17 דירה-06",
-  "כניסה-17 דירה-07",
-  "כניסה-17 דירה-08",
-  "כניסה-19 דירה-01",
-  "כניסה-19 דירה-02",
-  "כניסה-19 דירה-03",
-  "כניסה-19 דירה-04",
-  "כניסה-19 דירה-05",
-  "כניסה-19 דירה-06",
-  "כניסה-19 דירה-07",
-  "כניסה-19 דירה-08"
+  "׳›׳ ׳™׳¡׳”-17 ׳“׳™׳¨׳”-01",
+  "׳›׳ ׳™׳¡׳”-17 ׳“׳™׳¨׳”-02",
+  "׳›׳ ׳™׳¡׳”-17 ׳“׳™׳¨׳”-03",
+  "׳›׳ ׳™׳¡׳”-17 ׳“׳™׳¨׳”-04",
+  "׳›׳ ׳™׳¡׳”-17 ׳“׳™׳¨׳”-05",
+  "׳›׳ ׳™׳¡׳”-17 ׳“׳™׳¨׳”-06",
+  "׳›׳ ׳™׳¡׳”-17 ׳“׳™׳¨׳”-07",
+  "׳›׳ ׳™׳¡׳”-17 ׳“׳™׳¨׳”-08",
+  "׳›׳ ׳™׳¡׳”-19 ׳“׳™׳¨׳”-01",
+  "׳›׳ ׳™׳¡׳”-19 ׳“׳™׳¨׳”-02",
+  "׳›׳ ׳™׳¡׳”-19 ׳“׳™׳¨׳”-03",
+  "׳›׳ ׳™׳¡׳”-19 ׳“׳™׳¨׳”-04",
+  "׳›׳ ׳™׳¡׳”-19 ׳“׳™׳¨׳”-05",
+  "׳›׳ ׳™׳¡׳”-19 ׳“׳™׳¨׳”-06",
+  "׳›׳ ׳™׳¡׳”-19 ׳“׳™׳¨׳”-07",
+  "׳›׳ ׳™׳¡׳”-19 ׳“׳™׳¨׳”-08"
 ];
 
-const MAX_AREA_PHOTOS = 3;
+const MAX_CHECK_PHOTOS = 3;
 const APP_VERSION = "2026.07.11.153";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
-const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם-יפו";
+const DEFAULT_PROPERTY_ADDRESS = "׳׳’׳ ׳׳‘׳¨׳”׳-׳™׳₪׳•";
 
 function normalizePropertyAddress(value) {
   const normalized = String(value || "").trim();
   if (!normalized) return DEFAULT_PROPERTY_ADDRESS;
   if (
-    normalized === "מגן אברהם"
-    || normalized === "מגן אברהם -יפו"
-    || normalized === "מגן אברהם- יפו"
-    || normalized === "מגן אברהם - יפו"
+    normalized === "׳׳’׳ ׳׳‘׳¨׳”׳"
+    || normalized === "׳׳’׳ ׳׳‘׳¨׳”׳ -׳™׳₪׳•"
+    || normalized === "׳׳’׳ ׳׳‘׳¨׳”׳- ׳™׳₪׳•"
+    || normalized === "׳׳’׳ ׳׳‘׳¨׳”׳ - ׳™׳₪׳•"
   ) {
     return DEFAULT_PROPERTY_ADDRESS;
   }
@@ -222,9 +222,9 @@ const STATUS_ICON_MARKUP = {
 };
 
 function getAreaIconMarkup(area) {
-  if (area.name.includes("חדר שינה")) return AREA_ICON_MARKUP.dry;
-  if (area.name.includes("רחצה") || area.name.includes("ש.אורחים")) return AREA_ICON_MARKUP.wet;
-  if (area.name.includes("מרפסת") || area.name.includes("גג")) return AREA_ICON_MARKUP.outdoor;
+  if (area.name.includes("׳—׳“׳¨ ׳©׳™׳ ׳”")) return AREA_ICON_MARKUP.dry;
+  if (area.name.includes("׳¨׳—׳¦׳”") || area.name.includes("׳©.׳׳•׳¨׳—׳™׳")) return AREA_ICON_MARKUP.wet;
+  if (area.name.includes("׳׳¨׳₪׳¡׳×") || area.name.includes("׳’׳’")) return AREA_ICON_MARKUP.outdoor;
   return AREA_ICON_MARKUP[area.type] || AREA_ICON_MARKUP.dry;
 }
 
@@ -373,49 +373,49 @@ function getCheckVisual(check) {
   if (codeVisual) {
     return codeVisual;
   }
-  if (category.includes("שלד")) {
+  if (category.includes("׳©׳׳“")) {
     return {
       tone: "tone-structure",
       icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="crackGlow" x1="0" x2="1"><stop offset="0" stop-color="#ff9f90"/><stop offset="1" stop-color="#ff6b59"/></linearGradient></defs><path d="M34 8 22 24l8 2-10 13 7 3-8 13" fill="none" stroke="url(#crackGlow)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M31 10 24 22l8 2-9 12 7 3-6 11" fill="none" stroke="#8e2f2a" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 16h10M44 19h11M15 36h8M44 41h10M18 56h12" fill="none" stroke="#f6b7ae" stroke-width="3.2" stroke-linecap="round"></path></svg>`,
       badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3 8 10h4l-3 11 7-10h-4l1-8Z" fill="currentColor"></path></svg>`
     };
   }
-  if (category.includes("גמר")) {
+  if (category.includes("׳’׳׳¨")) {
     return {
       tone: "tone-finishes",
       icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="m18 20 17-9 18 10-17 9z" fill="#ffd48d" stroke="#9b5b13" stroke-width="2.8" stroke-linejoin="round"></path><path d="M18 20v21l17 10V30z" fill="#ffc15a" stroke="#9b5b13" stroke-width="2.8" stroke-linejoin="round"></path><path d="M53 21v20L35 51V30z" fill="#ffdeab" stroke="#9b5b13" stroke-width="2.8" stroke-linejoin="round"></path><path d="m23 31 12 7 13-7" fill="none" stroke="#8f5a23" stroke-opacity="0.45" stroke-width="2.4" stroke-linecap="round"></path><path d="M35 11v19" fill="none" stroke="#fff1cf" stroke-width="2" stroke-linecap="round"></path></svg>`,
       badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h12a2 2 0 0 1 2 2v2h2v2h-2v4h-3V9H4zM6 17h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`
     };
   }
-  if (category.includes("פתחים")) {
+  if (category.includes("׳₪׳×׳—׳™׳")) {
     return {
       tone: "tone-openings",
       icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="glassFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#dff6ff"/><stop offset="1" stop-color="#b7dcff"/></linearGradient></defs><path d="M14 13h44v46H14z" fill="#eef7ff" stroke="#375a76" stroke-width="3"></path><path d="M19 18h16v36H19zM37 18h16v36H37z" fill="url(#glassFill)" stroke="#5a80a0" stroke-width="2.5"></path><path d="M36 13v46" fill="none" stroke="#32526d" stroke-width="3"></path><path d="M24 24c3 2 4 5 5 8M44 21c-2 2-4 6-5 10" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path><path d="M18 54h36" fill="none" stroke="#6a8dab" stroke-width="2.5" stroke-linecap="round"></path></svg>`,
       badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM12 4v16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>`
     };
   }
-  if (category.includes("אינסטלציה")) {
+  if (category.includes("׳׳™׳ ׳¡׳˜׳׳¦׳™׳”")) {
     return {
       tone: "tone-plumbing",
       icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="dropFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#78e7ff"/><stop offset="1" stop-color="#00a9d8"/></linearGradient></defs><path d="M36 10c8 10 14 17 14 26a14 14 0 0 1-28 0c0-9 6-16 14-26Z" fill="url(#dropFill)" stroke="#0c78b1" stroke-width="3"></path><path d="M32 24c-2 2-4 5-5 8" fill="none" stroke="#e9ffff" stroke-width="3" stroke-linecap="round"></path><path d="M15 52c5-2 10-2 15 .2 4 2 8 2 12 0 5-2.2 10-2.2 15-.2" fill="none" stroke="#0c5f98" stroke-width="3" stroke-linecap="round"></path><path d="M18 59c4-1.7 8-1.7 12 0 4 1.7 8 1.7 12 0 4-1.7 8-1.7 12 0" fill="none" stroke="#37a9d8" stroke-width="2.5" stroke-linecap="round"></path></svg>`,
       badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4 6 7 6 11a6 6 0 1 1-12 0c0-4 3-7 6-11Z" fill="currentColor"></path></svg>`
     };
   }
-  if (category.includes("חשמל")) {
+  if (category.includes("׳—׳©׳׳")) {
     return {
       tone: "tone-electric",
       icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M23 18h8v14h9V18h8v15a4 4 0 0 1-4 4h-5v6h4a10 10 0 1 1 0 4h-16V37h-4a4 4 0 0 1-4-4z" fill="#7fb82a"></path><path d="M29 22v14M43 22v14" fill="none" stroke="#edf9c5" stroke-width="3" stroke-linecap="round"></path><circle cx="52" cy="49" r="6" fill="#9bd03f" stroke="#5c8620" stroke-width="2.6"></circle></svg>`,
       badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v6m10-6v6M8 7h8v6H8zm4 6v6M8 19h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`
     };
   }
-  if (category.includes("בטיחות")) {
+  if (category.includes("׳‘׳˜׳™׳—׳•׳×")) {
     return {
       tone: "tone-safety",
       icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M36 10 53 16v13c0 12-7 22-17 27-10-5-17-15-17-27V16z" fill="#ffcfbf" stroke="#bd6545" stroke-width="3"></path><path d="M36 18v17" fill="none" stroke="#914227" stroke-width="4" stroke-linecap="round"></path><circle cx="36" cy="44" r="3.8" fill="#914227"></circle><path d="M28 12h16" fill="none" stroke="#fff0e7" stroke-width="2.2" stroke-linecap="round"></path></svg>`,
       badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 5-3 8-7 10-4-2-7-5-7-10V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M12 8v5m0 3h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
     };
   }
-  if (category.includes("גג") || code.startsWith("6.")) {
+  if (category.includes("׳’׳’") || code.startsWith("6.")) {
     return {
       tone: "tone-outdoor",
       icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="m15 33 21-17 21 17v18H42v-11H30v11H15z" fill="#e6b38a" stroke="#9a6039" stroke-width="3" stroke-linejoin="round"></path><path d="M24 30h24" fill="none" stroke="#fff2e7" stroke-width="2.2" stroke-linecap="round"></path><path d="M21 52h30" fill="none" stroke="#b2774d" stroke-width="2.6" stroke-linecap="round"></path></svg>`,
@@ -564,14 +564,14 @@ function createDimensions() {
 }
 
 function inferAreaType(name) {
-  if (name.includes("רחצה") || name.includes("מטבח") || name.includes("ש.אורחים") || name.includes("שרות")) return "wet";
-  if (name.includes("מרפסת") || name.includes("גג")) return "outdoor";
+  if (name.includes("׳¨׳—׳¦׳”") || name.includes("׳׳˜׳‘׳—") || name.includes("׳©.׳׳•׳¨׳—׳™׳") || name.includes("׳©׳¨׳•׳×")) return "wet";
+  if (name.includes("׳׳¨׳₪׳¡׳×") || name.includes("׳’׳’")) return "outdoor";
   return "dry";
 }
 
 function defaultChecks(type, areaName = "") {
   let checks = checkSets[type] || [];
-  if (areaName.includes("מדרגות")) {
+  if (areaName.includes("׳׳“׳¨׳’׳•׳×")) {
     checks = uniqueChecks([
       ...checks,
       baseChecks.interiorFinishes.find((check) => check.code === "2.1.5"),
@@ -579,13 +579,13 @@ function defaultChecks(type, areaName = "") {
       baseChecks.safetyRegulations.find((check) => check.code === "7.1.4")
     ]);
   }
-  if (areaName.includes("גג")) {
+  if (areaName.includes("׳’׳’")) {
     checks = uniqueChecks([...checks, ...baseChecks.outdoorRoof, baseChecks.safetyRegulations.find((check) => check.code === "7.1.2")]);
   }
-  if (areaName.includes("מרפסת")) {
+  if (areaName.includes("׳׳¨׳₪׳¡׳×")) {
     checks = uniqueChecks([...checks, ...baseChecks.outdoorRoof, ...baseChecks.plumbingDrainage.filter((check) => ["4.1.3", "4.1.4"].includes(check.code))]);
   }
-  if (areaName.includes("מטבח")) {
+  if (areaName.includes("׳׳˜׳‘׳—")) {
     checks = uniqueChecks([...checks, ...baseChecks.plumbingDrainage]);
   }
   return checks.map((check) => ({ id: uid(), ...check, status: "pending", severity: "medium", note: "" }));
@@ -594,7 +594,7 @@ function defaultChecks(type, areaName = "") {
 function sanitizeChecks(checks) {
   return (Array.isArray(checks) ? checks : [])
     .filter((check) => !removedCheckCodes.has(check.code))
-    .map((check) => (check.code === "3.1.1" ? { ...check, name: "זיגוג" } : check));
+    .map((check) => (check.code === "3.1.1" ? { ...check, name: "׳–׳™׳’׳•׳’" } : check));
 }
 
 function mergeChecksWithDefaults(existingChecks, expectedChecks) {
@@ -669,7 +669,7 @@ function applyProjectData(projectData) {
 function updateAppVersionLabel() {
   const topVersion = document.querySelector(".top-version");
   if (topVersion) {
-    topVersion.textContent = `גרסה ${APP_VERSION}`;
+    topVersion.textContent = `׳’׳¨׳¡׳” ${APP_VERSION}`;
   }
 }
 
@@ -689,10 +689,10 @@ function updateWelcomeFormMode() {
     els.propertyAddressField.hidden = isOwnerMode;
   }
   if (els.clientNameLabel) {
-    els.clientNameLabel.textContent = isOwnerMode ? "שם הדייר" : "שם הלקוח";
+    els.clientNameLabel.textContent = isOwnerMode ? "׳©׳ ׳”׳“׳™׳™׳¨" : "׳©׳ ׳”׳׳§׳•׳—";
   }
   if (els.clientName) {
-    els.clientName.placeholder = isOwnerMode ? "הזן שם דייר" : "הזן שם לקוח";
+    els.clientName.placeholder = isOwnerMode ? "׳”׳–׳ ׳©׳ ׳“׳™׳™׳¨" : "׳”׳–׳ ׳©׳ ׳׳§׳•׳—";
   }
   if (els.welcomeNavBtn) {
     els.welcomeNavBtn.hidden = isOwnerMode;
@@ -705,12 +705,12 @@ function updateWelcomeFormMode() {
 function updateCloudStatus(message, tone = "") {
   if (!els.cloudStatus) return;
   const compactMessage = tone === "ok"
-    ? "הענן מחובר"
+    ? "׳”׳¢׳ ׳ ׳׳—׳•׳‘׳¨"
     : tone === "warn"
-      ? "הענן בתהליך"
+      ? "׳”׳¢׳ ׳ ׳‘׳×׳”׳׳™׳"
       : tone === "error"
-        ? "שגיאת סנכרון"
-        : "סנכרון ענן";
+        ? "׳©׳’׳™׳׳× ׳¡׳ ׳›׳¨׳•׳"
+        : "׳¡׳ ׳›׳¨׳•׳ ׳¢׳ ׳";
   els.cloudStatus.textContent = compactMessage;
   els.cloudStatus.classList.remove("status-ok", "status-warn", "status-error");
   if (tone) els.cloudStatus.classList.add(`status-${tone}`);
@@ -750,14 +750,14 @@ function finishPhotoUpload(areaId, checkCode) {
 }
 
 function applyCameraButtonState(button, count) {
-  const safeCount = Math.max(0, Math.min(MAX_AREA_PHOTOS, Number(count) || 0));
-  const fillPercent = (safeCount / MAX_AREA_PHOTOS) * 100;
+  const safeCount = Math.max(0, Math.min(MAX_CHECK_PHOTOS, Number(count) || 0));
+  const fillPercent = (safeCount / MAX_CHECK_PHOTOS) * 100;
   button.style.setProperty("--camera-fill", `${fillPercent}%`);
-  button.classList.toggle("is-complete", safeCount >= MAX_AREA_PHOTOS);
+  button.classList.toggle("is-complete", safeCount >= MAX_CHECK_PHOTOS);
 }
 
 function isCameraAllowedForCheck(area, check) {
-  return !area.locked && getAreaPhotoCount(area) < MAX_AREA_PHOTOS;
+  return !area.locked && getCheckPhotoCount(area, check.code) < MAX_CHECK_PHOTOS;
 }
 
 function readFileAsDataUrl(file) {
@@ -778,9 +778,9 @@ function sanitizeFileSegment(value) {
 }
 
 function buildCapturedPhotoName(area, check, file) {
-  const apartmentName = sanitizeFileSegment(state.propertyName || "דירה");
-  const roomName = sanitizeFileSegment(area.name || "חדר");
-  const checkCode = sanitizeFileSegment(check.code || "בדיקה");
+  const apartmentName = sanitizeFileSegment(state.propertyName || "׳“׳™׳¨׳”");
+  const roomName = sanitizeFileSegment(area.name || "׳—׳“׳¨");
+  const checkCode = sanitizeFileSegment(check.code || "׳‘׳“׳™׳§׳”");
   const timestamp = new Date().toISOString().replace(/[:T]/g, "-").split(".")[0];
   const typePart = (file?.type || "").split("/")[1] || "jpg";
   const extension = typePart === "jpeg" ? "jpg" : typePart.replace(/[^a-z0-9]/gi, "").toLowerCase() || "jpg";
@@ -788,9 +788,9 @@ function buildCapturedPhotoName(area, check, file) {
 }
 
 function buildCapturedPhotoPath(area, check, fileName) {
-  const apartmentName = sanitizeFileSegment(state.propertyName || "דירה");
-  const roomName = sanitizeFileSegment(area.name || "חדר");
-  const checkCode = sanitizeFileSegment(check.code || "בדיקה");
+  const apartmentName = sanitizeFileSegment(state.propertyName || "׳“׳™׳¨׳”");
+  const roomName = sanitizeFileSegment(area.name || "׳—׳“׳¨");
+  const checkCode = sanitizeFileSegment(check.code || "׳‘׳“׳™׳§׳”");
   return `inspections/${apartmentName}/${roomName}/${checkCode}/${fileName}`;
 }
 
@@ -862,8 +862,8 @@ async function uploadCapturedPhoto(file, area, check, fileName) {
 async function handleCheckCameraFile(area, check, file) {
   if (!file) return;
 
-  if (getAreaPhotoCount(area) >= MAX_AREA_PHOTOS) {
-    window.alert(`אפשר לשמור עד ${MAX_AREA_PHOTOS} תמונות לכל חדר.`);
+  if (getCheckPhotoCount(area, check.code) >= MAX_CHECK_PHOTOS) {
+    window.alert(`אפשר לשמור עד ${MAX_CHECK_PHOTOS} תמונות לכל סעיף בדיקה.`);
     return;
   }
 
@@ -884,14 +884,14 @@ async function handleCheckCameraFile(area, check, file) {
   area.photoCaptures = [
     ...(Array.isArray(area.photoCaptures) ? area.photoCaptures : []),
     pendingPhotoRecord
-  ].slice(0, MAX_AREA_PHOTOS);
+  ];
   startPhotoUpload(area.id, check.code);
   render({ preserveScroll: true });
   let uploadedPhoto;
   try {
     uploadedPhoto = await uploadCapturedPhoto(preparedFile, area, check, fileName);
   } catch (error) {
-    window.alert("התמונה נשמרה מקומית, אבל העלאה לענן נכשלה כרגע.");
+    window.alert("׳”׳×׳׳•׳ ׳” ׳ ׳©׳׳¨׳” ׳׳§׳•׳׳™׳×, ׳׳‘׳ ׳”׳¢׳׳׳” ׳׳¢׳ ׳ ׳ ׳›׳©׳׳” ׳›׳¨׳’׳¢.");
     finishPhotoUpload(area.id, check.code);
     saveState({ immediateCloud: true });
     render({ preserveScroll: true });
@@ -1096,12 +1096,12 @@ function classifyDelta(planValue, actualValue) {
 }
 
 function getAreaProgress(area) {
-  if (area.locked) return { key: "locked", label: "הושלם וננעל" };
+  if (area.locked) return { key: "locked", label: "׳”׳•׳©׳׳ ׳•׳ ׳ ׳¢׳" };
   const total = area.checks.length;
   const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
-  if (touchedChecks === 0) return { key: "pending", label: "לא נבדק" };
-  if (touchedChecks >= total && total > 0) return { key: "complete", label: "הושלם" };
-  return { key: "progress", label: "בבדיקה" };
+  if (touchedChecks === 0) return { key: "pending", label: "׳׳ ׳ ׳‘׳“׳§" };
+  if (touchedChecks >= total && total > 0) return { key: "complete", label: "׳”׳•׳©׳׳" };
+  return { key: "progress", label: "׳‘׳‘׳“׳™׳§׳”" };
 }
 
 function refreshProgressAndSummary() {
@@ -1216,53 +1216,53 @@ function getReportIssues(areas = getInspectedAreas()) {
 }
 
 function getReportStatus(summary) {
-  if (!summary.inspectedAreas) return "טרם הושלמה בדיקה";
-  if (summary.pending > 0 || summary.notStartedAreas > 0) return "דוח ביניים";
-  return "דוח מסכם";
+  if (!summary.inspectedAreas) return "׳˜׳¨׳ ׳”׳•׳©׳׳׳” ׳‘׳“׳™׳§׳”";
+  if (summary.pending > 0 || summary.notStartedAreas > 0) return "׳“׳•׳— ׳‘׳™׳ ׳™׳™׳";
+  return "׳“׳•׳— ׳׳¡׳›׳";
 }
 
 function buildIssueRecommendation(issue) {
   const noteText = issue.note || issue.name;
-  if (issue.category.includes("בטיחות")) {
-    return `מומלץ להסיר את המפגע הבטיחותי, לאמת את העמידה בדרישות התקן ולתעד תיקון.`;
+  if (issue.category.includes("׳‘׳˜׳™׳—׳•׳×")) {
+    return `׳׳•׳׳׳¥ ׳׳”׳¡׳™׳¨ ׳׳× ׳”׳׳₪׳’׳¢ ׳”׳‘׳˜׳™׳—׳•׳×׳™, ׳׳׳׳× ׳׳× ׳”׳¢׳׳™׳“׳” ׳‘׳“׳¨׳™׳©׳•׳× ׳”׳×׳§׳ ׳•׳׳×׳¢׳“ ׳×׳™׳§׳•׳.`;
   }
-  if (issue.category.includes("חשמל")) {
-    return `מומלץ להזמין בדיקה ותיקון של נקודת החשמל ולבצע אימות תפקודי לאחר הטיפול.`;
+  if (issue.category.includes("׳—׳©׳׳")) {
+    return `׳׳•׳׳׳¥ ׳׳”׳–׳׳™׳ ׳‘׳“׳™׳§׳” ׳•׳×׳™׳§׳•׳ ׳©׳ ׳ ׳§׳•׳“׳× ׳”׳—׳©׳׳ ׳•׳׳‘׳¦׳¢ ׳׳™׳׳•׳× ׳×׳₪׳§׳•׳“׳™ ׳׳׳—׳¨ ׳”׳˜׳™׳₪׳•׳.`;
   }
-  if (issue.category.includes("פתחים")) {
-    return `מומלץ לבצע כיוון, חיזוק או החלפה לפי הצורך ולאשר תקינות פתיחה, סגירה ואיטום.`;
+  if (issue.category.includes("׳₪׳×׳—׳™׳")) {
+    return `׳׳•׳׳׳¥ ׳׳‘׳¦׳¢ ׳›׳™׳•׳•׳, ׳—׳™׳–׳•׳§ ׳׳• ׳”׳—׳׳₪׳” ׳׳₪׳™ ׳”׳¦׳•׳¨׳ ׳•׳׳׳©׳¨ ׳×׳§׳™׳ ׳•׳× ׳₪׳×׳™׳—׳”, ׳¡׳’׳™׳¨׳” ׳•׳׳™׳˜׳•׳.`;
   }
-  if (issue.category.includes("גמר")) {
-    return `מומלץ להשלים תיקון גמר מקומי ולבצע ביקורת איכות לאחר ביצוע.`;
+  if (issue.category.includes("׳’׳׳¨")) {
+    return `׳׳•׳׳׳¥ ׳׳”׳©׳׳™׳ ׳×׳™׳§׳•׳ ׳’׳׳¨ ׳׳§׳•׳׳™ ׳•׳׳‘׳¦׳¢ ׳‘׳™׳§׳•׳¨׳× ׳׳™׳›׳•׳× ׳׳׳—׳¨ ׳‘׳™׳¦׳•׳¢.`;
   }
-  return `מומלץ לבדוק את הממצא בשטח, לבצע תיקון מתאים ולאשר השלמה בבדיקה חוזרת.`;
+  return `׳׳•׳׳׳¥ ׳׳‘׳“׳•׳§ ׳׳× ׳”׳׳׳¦׳ ׳‘׳©׳˜׳—, ׳׳‘׳¦׳¢ ׳×׳™׳§׳•׳ ׳׳×׳׳™׳ ׳•׳׳׳©׳¨ ׳”׳©׳׳׳” ׳‘׳‘׳“׳™׳§׳” ׳—׳•׳–׳¨׳×.`;
 }
 
 function buildExecutiveSummary(summary) {
   if (!summary.inspectedAreas) {
-    return "טרם הושלמו נתוני בדיקה להצגה בדוח לקוח. לאחר הזנת ממצאים באזורים שנבדקו, יופיע כאן תקציר מקצועי ומוכן למשלוח.";
+    return "׳˜׳¨׳ ׳”׳•׳©׳׳׳• ׳ ׳×׳•׳ ׳™ ׳‘׳“׳™׳§׳” ׳׳”׳¦׳’׳” ׳‘׳“׳•׳— ׳׳§׳•׳—. ׳׳׳—׳¨ ׳”׳–׳ ׳× ׳׳׳¦׳׳™׳ ׳‘׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳•, ׳™׳•׳₪׳™׳¢ ׳›׳׳ ׳×׳§׳¦׳™׳¨ ׳׳§׳¦׳•׳¢׳™ ׳•׳׳•׳›׳ ׳׳׳©׳׳•׳—.";
   }
 
   const issueTone = summary.issues
-    ? `במהלך הבדיקה זוהו ${summary.issues} ליקויים הדורשים טיפול או בדיקה חוזרת.`
-    : "במהלך הבדיקה לא זוהו ליקויים שסומנו לטיפול.";
+    ? `׳‘׳׳”׳׳ ׳”׳‘׳“׳™׳§׳” ׳–׳•׳”׳• ${summary.issues} ׳׳™׳§׳•׳™׳™׳ ׳”׳“׳•׳¨׳©׳™׳ ׳˜׳™׳₪׳•׳ ׳׳• ׳‘׳“׳™׳§׳” ׳—׳•׳–׳¨׳×.`
+    : "׳‘׳׳”׳׳ ׳”׳‘׳“׳™׳§׳” ׳׳ ׳–׳•׳”׳• ׳׳™׳§׳•׳™׳™׳ ׳©׳¡׳•׳׳ ׳• ׳׳˜׳™׳₪׳•׳.";
   const scopeTone = summary.notStartedAreas
-    ? `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל, בעוד ${summary.notStartedAreas} אזורים נוספים טרם הושלמו ולכן אינם מפורטים במסמך זה.`
-    : `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל ומציג את עיקרי הממצאים והמלצות ההמשך.`;
+    ? `׳”׳“׳•׳— ׳׳×׳™׳™׳—׳¡ ׳-${summary.inspectedAreas} ׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳• ׳‘׳₪׳•׳¢׳, ׳‘׳¢׳•׳“ ${summary.notStartedAreas} ׳׳–׳•׳¨׳™׳ ׳ ׳•׳¡׳₪׳™׳ ׳˜׳¨׳ ׳”׳•׳©׳׳׳• ׳•׳׳›׳ ׳׳™׳ ׳ ׳׳₪׳•׳¨׳˜׳™׳ ׳‘׳׳¡׳׳ ׳–׳”.`
+    : `׳”׳“׳•׳— ׳׳×׳™׳™׳—׳¡ ׳-${summary.inspectedAreas} ׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳• ׳‘׳₪׳•׳¢׳ ׳•׳׳¦׳™׳’ ׳׳× ׳¢׳™׳§׳¨׳™ ׳”׳׳׳¦׳׳™׳ ׳•׳”׳׳׳¦׳•׳× ׳”׳”׳׳©׳.`;
 
-  return `${scopeTone} ${issueTone} שיעור ההשלמה באזורים הנכללים בדוח עומד על ${summary.completionRate}%.`;
+  return `${scopeTone} ${issueTone} ׳©׳™׳¢׳•׳¨ ׳”׳”׳©׳׳׳” ׳‘׳׳–׳•׳¨׳™׳ ׳”׳ ׳›׳׳׳™׳ ׳‘׳“׳•׳— ׳¢׳•׳׳“ ׳¢׳ ${summary.completionRate}%.`;
 }
 
 function buildClosingNote(summary) {
   if (!summary.inspectedAreas) {
-    return "מומלץ להשלים את הבדיקה בשטח ולהזין ממצאים לפני הפקת דוח לקוח.";
+    return "׳׳•׳׳׳¥ ׳׳”׳©׳׳™׳ ׳׳× ׳”׳‘׳“׳™׳§׳” ׳‘׳©׳˜׳— ׳•׳׳”׳–׳™׳ ׳׳׳¦׳׳™׳ ׳׳₪׳ ׳™ ׳”׳₪׳§׳× ׳“׳•׳— ׳׳§׳•׳—.";
   }
 
   if (summary.issues > 0) {
-    return "המסמך מרכז את הליקויים שדורשים טיפול בשלב זה. מומלץ להעבירו לגורם המבצע, לעקוב אחר תיקון הליקויים, ולהפיק דוח מעודכן לאחר ביקורת חוזרת.";
+    return "׳”׳׳¡׳׳ ׳׳¨׳›׳– ׳׳× ׳”׳׳™׳§׳•׳™׳™׳ ׳©׳“׳•׳¨׳©׳™׳ ׳˜׳™׳₪׳•׳ ׳‘׳©׳׳‘ ׳–׳”. ׳׳•׳׳׳¥ ׳׳”׳¢׳‘׳™׳¨׳• ׳׳’׳•׳¨׳ ׳”׳׳‘׳¦׳¢, ׳׳¢׳§׳•׳‘ ׳׳—׳¨ ׳×׳™׳§׳•׳ ׳”׳׳™׳§׳•׳™׳™׳, ׳•׳׳”׳₪׳™׳§ ׳“׳•׳— ׳׳¢׳•׳“׳›׳ ׳׳׳—׳¨ ׳‘׳™׳§׳•׳¨׳× ׳—׳•׳–׳¨׳×.";
   }
 
-  return "לא סומנו ליקויים לטיפול באזורים שנבדקו. לאחר השלמת יתר האזורים, ניתן להפיק דוח מסכם סופי למסירה.";
+  return "׳׳ ׳¡׳•׳׳ ׳• ׳׳™׳§׳•׳™׳™׳ ׳׳˜׳™׳₪׳•׳ ׳‘׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳•. ׳׳׳—׳¨ ׳”׳©׳׳׳× ׳™׳×׳¨ ׳”׳׳–׳•׳¨׳™׳, ׳ ׳™׳×׳ ׳׳”׳₪׳™׳§ ׳“׳•׳— ׳׳¡׳›׳ ׳¡׳•׳₪׳™ ׳׳׳¡׳™׳¨׳”.";
 }
 
 function renderReportDocument(summary, issues) {
@@ -1270,12 +1270,12 @@ function renderReportDocument(summary, issues) {
   const reportSummary = computeReportSummary(reportAreas);
   const reportIssues = getReportIssues(reportAreas);
   const reportStatus = getReportStatus(reportSummary);
-  const projectTitle = state.propertyName || "דוח בדיקה הנדסית";
-  const headerBrandTitle = "אורי לוין";
-  const headerBrandSubtitle = "ביצוע ופיקוח בבנייה";
+  const projectTitle = state.propertyName || "׳“׳•׳— ׳‘׳“׳™׳§׳” ׳”׳ ׳“׳¡׳™׳×";
+  const headerBrandTitle = "׳׳•׳¨׳™ ׳׳•׳™׳";
+  const headerBrandSubtitle = "׳‘׳™׳¦׳•׳¢ ׳•׳₪׳™׳§׳•׳— ׳‘׳‘׳ ׳™׳™׳”";
   const subtitle = state.propertyAddress
-    ? `${reportStatus} עבור ${state.propertyAddress}.`
-    : `${reportStatus} מוכן לשיתוף ולהפקה כ-PDF.`;
+    ? `${reportStatus} ׳¢׳‘׳•׳¨ ${state.propertyAddress}.`
+    : `${reportStatus} ׳׳•׳›׳ ׳׳©׳™׳×׳•׳£ ׳•׳׳”׳₪׳§׳” ׳›-PDF.`;
 
   els.reportDocTitle.textContent = projectTitle;
   els.reportDocSubtitle.textContent = subtitle;
@@ -1287,37 +1287,37 @@ function renderReportDocument(summary, issues) {
 
   if (els.reportIntroTitle && els.reportIntroBlock) {
     if (state.inspectionMode === "owner") {
-      els.reportIntroTitle.textContent = "חשיבות תסקיר דירות בעלים";
+      els.reportIntroTitle.textContent = "׳—׳©׳™׳‘׳•׳× ׳×׳¡׳§׳™׳¨ ׳“׳™׳¨׳•׳× ׳‘׳¢׳׳™׳";
       els.reportIntroBlock.innerHTML = `
-        <p>תסקיר דירות בעלים נועד ליצור צילום מצב קיים של הדירה לפני תחילת השיפוץ, כך שניתן יהיה לתעד באופן מסודר את מצבה בנקודת הזמן הנוכחית.</p>
-        <p>התסקיר מסייע לבעלי הדירה, למתכננים ולבעלי המקצוע לעבוד מתוך בסיס ברור, להשוות בהמשך בין המצב הקיים לתכנון החדש, ולהפחית אי-הבנות במהלך השיפוץ.</p>
+        <p>׳×׳¡׳§׳™׳¨ ׳“׳™׳¨׳•׳× ׳‘׳¢׳׳™׳ ׳ ׳•׳¢׳“ ׳׳™׳¦׳•׳¨ ׳¦׳™׳׳•׳ ׳׳¦׳‘ ׳§׳™׳™׳ ׳©׳ ׳”׳“׳™׳¨׳” ׳׳₪׳ ׳™ ׳×׳—׳™׳׳× ׳”׳©׳™׳₪׳•׳¥, ׳›׳ ׳©׳ ׳™׳×׳ ׳™׳”׳™׳” ׳׳×׳¢׳“ ׳‘׳׳•׳₪׳ ׳׳¡׳•׳“׳¨ ׳׳× ׳׳¦׳‘׳” ׳‘׳ ׳§׳•׳“׳× ׳”׳–׳׳ ׳”׳ ׳•׳›׳—׳™׳×.</p>
+        <p>׳”׳×׳¡׳§׳™׳¨ ׳׳¡׳™׳™׳¢ ׳׳‘׳¢׳׳™ ׳”׳“׳™׳¨׳”, ׳׳׳×׳›׳ ׳ ׳™׳ ׳•׳׳‘׳¢׳׳™ ׳”׳׳§׳¦׳•׳¢ ׳׳¢׳‘׳•׳“ ׳׳×׳•׳ ׳‘׳¡׳™׳¡ ׳‘׳¨׳•׳¨, ׳׳”׳©׳•׳•׳× ׳‘׳”׳׳©׳ ׳‘׳™׳ ׳”׳׳¦׳‘ ׳”׳§׳™׳™׳ ׳׳×׳›׳ ׳•׳ ׳”׳—׳“׳©, ׳•׳׳”׳₪׳—׳™׳× ׳׳™-׳”׳‘׳ ׳•׳× ׳‘׳׳”׳׳ ׳”׳©׳™׳₪׳•׳¥.</p>
       `;
     } else {
-      els.reportIntroTitle.textContent = "חשיבות בדק בית";
+      els.reportIntroTitle.textContent = "׳—׳©׳™׳‘׳•׳× ׳‘׳“׳§ ׳‘׳™׳×";
       els.reportIntroBlock.innerHTML = `
-        <p>בדק בית מקצועי נועד לוודא כי הנכס נבנה בהתאם לתקנים, לתוכניות ולדרישות הבטיחות, וכן לאתר ליקויים בשלב מוקדם ככל האפשר. איתור מוקדם מאפשר לצמצם עלויות תיקון עתידיות, לשפר את איכות הביצוע ולשמור על רמת גימור נאותה טרם מסירה או אכלוס.</p>
-        <p>מסמך זה מרכז ממצאים, הערות והמלצות להמשך טיפול, ומהווה כלי תיעודי חשוב להתנהלות מול הקבלן והגורמים המקצועיים. בדיקה מסודרת מעניקה לרוכש תמונת מצב אמינה, מסייעת במימוש זכויות האחריות ותורמת לשקט נפשי ולביטחון בהשקעה בנכס.</p>
+        <p>׳‘׳“׳§ ׳‘׳™׳× ׳׳§׳¦׳•׳¢׳™ ׳ ׳•׳¢׳“ ׳׳•׳•׳“׳ ׳›׳™ ׳”׳ ׳›׳¡ ׳ ׳‘׳ ׳” ׳‘׳”׳×׳׳ ׳׳×׳§׳ ׳™׳, ׳׳×׳•׳›׳ ׳™׳•׳× ׳•׳׳“׳¨׳™׳©׳•׳× ׳”׳‘׳˜׳™׳—׳•׳×, ׳•׳›׳ ׳׳׳×׳¨ ׳׳™׳§׳•׳™׳™׳ ׳‘׳©׳׳‘ ׳׳•׳§׳“׳ ׳›׳›׳ ׳”׳׳₪׳©׳¨. ׳׳™׳×׳•׳¨ ׳׳•׳§׳“׳ ׳׳׳₪׳©׳¨ ׳׳¦׳׳¦׳ ׳¢׳׳•׳™׳•׳× ׳×׳™׳§׳•׳ ׳¢׳×׳™׳“׳™׳•׳×, ׳׳©׳₪׳¨ ׳׳× ׳׳™׳›׳•׳× ׳”׳‘׳™׳¦׳•׳¢ ׳•׳׳©׳׳•׳¨ ׳¢׳ ׳¨׳׳× ׳’׳™׳׳•׳¨ ׳ ׳׳•׳×׳” ׳˜׳¨׳ ׳׳¡׳™׳¨׳” ׳׳• ׳׳›׳׳•׳¡.</p>
+        <p>׳׳¡׳׳ ׳–׳” ׳׳¨׳›׳– ׳׳׳¦׳׳™׳, ׳”׳¢׳¨׳•׳× ׳•׳”׳׳׳¦׳•׳× ׳׳”׳׳©׳ ׳˜׳™׳₪׳•׳, ׳•׳׳”׳•׳•׳” ׳›׳׳™ ׳×׳™׳¢׳•׳“׳™ ׳—׳©׳•׳‘ ׳׳”׳×׳ ׳”׳׳•׳× ׳׳•׳ ׳”׳§׳‘׳׳ ׳•׳”׳’׳•׳¨׳׳™׳ ׳”׳׳§׳¦׳•׳¢׳™׳™׳. ׳‘׳“׳™׳§׳” ׳׳¡׳•׳“׳¨׳× ׳׳¢׳ ׳™׳§׳” ׳׳¨׳•׳›׳© ׳×׳׳•׳ ׳× ׳׳¦׳‘ ׳׳׳™׳ ׳”, ׳׳¡׳™׳™׳¢׳× ׳‘׳׳™׳׳•׳© ׳–׳›׳•׳™׳•׳× ׳”׳׳—׳¨׳™׳•׳× ׳•׳×׳•׳¨׳׳× ׳׳©׳§׳˜ ׳ ׳₪׳©׳™ ׳•׳׳‘׳™׳˜׳—׳•׳ ׳‘׳”׳©׳§׳¢׳” ׳‘׳ ׳›׳¡.</p>
       `;
     }
   }
 
   const coverMetaItems = [
-    state.clientName && `לקוח: ${state.clientName}`,
-    state.clientPhone && `נייד: ${state.clientPhone}`,
+    state.clientName && `׳׳§׳•׳—: ${state.clientName}`,
+    state.clientPhone && `׳ ׳™׳™׳“: ${state.clientPhone}`,
     state.clientEmail && `Email: ${state.clientEmail}`,
-    state.inspectorName && `בודק: ${state.inspectorName}`,
-    state.propertyAddress && `מיקום: ${state.propertyAddress}`,
-    `תאריך הפקה: ${formatGeneratedAt()}`
+    state.inspectorName && `׳‘׳•׳“׳§: ${state.inspectorName}`,
+    state.propertyAddress && `׳׳™׳§׳•׳: ${state.propertyAddress}`,
+    `׳×׳׳¨׳™׳ ׳”׳₪׳§׳”: ${formatGeneratedAt()}`
   ].filter(Boolean);
   els.reportCoverMeta.innerHTML = coverMetaItems.map((item) => `<span>${escapeHtml(item)}</span>`).join("");
 
   const overviewItems = [
-    ["סטטוס", reportStatus],
-    ["בודק", state.inspectorName || "לא הוזן"],
-    ["לקוח", state.clientName || "לא הוזן"],
-    ["נייד", state.clientPhone || "לא הוזן"],
-    ["Email", state.clientEmail || "לא הוזן"],
-    ["אזורים", `${reportSummary.inspectedAreas} נבדקו${reportSummary.notStartedAreas ? `, ${reportSummary.notStartedAreas} לא נכללו` : ""}`]
+    ["׳¡׳˜׳˜׳•׳¡", reportStatus],
+    ["׳‘׳•׳“׳§", state.inspectorName || "׳׳ ׳”׳•׳–׳"],
+    ["׳׳§׳•׳—", state.clientName || "׳׳ ׳”׳•׳–׳"],
+    ["׳ ׳™׳™׳“", state.clientPhone || "׳׳ ׳”׳•׳–׳"],
+    ["Email", state.clientEmail || "׳׳ ׳”׳•׳–׳"],
+    ["׳׳–׳•׳¨׳™׳", `${reportSummary.inspectedAreas} ׳ ׳‘׳“׳§׳•${reportSummary.notStartedAreas ? `, ${reportSummary.notStartedAreas} ׳׳ ׳ ׳›׳׳׳•` : ""}`]
   ];
 
   if (els.reportOverview) {
@@ -1334,11 +1334,11 @@ function renderReportDocument(summary, issues) {
   }
 
   const statItems = [
-    ["אזורים שנבדקו", reportSummary.inspectedAreas],
-    ["סעיפים שנבדקו", reportSummary.completedChecks],
-    ["תקין", reportSummary.ok],
-    ["ליקויים", reportSummary.issues],
-    ["השלמה", `${reportSummary.completionRate}%`]
+    ["׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳•", reportSummary.inspectedAreas],
+    ["׳¡׳¢׳™׳₪׳™׳ ׳©׳ ׳‘׳“׳§׳•", reportSummary.completedChecks],
+    ["׳×׳§׳™׳", reportSummary.ok],
+    ["׳׳™׳§׳•׳™׳™׳", reportSummary.issues],
+    ["׳”׳©׳׳׳”", `${reportSummary.completionRate}%`]
   ];
 
   if (els.reportSummaryStats) {
@@ -1351,15 +1351,15 @@ function renderReportDocument(summary, issues) {
   }
 
   if (!reportIssues.length) {
-    els.reportCriticalFindings.innerHTML = `<div class="report-empty">לא זוהו ליקויים באזורים שנבדקו בפועל. ניתן להשתמש במסמך זה כדוח ביניים או להמשיך להשלמת יתר האזורים.</div>`;
+    els.reportCriticalFindings.innerHTML = `<div class="report-empty">׳׳ ׳–׳•׳”׳• ׳׳™׳§׳•׳™׳™׳ ׳‘׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳• ׳‘׳₪׳•׳¢׳. ׳ ׳™׳×׳ ׳׳”׳©׳×׳׳© ׳‘׳׳¡׳׳ ׳–׳” ׳›׳“׳•׳— ׳‘׳™׳ ׳™׳™׳ ׳׳• ׳׳”׳׳©׳™׳ ׳׳”׳©׳׳׳× ׳™׳×׳¨ ׳”׳׳–׳•׳¨׳™׳.</div>`;
   } else {
     els.reportCriticalFindings.innerHTML = reportIssues
       .map((issue) => `
         <article class="report-finding-item">
           <strong>${escapeHtml(issue.area)} | ${escapeHtml(issue.name)}</strong>
-          <div class="report-finding-meta">קוד סעיף: ${escapeHtml(issue.code)} | ${escapeHtml(issue.category)}</div>
-          <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(issue.note || "נדרש פירוט נוסף מצד הבודק.")}</p>
-          <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation(issue))}</p>
+          <div class="report-finding-meta">׳§׳•׳“ ׳¡׳¢׳™׳£: ${escapeHtml(issue.code)} | ${escapeHtml(issue.category)}</div>
+          <p class="report-check-note"><strong>׳׳׳¦׳:</strong> ${escapeHtml(issue.note || "׳ ׳“׳¨׳© ׳₪׳™׳¨׳•׳˜ ׳ ׳•׳¡׳£ ׳׳¦׳“ ׳”׳‘׳•׳“׳§.")}</p>
+          <p class="report-check-note"><strong>׳”׳׳׳¦׳”:</strong> ${escapeHtml(buildIssueRecommendation(issue))}</p>
         </article>
       `).join("");
   }
@@ -1376,26 +1376,26 @@ function renderReportDocument(summary, issues) {
           <div class="report-check-item">
             <strong>${escapeHtml(check.name)}</strong>
             <div class="report-check-meta">${escapeHtml(check.category)}</div>
-            <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(check.note || "נדרש פירוט נוסף מצד הבודק.")}</p>
-            <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
+            <p class="report-check-note"><strong>׳׳׳¦׳:</strong> ${escapeHtml(check.note || "׳ ׳“׳¨׳© ׳₪׳™׳¨׳•׳˜ ׳ ׳•׳¡׳£ ׳׳¦׳“ ׳”׳‘׳•׳“׳§.")}</p>
+            <p class="report-check-note"><strong>׳”׳׳׳¦׳”:</strong> ${escapeHtml(buildIssueRecommendation({
               category: check.category,
               note: check.note.trim(),
               name: check.name
             }))}</p>
           </div>
         `).join("")
-      : `<div class="report-empty">לא זוהו ליקויים באזור זה.</div>`;
+      : `<div class="report-empty">׳׳ ׳–׳•׳”׳• ׳׳™׳§׳•׳™׳™׳ ׳‘׳׳–׳•׳¨ ׳–׳”.</div>`;
 
     return `
       <article class="report-area-card">
         <div class="report-area-head">
           <div>
             <strong>${escapeHtml(area.name)}</strong>
-            <div class="report-area-meta">${escapeHtml(areaTypeLabels[area.type])} | ${escapeHtml(total)} סעיפי בדיקה | ${escapeHtml(progress.label)}</div>
+            <div class="report-area-meta">${escapeHtml(areaTypeLabels[area.type])} | ${escapeHtml(total)} ׳¡׳¢׳™׳₪׳™ ׳‘׳“׳™׳§׳” | ${escapeHtml(progress.label)}</div>
           </div>
-          <span class="report-area-status">${escapeHtml(completion)}% הושלם</span>
+          <span class="report-area-status">${escapeHtml(completion)}% ׳”׳•׳©׳׳</span>
         </div>
-        <div class="report-area-meta">תקין: ${escapeHtml(okCount)} | ליקויים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
+        <div class="report-area-meta">׳×׳§׳™׳: ${escapeHtml(okCount)} | ׳׳™׳§׳•׳™׳™׳: ${escapeHtml(issuesInArea.length)} | ׳׳׳×׳™׳: ${escapeHtml(pendingCount)}</div>
         ${area.photoCaptures?.length ? `
           <div class="report-area-photos">
             ${area.photoCaptures.map((photo) => {
@@ -1411,7 +1411,7 @@ function renderReportDocument(summary, issues) {
 
   els.reportAreaDetails.innerHTML = areaCards.length
     ? areaCards.join("")
-    : `<div class="report-empty">אין אזורים עם נתוני בדיקה להצגה במסמך זה.</div>`;
+    : `<div class="report-empty">׳׳™׳ ׳׳–׳•׳¨׳™׳ ׳¢׳ ׳ ׳×׳•׳ ׳™ ׳‘׳“׳™׳§׳” ׳׳”׳¦׳’׳” ׳‘׳׳¡׳׳ ׳–׳”.</div>`;
 
   els.reportClosingNote.innerHTML = `<p>${escapeHtml(buildClosingNote(reportSummary))}</p>`;
 }
@@ -1426,16 +1426,16 @@ function createPrintPage(pageNumber) {
   page.innerHTML = `
     <div class="print-page-header">
       <div class="print-page-brand">
-        <img class="print-page-logo" src="assets/logo01.jpeg" alt="לוגו Inspector">
+        <img class="print-page-logo" src="assets/logo01.jpeg" alt="׳׳•׳’׳• Inspector">
         <div>
-          <strong>אורי לוין</strong>
-          <span>ביצוע ופיקוח בבנייה</span>
+          <strong>׳׳•׳¨׳™ ׳׳•׳™׳</strong>
+          <span>׳‘׳™׳¦׳•׳¢ ׳•׳₪׳™׳§׳•׳— ׳‘׳‘׳ ׳™׳™׳”</span>
         </div>
       </div>
       <div class="print-page-meta">
         <span>${escapeHtml(els.reportPageHeaderStatus.textContent)}</span>
         <span>${escapeHtml(els.reportPageHeaderDate.textContent)}</span>
-        <span>עמוד ${padPageNumber(pageNumber)}</span>
+        <span>׳¢׳׳•׳“ ${padPageNumber(pageNumber)}</span>
       </div>
     </div>
     <div class="print-page-body"></div>
@@ -1450,7 +1450,7 @@ function buildCompactPrintBody() {
   const topAreaLines = reportAreas.slice(0, 4).map((area) => {
     const issuesCount = area.checks.filter((check) => check.status === "issue").length;
     const completion = computeAreaCompletion(area);
-    return `${area.name} | ${completion}% הושלם | ליקויים: ${issuesCount}`;
+    return `${area.name} | ${completion}% ׳”׳•׳©׳׳ | ׳׳™׳§׳•׳™׳™׳: ${issuesCount}`;
   });
 
   const issueMarkup = reportIssues.length
@@ -1460,75 +1460,75 @@ function buildCompactPrintBody() {
           ${escapeHtml(issue.note || issue.name)}
         </li>
       `).join("")
-    : `<li>לא זוהו ליקויים באזורים שנבדקו.</li>`;
+    : `<li>׳׳ ׳–׳•׳”׳• ׳׳™׳§׳•׳™׳™׳ ׳‘׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳•.</li>`;
 
   const areaMarkup = topAreaLines.length
     ? topAreaLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")
-    : `<li>אין אזורים שנבדקו בפועל.</li>`;
+    : `<li>׳׳™׳ ׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳• ׳‘׳₪׳•׳¢׳.</li>`;
 
   return `
     <section class="report-section compact-print-intro">
-      <h3>מהות המסמך</h3>
+      <h3>׳׳”׳•׳× ׳”׳׳¡׳׳</h3>
       <div class="report-text-block">
-        <p>דוח זה מרכז ממצאים עיקריים, תמונת מצב תמציתית והמלצות פעולה להמשך טיפול, לצורך מסירה ללקוח ותיעוד מקצועי מסודר.</p>
+        <p>׳“׳•׳— ׳–׳” ׳׳¨׳›׳– ׳׳׳¦׳׳™׳ ׳¢׳™׳§׳¨׳™׳™׳, ׳×׳׳•׳ ׳× ׳׳¦׳‘ ׳×׳׳¦׳™׳×׳™׳× ׳•׳”׳׳׳¦׳•׳× ׳₪׳¢׳•׳׳” ׳׳”׳׳©׳ ׳˜׳™׳₪׳•׳, ׳׳¦׳•׳¨׳ ׳׳¡׳™׳¨׳” ׳׳׳§׳•׳— ׳•׳×׳™׳¢׳•׳“ ׳׳§׳¦׳•׳¢׳™ ׳׳¡׳•׳“׳¨.</p>
       </div>
     </section>
     <section class="report-section compact-print-grid">
       <div class="compact-print-card">
-        <strong>נכס</strong>
-        <span>${escapeHtml(state.propertyName || "לא הוזן")}</span>
+        <strong>׳ ׳›׳¡</strong>
+        <span>${escapeHtml(state.propertyName || "׳׳ ׳”׳•׳–׳")}</span>
       </div>
       <div class="compact-print-card">
-        <strong>כתובת</strong>
-        <span>${escapeHtml(state.propertyAddress || "לא הוזנה")}</span>
+        <strong>׳›׳×׳•׳‘׳×</strong>
+        <span>${escapeHtml(state.propertyAddress || "׳׳ ׳”׳•׳–׳ ׳”")}</span>
       </div>
       <div class="compact-print-card">
-        <strong>לקוח</strong>
-        <span>${escapeHtml(state.clientName || "לא הוזן")}</span>
+        <strong>׳׳§׳•׳—</strong>
+        <span>${escapeHtml(state.clientName || "׳׳ ׳”׳•׳–׳")}</span>
       </div>
       <div class="compact-print-card">
-        <strong>בודק</strong>
-        <span>${escapeHtml(state.inspectorName || "לא הוזן")}</span>
+        <strong>׳‘׳•׳“׳§</strong>
+        <span>${escapeHtml(state.inspectorName || "׳׳ ׳”׳•׳–׳")}</span>
       </div>
       <div class="compact-print-card">
-        <strong>אזורים שנבדקו</strong>
+        <strong>׳׳–׳•׳¨׳™׳ ׳©׳ ׳‘׳“׳§׳•</strong>
         <span>${escapeHtml(reportSummary.inspectedAreas)}</span>
       </div>
       <div class="compact-print-card">
-        <strong>ליקויים</strong>
+        <strong>׳׳™׳§׳•׳™׳™׳</strong>
         <span>${escapeHtml(reportSummary.issues)}</span>
       </div>
     </section>
     <section class="report-section compact-print-grid compact-print-stats">
       <div class="compact-print-card">
-        <strong>סעיפים שנבדקו</strong>
+        <strong>׳¡׳¢׳™׳₪׳™׳ ׳©׳ ׳‘׳“׳§׳•</strong>
         <span>${escapeHtml(reportSummary.completedChecks)}</span>
       </div>
       <div class="compact-print-card">
-        <strong>תקין</strong>
+        <strong>׳×׳§׳™׳</strong>
         <span>${escapeHtml(reportSummary.ok)}</span>
       </div>
       <div class="compact-print-card">
-        <strong>השלמה</strong>
+        <strong>׳”׳©׳׳׳”</strong>
         <span>${escapeHtml(`${reportSummary.completionRate}%`)}</span>
       </div>
       <div class="compact-print-card">
-        <strong>סטטוס</strong>
+        <strong>׳¡׳˜׳˜׳•׳¡</strong>
         <span>${escapeHtml(getReportStatus(reportSummary))}</span>
       </div>
     </section>
     <section class="report-section compact-print-columns">
       <div>
-        <h3>ממצאים מרכזיים</h3>
+        <h3>׳׳׳¦׳׳™׳ ׳׳¨׳›׳–׳™׳™׳</h3>
         <ul class="compact-print-list">${issueMarkup}</ul>
       </div>
       <div>
-        <h3>תמונת מצב אזורים</h3>
+        <h3>׳×׳׳•׳ ׳× ׳׳¦׳‘ ׳׳–׳•׳¨׳™׳</h3>
         <ul class="compact-print-list">${areaMarkup}</ul>
       </div>
     </section>
     <section class="report-section">
-      <h3>סיכום והמלצות</h3>
+      <h3>׳¡׳™׳›׳•׳ ׳•׳”׳׳׳¦׳•׳×</h3>
       <div class="report-text-block">
         <p>${escapeHtml(buildClosingNote(reportSummary))}</p>
       </div>
@@ -1554,7 +1554,7 @@ function updateProjectFields() {
 }
 
 function getProjectTitle(project = state) {
-  return project.propertyName || "בדיקת דירה ללא שם נכס";
+  return project.propertyName || "׳‘׳“׳™׳§׳× ׳“׳™׳¨׳” ׳׳׳ ׳©׳ ׳ ׳›׳¡";
 }
 
 function projectDataSignature(projectData = {}) {
@@ -1715,7 +1715,7 @@ function normalizeProjectRecord(project) {
   if (!project || !project.id || !project.data) return null;
   return {
     ...project,
-    title: project.data.propertyName || project.title || "בדיקת דירה ללא שם נכס",
+    title: project.data.propertyName || project.title || "׳‘׳“׳™׳§׳× ׳“׳™׳¨׳” ׳׳׳ ׳©׳ ׳ ׳›׳¡",
     propertyAddress: normalizePropertyAddress(project.data.propertyAddress || project.propertyAddress),
     updatedAt: project.updatedAt || new Date(project.updatedAtMs || Date.now()).toISOString(),
     updatedAtMs: Number(project.updatedAtMs || 0),
@@ -1737,7 +1737,7 @@ async function bootstrapCloudProjects(localProjects = []) {
       await saveProjectRecordToCloud(normalizeProjectRecord(project) || project);
     }
   } catch (error) {
-    updateCloudStatus("הסנכרון לענן זמין חלקית. אפשר להמשיך לעבוד ולשמור ידנית.", "warn");
+    updateCloudStatus("׳”׳¡׳ ׳›׳¨׳•׳ ׳׳¢׳ ׳ ׳–׳׳™׳ ׳—׳׳§׳™׳×. ׳׳₪׳©׳¨ ׳׳”׳׳©׳™׳ ׳׳¢׳‘׳•׳“ ׳•׳׳©׳׳•׳¨ ׳™׳“׳ ׳™׳×.", "warn");
     console.error(error);
   }
 }
@@ -1756,9 +1756,9 @@ function queueCloudSync() {
       await saveProjectRecordToCloud(record);
       state.currentProjectId = record.id;
       lastCloudAppliedAt = record.updatedAtMs;
-      updateCloudStatus("הבדיקה מסונכרנת לענן בין מחשב לנייד.", "ok");
+      updateCloudStatus("׳”׳‘׳“׳™׳§׳” ׳׳¡׳•׳ ׳›׳¨׳ ׳× ׳׳¢׳ ׳ ׳‘׳™׳ ׳׳—׳©׳‘ ׳׳ ׳™׳™׳“.", "ok");
     } catch (error) {
-      updateCloudStatus("שמירה מקומית פועלת, אבל הסנכרון לענן נכשל כרגע.", "error");
+      updateCloudStatus("׳©׳׳™׳¨׳” ׳׳§׳•׳׳™׳× ׳₪׳•׳¢׳׳×, ׳׳‘׳ ׳”׳¡׳ ׳›׳¨׳•׳ ׳׳¢׳ ׳ ׳ ׳›׳©׳ ׳›׳¨׳’׳¢.", "error");
       console.error(error);
     }
   }, 700);
@@ -1766,11 +1766,11 @@ function queueCloudSync() {
 
 function subscribeToCloudProjects() {
   if (!db || projectsUnsubscribe) {
-    if (!db) updateCloudStatus("אין חיבור לענן. הנתונים נשמרים מקומית בלבד.", "warn");
+    if (!db) updateCloudStatus("׳׳™׳ ׳—׳™׳‘׳•׳¨ ׳׳¢׳ ׳. ׳”׳ ׳×׳•׳ ׳™׳ ׳ ׳©׳׳¨׳™׳ ׳׳§׳•׳׳™׳× ׳‘׳׳‘׳“.", "warn");
     return;
   }
 
-  updateCloudStatus("מתחבר לענן ומסנכרן פרויקטים...", "warn");
+  updateCloudStatus("׳׳×׳—׳‘׳¨ ׳׳¢׳ ׳ ׳•׳׳¡׳ ׳›׳¨׳ ׳₪׳¨׳•׳™׳§׳˜׳™׳...", "warn");
   const localProjectsSeed = [...state.savedProjects];
   bootstrapCloudProjects(localProjectsSeed);
   projectsUnsubscribe = onSnapshot(
@@ -1783,7 +1783,7 @@ function subscribeToCloudProjects() {
       state.savedProjects = dedupedProjects;
       saveProjectsLibrary();
       renderSavedProjects();
-      updateCloudStatus("סנכרון ענן פעיל. אותם פרויקטים זמינים במחשב ובנייד.", "ok");
+      updateCloudStatus("׳¡׳ ׳›׳¨׳•׳ ׳¢׳ ׳ ׳₪׳¢׳™׳. ׳׳•׳×׳ ׳₪׳¨׳•׳™׳§׳˜׳™׳ ׳–׳׳™׳ ׳™׳ ׳‘׳׳—׳©׳‘ ׳•׳‘׳ ׳™׳™׳“.", "ok");
       cleanupDuplicateOwnerProjects(duplicateProjects);
 
       const activeProject = state.currentProjectId ? dedupedProjects.find((project) => project.id === state.currentProjectId) : null;
@@ -1803,7 +1803,7 @@ function subscribeToCloudProjects() {
       }
     },
     (error) => {
-      updateCloudStatus("החיבור לענן נכשל. אפשר להמשיך לעבוד מקומית.", "error");
+      updateCloudStatus("׳”׳—׳™׳‘׳•׳¨ ׳׳¢׳ ׳ ׳ ׳›׳©׳. ׳׳₪׳©׳¨ ׳׳”׳׳©׳™׳ ׳׳¢׳‘׳•׳“ ׳׳§׳•׳׳™׳×.", "error");
       console.error(error);
     }
   );
@@ -1812,7 +1812,7 @@ function subscribeToCloudProjects() {
 async function saveCurrentProject() {
   updateProjectFields();
   if (!state.propertyName) {
-    window.alert("יש להזין שם נכס לפני שמירה.");
+    window.alert("׳™׳© ׳׳”׳–׳™׳ ׳©׳ ׳ ׳›׳¡ ׳׳₪׳ ׳™ ׳©׳׳™׳¨׳”.");
     return false;
   }
 
@@ -1830,9 +1830,9 @@ async function saveCurrentProject() {
   try {
     await saveProjectRecordToCloud(record);
     lastCloudAppliedAt = record.updatedAtMs;
-    updateCloudStatus("הבדיקה נשמרה בענן וזמינה גם במחשב וגם בנייד.", "ok");
+    updateCloudStatus("׳”׳‘׳“׳™׳§׳” ׳ ׳©׳׳¨׳” ׳‘׳¢׳ ׳ ׳•׳–׳׳™׳ ׳” ׳’׳ ׳‘׳׳—׳©׳‘ ׳•׳’׳ ׳‘׳ ׳™׳™׳“.", "ok");
   } catch (error) {
-    updateCloudStatus("הבדיקה נשמרה מקומית, אבל לא הועלתה לענן.", "error");
+    updateCloudStatus("׳”׳‘׳“׳™׳§׳” ׳ ׳©׳׳¨׳” ׳׳§׳•׳׳™׳×, ׳׳‘׳ ׳׳ ׳”׳•׳¢׳׳×׳” ׳׳¢׳ ׳.", "error");
     console.error(error);
   }
   renderSavedProjects();
@@ -1858,7 +1858,7 @@ function loadProject(projectId) {
 async function deleteProject(projectId) {
   const project = state.savedProjects.find((item) => item.id === projectId);
   if (!project) return;
-  const confirmed = window.confirm(`למחוק את "${project.title}" מרשימת הבדיקות השמורות?`);
+  const confirmed = window.confirm(`׳׳׳—׳•׳§ ׳׳× "${project.title}" ׳׳¨׳©׳™׳׳× ׳”׳‘׳“׳™׳§׳•׳× ׳”׳©׳׳•׳¨׳•׳×?`);
   if (!confirmed) return;
 
   const canonicalId = getCanonicalProjectId(project) || projectId;
@@ -1878,7 +1878,7 @@ async function deleteProject(projectId) {
         await deleteDoc(doc(db, PROJECTS_COLLECTION, projectId));
       }
     } catch (error) {
-      updateCloudStatus("הפרויקט נמחק מקומית, אבל המחיקה בענן נכשלה.", "error");
+      updateCloudStatus("׳”׳₪׳¨׳•׳™׳§׳˜ ׳ ׳׳—׳§ ׳׳§׳•׳׳™׳×, ׳׳‘׳ ׳”׳׳—׳™׳§׳” ׳‘׳¢׳ ׳ ׳ ׳›׳©׳׳”.", "error");
       console.error(error);
     }
   }
@@ -1957,7 +1957,7 @@ function renderSavedProjects() {
   }
 
   if (!state.savedProjects.length) {
-    els.savedProjectsList.innerHTML = `<div class="empty-state">עדיין אין בדיקות שמורות. שמור את הדירה הנוכחית כדי לחזור אליה בהמשך.</div>`;
+    els.savedProjectsList.innerHTML = `<div class="empty-state">׳¢׳“׳™׳™׳ ׳׳™׳ ׳‘׳“׳™׳§׳•׳× ׳©׳׳•׳¨׳•׳×. ׳©׳׳•׳¨ ׳׳× ׳”׳“׳™׳¨׳” ׳”׳ ׳•׳›׳—׳™׳× ׳›׳“׳™ ׳׳—׳–׳•׳¨ ׳׳׳™׳” ׳‘׳”׳׳©׳.</div>`;
     return;
   }
 
@@ -1965,9 +1965,9 @@ function renderSavedProjects() {
     const updatedAt = project.updatedAt
       ? new Date(project.updatedAt).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })
       : "";
-    const propertyName = project.data?.propertyName || project.title || "בדיקת דירה ללא שם נכס";
+    const propertyName = project.data?.propertyName || project.title || "׳‘׳“׳™׳§׳× ׳“׳™׳¨׳” ׳׳׳ ׳©׳ ׳ ׳›׳¡";
     const addressLine = project.propertyAddress ? `<p class="saved-project-meta">${project.propertyAddress}</p>` : "";
-    const modeLabel = project.data?.inspectionMode === "owner" ? "תסקיר בעלים" : "בדיקת נכס";
+    const modeLabel = project.data?.inspectionMode === "owner" ? "׳×׳¡׳§׳™׳¨ ׳‘׳¢׳׳™׳" : "׳‘׳“׳™׳§׳× ׳ ׳›׳¡";
     return `
       <article class="saved-project" data-project-id="${project.id}">
         <div class="saved-project-accent"></div>
@@ -1977,13 +1977,13 @@ function renderSavedProjects() {
             <p class="saved-project-title">${propertyName}</p>
             <p class="saved-project-mode">${modeLabel}</p>
             ${addressLine}
-            <p class="saved-project-meta">עודכן: ${updatedAt || "ללא תאריך"}</p>
+            <p class="saved-project-meta">׳¢׳•׳“׳›׳: ${updatedAt || "׳׳׳ ׳×׳׳¨׳™׳"}</p>
           </div>
-          ${state.currentProjectId === project.id ? '<span class="inline-badge">פתוח עכשיו</span>' : ""}
+          ${state.currentProjectId === project.id ? '<span class="inline-badge">׳₪׳×׳•׳— ׳¢׳›׳©׳™׳•</span>' : ""}
         </div>
         <div class="saved-project-actions">
-          <button class="ghost-btn" type="button" data-action="open-project" data-project-id="${project.id}">פתח</button>
-          <button class="delete-btn" type="button" data-action="delete-project" data-project-id="${project.id}">מחק</button>
+          <button class="ghost-btn" type="button" data-action="open-project" data-project-id="${project.id}">׳₪׳×׳—</button>
+          <button class="delete-btn" type="button" data-action="delete-project" data-project-id="${project.id}">׳׳—׳§</button>
         </div>
       </article>
     `;
@@ -2000,30 +2000,30 @@ function renderSavedProjects() {
 
 function updateHeader() {
   updateProjectFields();
-  const defaultReportTitle = state.inspectionMode === "owner" ? "תסקיר דירות בעלים" : "דוח בדיקה הנדסית";
+  const defaultReportTitle = state.inspectionMode === "owner" ? "׳×׳¡׳§׳™׳¨ ׳“׳™׳¨׳•׳× ׳‘׳¢׳׳™׳" : "׳“׳•׳— ׳‘׳“׳™׳§׳” ׳”׳ ׳“׳¡׳™׳×";
   const introScreens = new Set(["home", "owner-apartments"]);
   const welcomeLikeScreens = new Set(["welcome", "rooms"]);
   if (introScreens.has(state.currentScreen)) {
     els.reportTitle.textContent = "Inspector";
-    els.reportMeta.textContent = "בדיקות הנדסיות לנכס";
+    els.reportMeta.textContent = "׳‘׳“׳™׳§׳•׳× ׳”׳ ׳“׳¡׳™׳•׳× ׳׳ ׳›׳¡";
     return;
   }
 
   if (welcomeLikeScreens.has(state.currentScreen) && !state.propertyName) {
     els.reportTitle.textContent = defaultReportTitle;
-    els.reportMeta.textContent = "מלא פרטי נכס, בחר חדרים ואז עבור למסך הבדיקה.";
+    els.reportMeta.textContent = "׳׳׳ ׳₪׳¨׳˜׳™ ׳ ׳›׳¡, ׳‘׳—׳¨ ׳—׳“׳¨׳™׳ ׳•׳׳– ׳¢׳‘׳•׳¨ ׳׳׳¡׳ ׳”׳‘׳“׳™׳§׳”.";
     return;
   }
 
   els.reportTitle.textContent = state.propertyName || defaultReportTitle;
   const parts = [
-    state.propertyAddress && `כתובת: ${state.propertyAddress}`,
-    state.clientName && `לקוח: ${state.clientName}`,
-    state.clientPhone && `נייד: ${state.clientPhone}`,
+    state.propertyAddress && `׳›׳×׳•׳‘׳×: ${state.propertyAddress}`,
+    state.clientName && `׳׳§׳•׳—: ${state.clientName}`,
+    state.clientPhone && `׳ ׳™׳™׳“: ${state.clientPhone}`,
     state.clientEmail && `Email: ${state.clientEmail}`,
-    state.inspectorName && `בודק: ${state.inspectorName}`
+    state.inspectorName && `׳‘׳•׳“׳§: ${state.inspectorName}`
   ].filter(Boolean);
-  els.reportMeta.textContent = parts.length ? parts.join(" | ") : "בחר חדרים ומלא את הבדיקות בשטח.";
+  els.reportMeta.textContent = parts.length ? parts.join(" | ") : "׳‘׳—׳¨ ׳—׳“׳¨׳™׳ ׳•׳׳׳ ׳׳× ׳”׳‘׳“׳™׳§׳•׳× ׳‘׳©׳˜׳—.";
 }
 
 function persistProjectRecordImmediately(record) {
@@ -2033,10 +2033,10 @@ function persistProjectRecordImmediately(record) {
   lastCloudAppliedAt = record.updatedAtMs;
   saveProjectRecordToCloud(record)
     .then(() => {
-      updateCloudStatus("הבדיקה מסונכרנת לענן בין מחשב לנייד.", "ok");
+      updateCloudStatus("׳”׳‘׳“׳™׳§׳” ׳׳¡׳•׳ ׳›׳¨׳ ׳× ׳׳¢׳ ׳ ׳‘׳™׳ ׳׳—׳©׳‘ ׳׳ ׳™׳™׳“.", "ok");
     })
     .catch((error) => {
-      updateCloudStatus("שמירה מקומית פועלת, אבל הסנכרון לענן נכשל כרגע.", "error");
+      updateCloudStatus("׳©׳׳™׳¨׳” ׳׳§׳•׳׳™׳× ׳₪׳•׳¢׳׳×, ׳׳‘׳ ׳”׳¡׳ ׳›׳¨׳•׳ ׳׳¢׳ ׳ ׳ ׳›׳©׳ ׳›׳¨׳’׳¢.", "error");
       console.error(error);
     });
 }
@@ -2075,7 +2075,7 @@ function setScreen(screen, options = {}) {
 function renderRoomSelection() {
   els.roomsSelection.innerHTML = "";
   if (els.roomsPropertyName) {
-    els.roomsPropertyName.textContent = state.propertyName ? `דירה פעילה: ${state.propertyName}` : "";
+    els.roomsPropertyName.textContent = state.propertyName ? `׳“׳™׳¨׳” ׳₪׳¢׳™׳׳”: ${state.propertyName}` : "";
   }
   state.areas.forEach((area) => {
     const button = els.roomChipTemplate.content.firstElementChild.cloneNode(true);
@@ -2097,7 +2097,7 @@ function renderRoomSelection() {
     });
     els.roomsSelection.appendChild(button);
   });
-  els.selectedRoomsCount.textContent = `${selectedAreas().length} חדרים`;
+  els.selectedRoomsCount.textContent = `${selectedAreas().length} ׳—׳“׳¨׳™׳`;
 }
 
 function renderAreas() {
@@ -2105,7 +2105,7 @@ function renderAreas() {
   const activeArea = ensureActiveInspectionArea();
   const selected = selectedAreas();
   if (!activeArea) {
-    els.areasContainer.innerHTML = `<div class="empty-state">בחר לפחות חדר אחד במסך החדרים כדי להתחיל בדיקה.</div>`;
+    els.areasContainer.innerHTML = `<div class="empty-state">׳‘׳—׳¨ ׳׳₪׳—׳•׳× ׳—׳“׳¨ ׳׳—׳“ ׳‘׳׳¡׳ ׳”׳—׳“׳¨׳™׳ ׳›׳“׳™ ׳׳”׳×׳—׳™׳ ׳‘׳“׳™׳§׳”.</div>`;
     return;
   }
 
@@ -2114,12 +2114,12 @@ function renderAreas() {
     node.querySelector(".area-icon-badge").innerHTML = getAreaIconMarkup(area);
     node.querySelector(".area-title").textContent = area.name;
     node.querySelector(".area-type").textContent = areaTypeLabels[area.type];
-    node.querySelector(".area-photo-count").textContent = `תמונות חדר: ${getAreaPhotoCount(area)}/${MAX_AREA_PHOTOS}`;
+    node.querySelector(".area-photo-count").textContent = `תמונות חדר: ${getAreaPhotoCount(area)}`;
     node.classList.add(`area-${area.type}`);
     if (area.locked) node.classList.add("is-locked");
 
     node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
-      lockBtn.textContent = area.locked ? "לחץ לפתיחה לעריכה" : "לחץ לשמירה ונעילה";
+      lockBtn.textContent = area.locked ? "׳׳—׳¥ ׳׳₪׳×׳™׳—׳” ׳׳¢׳¨׳™׳›׳”" : "׳׳—׳¥ ׳׳©׳׳™׳¨׳” ׳•׳ ׳¢׳™׳׳”";
       if (area.locked) lockBtn.classList.add("locked");
       lockBtn.addEventListener("click", () => {
         toggleAreaLock(area);
@@ -2127,7 +2127,7 @@ function renderAreas() {
     });
 
     node.querySelector(".delete-btn").addEventListener("click", () => {
-      const confirmed = window.confirm(`למחוק את "${area.name}" מהבדיקה הנוכחית?\n\nהמחיקה תסיר את החדר הזה מהדירה הפעילה ותמחק ממנו את כל המידות, ההערות, התמונות והממצאים שנשמרו בו.`);
+      const confirmed = window.confirm(`׳׳׳—׳•׳§ ׳׳× "${area.name}" ׳׳”׳‘׳“׳™׳§׳” ׳”׳ ׳•׳›׳—׳™׳×?\n\n׳”׳׳—׳™׳§׳” ׳×׳¡׳™׳¨ ׳׳× ׳”׳—׳“׳¨ ׳”׳–׳” ׳׳”׳“׳™׳¨׳” ׳”׳₪׳¢׳™׳׳” ׳•׳×׳׳—׳§ ׳׳׳ ׳• ׳׳× ׳›׳ ׳”׳׳™׳“׳•׳×, ׳”׳”׳¢׳¨׳•׳×, ׳”׳×׳׳•׳ ׳•׳× ׳•׳”׳׳׳¦׳׳™׳ ׳©׳ ׳©׳׳¨׳• ׳‘׳•.`);
       if (!confirmed) return;
       state.areas = state.areas.filter((item) => item.id !== area.id);
       if (state.activeInspectionAreaId === area.id) {
@@ -2144,7 +2144,7 @@ function renderAreas() {
       checkNode.querySelector(".check-icon-badge").innerHTML = checkVisual.icon;
       checkNode.querySelector(".check-title-badge").innerHTML = checkVisual.badgeIcon || checkVisual.icon;
       checkNode.querySelector(".check-name").textContent = check.name;
-      checkNode.querySelector(".check-category").textContent = `${check.code} • ${check.category}`;
+      checkNode.querySelector(".check-category").textContent = `${check.code} ג€¢ ${check.category}`;
       const statusSelect = checkNode.querySelector(".status-select");
       const cameraBtn = checkNode.querySelector(".camera-btn");
       const cameraInput = checkNode.querySelector(".camera-input");
@@ -2158,7 +2158,7 @@ function renderAreas() {
         .filter((photo) => photo.checkCode === check.code);
       statusSelect.value = check.status;
       noteInput.value = check.note;
-      cameraCount.textContent = `${checkPhotoCount}/${MAX_AREA_PHOTOS}`;
+      cameraCount.textContent = `${checkPhotoCount}/${MAX_CHECK_PHOTOS}`;
       applyCameraButtonState(cameraBtn, checkPhotoCount);
       cameraBtn.classList.toggle("is-uploading", uploadPending);
       cameraBtn.classList.toggle("is-disabled", !cameraAllowed);
@@ -2177,7 +2177,7 @@ function renderAreas() {
             const alt = photo.checkName || check.name;
             return src
               ? `<a class="check-photo-thumb" href="${escapeHtml(src)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"></a>`
-              : `<div class="check-photo-thumb is-pending">ממתין</div>`;
+              : `<div class="check-photo-thumb is-pending">׳׳׳×׳™׳</div>`;
           }).join("")
         : "";
       cameraInput.disabled = !cameraAllowed;
@@ -2222,7 +2222,7 @@ function renderAreas() {
 function renderOwnerApartments() {
   if (!els.ownerApartmentsGrid) return;
   els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => `
-    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"}" type="button" data-owner-apartment="${apartmentName}">
+    <button class="owner-apartment-card ${apartmentName.startsWith("׳›׳ ׳™׳¡׳”-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"}" type="button" data-owner-apartment="${apartmentName}">
       <span class="owner-apartment-icon" aria-hidden="true">${STATUS_ICON_MARKUP.saved}</span>
       <strong>${apartmentName}</strong>
     </button>
@@ -2237,12 +2237,12 @@ function renderSummaryReports() {
   const summary = computeSummary();
   const issues = getAllIssues();
   const stats = [
-    { key: "areas", label: "אזורים", value: summary.totalAreas },
-    { key: "checks", label: "בדיקות", value: summary.totalChecks },
-    { key: "ok", label: "תקין", value: summary.ok },
-    { key: "issues", label: "ליקויים", value: summary.issues },
-    { key: "pending", label: "לבדיקה", value: summary.pending },
-    { key: "high", label: "ליקוי גבוה", value: summary.highIssues }
+    { key: "areas", label: "׳׳–׳•׳¨׳™׳", value: summary.totalAreas },
+    { key: "checks", label: "׳‘׳“׳™׳§׳•׳×", value: summary.totalChecks },
+    { key: "ok", label: "׳×׳§׳™׳", value: summary.ok },
+    { key: "issues", label: "׳׳™׳§׳•׳™׳™׳", value: summary.issues },
+    { key: "pending", label: "׳׳‘׳“׳™׳§׳”", value: summary.pending },
+    { key: "high", label: "׳׳™׳§׳•׳™ ׳’׳‘׳•׳”", value: summary.highIssues }
   ];
   if (els.summaryStats) {
     els.summaryStats.innerHTML = stats.map((item) => `
@@ -2255,14 +2255,14 @@ function renderSummaryReports() {
   }
 
   if (!issues.length) {
-    els.issueSummary.innerHTML = `<div class="empty-state">עדיין לא סומנו ליקויים. ברגע שתעדכן ממצא כליקוי, הוא יופיע כאן.</div>`;
+    els.issueSummary.innerHTML = `<div class="empty-state">׳¢׳“׳™׳™׳ ׳׳ ׳¡׳•׳׳ ׳• ׳׳™׳§׳•׳™׳™׳. ׳‘׳¨׳’׳¢ ׳©׳×׳¢׳“׳›׳ ׳׳׳¦׳ ׳›׳׳™׳§׳•׳™, ׳”׳•׳ ׳™׳•׳₪׳™׳¢ ׳›׳׳.</div>`;
   } else {
     els.issueSummary.innerHTML = issues.map((issue) => `
       <div class="issue-item">
         <span class="issue-item-icon" aria-hidden="true">${STATUS_ICON_MARKUP.issues}</span>
-        <strong>${issue.area} � ${issue.code} � ${issue.name}</strong>
+        <strong>${issue.area} ן¿½ ${issue.code} ן¿½ ${issue.name}</strong>
         <div class="issue-meta">${issue.category}</div>
-        <div>${issue.note || "לא הוזנה הערה."}</div>
+        <div>${issue.note || "׳׳ ׳”׳•׳–׳ ׳” ׳”׳¢׳¨׳”."}</div>
       </div>
     `).join("");
   }
@@ -2277,7 +2277,7 @@ function renderSummaryReports() {
         <span class="summary-card-icon area-summary-icon" aria-hidden="true">${getAreaIconMarkup(area)}</span>
         <strong>${area.name}</strong>
         <p>${areaTypeLabels[area.type]} | ${progress.label}</p>
-        <p>הושלמו ${done} מתוך ${total} | ליקויים: ${issuesCount}</p>
+        <p>׳”׳•׳©׳׳׳• ${done} ׳׳×׳•׳ ${total} | ׳׳™׳§׳•׳™׳™׳: ${issuesCount}</p>
       </div>
     `;
   }).join("");
@@ -2295,7 +2295,7 @@ function loadState() {
     state.currentScreen = "home";
     state.inspectionMode = "new";
     state.areas = buildPresetAreas();
-    updateCloudStatus("טוען פרויקטים מהענן...", "warn");
+    updateCloudStatus("׳˜׳•׳¢׳ ׳₪׳¨׳•׳™׳§׳˜׳™׳ ׳׳”׳¢׳ ׳...", "warn");
     return;
   }
   const parsed = JSON.parse(raw);
@@ -2313,7 +2313,7 @@ function loadState() {
     activeInspectionAreaId: parsed.activeInspectionAreaId || null,
     areas: Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas()
   });
-  updateCloudStatus("טוען פרויקטים מהענן...", "warn");
+  updateCloudStatus("׳˜׳•׳¢׳ ׳₪׳¨׳•׳™׳§׳˜׳™׳ ׳׳”׳¢׳ ׳...", "warn");
 }
 
 function render(options = {}) {
@@ -2343,7 +2343,7 @@ function addArea(name, type) {
 
 els.saveProjectBtn.addEventListener("click", async () => {
   if (await saveCurrentProject()) {
-    window.alert("הבדיקה נשמרה ותופיע ברשימת הבדיקות השמורות.");
+    window.alert("׳”׳‘׳“׳™׳§׳” ׳ ׳©׳׳¨׳” ׳•׳×׳•׳₪׳™׳¢ ׳‘׳¨׳©׳™׳׳× ׳”׳‘׳“׳™׳§׳•׳× ׳”׳©׳׳•׳¨׳•׳×.");
   }
 });
 
@@ -2369,7 +2369,7 @@ if (els.welcomeNavBtn) {
   els.welcomeNavBtn.addEventListener("click", () => {
     updateProjectFields();
     if (!state.propertyName) {
-      window.alert("יש להזין שם נכס לפני מעבר לחדרים.");
+      window.alert("׳™׳© ׳׳”׳–׳™׳ ׳©׳ ׳ ׳›׳¡ ׳׳₪׳ ׳™ ׳׳¢׳‘׳¨ ׳׳—׳“׳¨׳™׳.");
       els.propertyName.focus();
       return;
     }
@@ -2397,7 +2397,7 @@ if (els.newProjectBtn) {
       || state.inspectorName
       || selectedAreas().some((area) => area.checks.some((check) => check.status !== "pending" || check.note.trim()));
     if (hasContent) {
-      const confirmed = window.confirm("לפתוח בדיקה חדשה? הנתונים הנוכחיים יישארו רק אם שמרת אותם.");
+      const confirmed = window.confirm("׳׳₪׳×׳•׳— ׳‘׳“׳™׳§׳” ׳—׳“׳©׳”? ׳”׳ ׳×׳•׳ ׳™׳ ׳”׳ ׳•׳›׳—׳™׳™׳ ׳™׳™׳©׳׳¨׳• ׳¨׳§ ׳׳ ׳©׳׳¨׳× ׳׳•׳×׳.");
       if (!confirmed) return;
     }
     startNewProject();
@@ -2439,10 +2439,10 @@ if (els.resetBtn) {
   els.resetBtn.addEventListener("click", () => {
     const activeArea = ensureActiveInspectionArea();
     if (!activeArea) {
-      window.alert("אין חדר פעיל לאיפוס כרגע.");
+      window.alert("׳׳™׳ ׳—׳“׳¨ ׳₪׳¢׳™׳ ׳׳׳™׳₪׳•׳¡ ׳›׳¨׳’׳¢.");
       return;
     }
-    const confirmed = window.confirm(`לאפס את "${activeArea.name}" בלבד? כל המידות, הממצאים והנעילה של החדר הזה יימחקו.`);
+    const confirmed = window.confirm(`׳׳׳₪׳¡ ׳׳× "${activeArea.name}" ׳‘׳׳‘׳“? ׳›׳ ׳”׳׳™׳“׳•׳×, ׳”׳׳׳¦׳׳™׳ ׳•׳”׳ ׳¢׳™׳׳” ׳©׳ ׳”׳—׳“׳¨ ׳”׳–׳” ׳™׳™׳׳—׳§׳•.`);
     if (!confirmed) return;
     resetArea(activeArea);
     persistAndRender({}, { immediateCloud: true });
