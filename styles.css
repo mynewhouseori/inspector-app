@@ -2806,6 +2806,27 @@ textarea:focus {
     display: none !important;
   }
 
+  .report-section {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .compact-print-rooms,
+  .compact-print-photos,
+  .report-area-details {
+    display: block;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .compact-print-rooms .report-area-card,
+  .compact-print-photos .compact-photo-card {
+    display: block;
+    margin-bottom: 12px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   .print-pages {
     display: grid;
     gap: 0;
