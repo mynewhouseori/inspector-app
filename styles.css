@@ -1989,13 +1989,13 @@ textarea:focus {
 
 .tone-safety::before,
 .tone-safety .check-icon-badge {
-  background-color: rgba(255, 229, 218, 0.96);
+  background: linear-gradient(180deg, #ffd1bf 0%, #ffe8dd 50%, #fff7f1 100%);
   color: #bc6342;
 }
 
 .tone-outdoor::before,
 .tone-outdoor .check-icon-badge {
-  background-color: rgba(245, 234, 221, 0.96);
+  background: linear-gradient(180deg, #f3d0af 0%, #f7e6d3 50%, #fdf7ef 100%);
   color: #cb7a49;
 }
 
@@ -2009,8 +2009,8 @@ textarea:focus {
   grid-column: 3;
   grid-row: 1;
   display: grid;
-  gap: 6px;
-  padding: 8px 8px 0 0;
+  gap: 5px;
+  padding: 9px 8px 0 0;
   direction: rtl;
 }
 
@@ -2032,6 +2032,7 @@ textarea:focus {
   box-shadow:
     0 1px 0 rgba(255,255,255,0.85) inset,
     0 4px 10px rgba(224, 151, 111, 0.08);
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 
 .camera-btn {
@@ -2048,6 +2049,7 @@ textarea:focus {
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.35),
     0 4px 10px rgba(86, 149, 179, 0.1);
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 
 .camera-count {
@@ -2058,6 +2060,25 @@ textarea:focus {
 .camera-icon {
   width: 12px;
   height: 12px;
+}
+
+.camera-btn:hover,
+.status-select:hover {
+  transform: translateY(-1px);
+}
+
+.camera-btn:hover {
+  border-color: rgba(116, 173, 201, 0.8);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.38),
+    0 6px 14px rgba(86, 149, 179, 0.16);
+}
+
+.status-select:hover {
+  border-color: rgba(221, 160, 123, 0.78);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.85) inset,
+    0 6px 14px rgba(224, 151, 111, 0.12);
 }
 
 .note-input {
@@ -2129,6 +2150,16 @@ textarea:focus {
 .tone-electric .check-title-badge {
   background: rgba(240, 250, 219, 0.96);
   color: #6eaa2c;
+}
+
+.tone-safety .check-title-badge {
+  background: rgba(255, 240, 233, 0.96);
+  color: #bf6b48;
+}
+
+.tone-outdoor .check-title-badge {
+  background: rgba(251, 240, 228, 0.96);
+  color: #bf7b4a;
 }
 
 .tone-structure::after,

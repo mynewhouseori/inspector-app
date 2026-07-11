@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.143";
+const APP_VERSION = "2026.07.11.144";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -264,13 +264,13 @@ function getCheckVisual(check) {
   if (category.includes("בטיחות")) {
     return {
       tone: "tone-safety",
-      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 19 6v5.3c0 4.2-2.6 7.8-7 9.2-4.4-1.4-7-5-7-9.2V6l7-2.5Zm-.8 5.3v4.4h1.6V8.8Zm0 5.7v1.7h1.6v-1.7Z"></path></svg>`
+      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M36 10 53 16v13c0 12-7 22-17 27-10-5-17-15-17-27V16z" fill="#ffcfbf" stroke="#bd6545" stroke-width="3"></path><path d="M36 18v17" fill="none" stroke="#914227" stroke-width="4" stroke-linecap="round"></path><circle cx="36" cy="44" r="3.8" fill="#914227"></circle><path d="M28 12h16" fill="none" stroke="#fff0e7" stroke-width="2.2" stroke-linecap="round"></path></svg>`
     };
   }
   if (category.includes("גג") || code.startsWith("6.")) {
     return {
       tone: "tone-outdoor",
-      icon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 13 8-7 8 7v6h-5.5v-4h-5v4H4z"></path></svg>`
+      icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="m15 33 21-17 21 17v18H42v-11H30v11H15z" fill="#e6b38a" stroke="#9a6039" stroke-width="3" stroke-linejoin="round"></path><path d="M24 30h24" fill="none" stroke="#fff2e7" stroke-width="2.2" stroke-linecap="round"></path><path d="M21 52h30" fill="none" stroke="#b2774d" stroke-width="2.6" stroke-linecap="round"></path></svg>`
     };
   }
   return {
