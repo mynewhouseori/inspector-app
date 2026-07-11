@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.162";
+const APP_VERSION = "2026.07.11.163";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2332,20 +2332,22 @@ function renderSummaryReports() {
     `).join("");
   }
 
-  els.reportAreasSummary.innerHTML = selectedAreas().map((area) => {
-    const total = area.checks.length;
-    const issuesCount = area.checks.filter((check) => check.status === "issue").length;
-    const done = area.checks.filter((check) => check.status !== "pending").length;
-    const progress = getAreaProgress(area);
-    return `
-      <div class="summary-card area-summary-card area-${area.type}">
-        <span class="summary-card-icon area-summary-icon" aria-hidden="true">${getAreaIconMarkup(area)}</span>
-        <strong>${area.name}</strong>
-        <p>${areaTypeLabels[area.type]} | ${progress.label}</p>
-        <p>הושלמו ${done} מתוך ${total} | ליקויים: ${issuesCount}</p>
-      </div>
-    `;
-  }).join("");
+  if (els.reportAreasSummary) {
+    els.reportAreasSummary.innerHTML = selectedAreas().map((area) => {
+      const total = area.checks.length;
+      const issuesCount = area.checks.filter((check) => check.status === "issue").length;
+      const done = area.checks.filter((check) => check.status !== "pending").length;
+      const progress = getAreaProgress(area);
+      return `
+        <div class="summary-card area-summary-card area-${area.type}">
+          <span class="summary-card-icon area-summary-icon" aria-hidden="true">${getAreaIconMarkup(area)}</span>
+          <strong>${area.name}</strong>
+          <p>${areaTypeLabels[area.type]} | ${progress.label}</p>
+          <p>הושלמו ${done} מתוך ${total} | ליקויים: ${issuesCount}</p>
+        </div>
+      `;
+    }).join("");
+  }
 
   renderReportDocument(summary, issues);
 }
