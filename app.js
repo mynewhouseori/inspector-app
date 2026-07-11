@@ -174,7 +174,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_AREA_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.146";
+const APP_VERSION = "2026.07.11.147";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -228,9 +228,151 @@ function getAreaIconMarkup(area) {
   return AREA_ICON_MARKUP[area.type] || AREA_ICON_MARKUP.dry;
 }
 
+const CHECK_VISUALS_BY_CODE = {
+  "1.1.1": {
+    tone: "tone-structure",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="chk-crack" x1="0" x2="1"><stop offset="0" stop-color="#ffd3cb"/><stop offset="1" stop-color="#ff7064"/></linearGradient></defs><path d="M34 8 22 24l8 2-10 13 7 3-8 13" fill="none" stroke="url(#chk-crack)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M31 10 24 22l8 2-9 12 7 3-6 11" fill="none" stroke="#8e2f2a" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 16h10M44 19h11M15 36h8M44 41h10M18 56h12" fill="none" stroke="#f6b7ae" stroke-width="3.2" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 8 9l4 1-4 11 8-11-4-1 2-6Z" fill="currentColor"></path></svg>`
+  },
+  "1.1.5": {
+    tone: "tone-structure",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M18 20h36l-4 28H22Z" fill="#ffe3db" stroke="#cf6b57" stroke-width="3" stroke-linejoin="round"></path><path d="M26 16h20l8 8H18Z" fill="#ffb9aa" stroke="#cf6b57" stroke-width="3" stroke-linejoin="round"></path><path d="M36 27c6 7 10 12 10 18a10 10 0 1 1-20 0c0-6 4-11 10-18Z" fill="#6fd2ff" stroke="#1781b0" stroke-width="2.8"></path><path d="M33 36c-1.8 1.8-3.1 4.1-3.4 6.5" fill="none" stroke="#e8fbff" stroke-width="2.4" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10h14l-2 9H7zM8 7h8l3 3H5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M12 11c2 2.3 3.5 4 3.5 5.8a3.5 3.5 0 1 1-7 0C8.5 15 10 13.3 12 11Z" fill="currentColor"></path></svg>`
+  },
+  "1.1.6": {
+    tone: "tone-structure",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M24 14h24l6 7v29a8 8 0 0 1-8 8H24a8 8 0 0 1-8-8V22Z" fill="#fff4eb" stroke="#c97d5b" stroke-width="3"></path><path d="M48 14v11h11" fill="#ffd7c3" stroke="#c97d5b" stroke-width="3" stroke-linejoin="round"></path><path d="M29 36c3-5 10-7 15-4 4 2 7 6 7 11" fill="none" stroke="#63b8e6" stroke-width="4" stroke-linecap="round"></path><path d="M30 47c2 3 5 5 9 5 5 0 9-3 11-7" fill="none" stroke="#3b8db8" stroke-width="3.2" stroke-linecap="round"></path><circle cx="28" cy="50" r="7" fill="#fff" stroke="#567891" stroke-width="3"></circle><path d="m33 55 7 7" fill="none" stroke="#567891" stroke-width="3.4" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="m14 14 6 6M8 11c1-2 3-3 5-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
+  },
+  "2.1.1": {
+    tone: "tone-finishes",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M15 24h42v26H15z" fill="#fff7ea" stroke="#ca8521" stroke-width="3" rx="4"></path><path d="M29 24v26M43 24v26M15 37h42" fill="none" stroke="#e1a54b" stroke-width="2.6"></path><path d="m19 16 11-7 11 7" fill="none" stroke="#ff9f1c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="m41 14 12 0-6 8" fill="none" stroke="#7d6b52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16v10H4zM10 9v10M16 9v10M4 14h16" fill="none" stroke="currentColor" stroke-width="2"></path><path d="m6 6 4-2 4 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
+  },
+  "2.1.2": {
+    tone: "tone-finishes",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M18 18h22a8 8 0 0 1 8 8v8H18z" fill="#ff9a7c" stroke="#c7634d" stroke-width="3"></path><path d="M48 28h6a7 7 0 0 1 7 7v4H48z" fill="#ffd0c2" stroke="#c7634d" stroke-width="3"></path><path d="M34 42h8v14h-8z" fill="#d8c3a6" stroke="#8f6e42" stroke-width="2.6"></path><path d="M24 56h28" fill="none" stroke="#8f6e42" stroke-width="3.2" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h9a3 3 0 0 1 3 3v3H4zM16 11h4a2 2 0 0 1 2 2v1h-6zM11 14v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>`
+  },
+  "2.1.2R": {
+    tone: "tone-finishes",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="17" y="14" width="38" height="44" rx="6" fill="#f6fbff" stroke="#6c9fc7" stroke-width="3"></rect><path d="M24 20v32M33 20v32M42 20v32M18 28h36M18 38h36M18 48h36" fill="none" stroke="#9fd0f0" stroke-width="2.6"></path><path d="m20 20 32 32M52 20 20 52" fill="none" stroke="#4f7997" stroke-width="2.3" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5zM10 5v14M14 5v14M5 10h14M5 14h14" fill="none" stroke="currentColor" stroke-width="2"></path></svg>`
+  },
+  "2.1.3": {
+    tone: "tone-finishes",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="m17 44 20-20 18 18-20 20H17z" fill="#ffe4bf" stroke="#c9842f" stroke-width="3" stroke-linejoin="round"></path><path d="m38 23 7-7 13 13-7 7" fill="#d59f63" stroke="#8d5d28" stroke-width="3" stroke-linejoin="round"></path><path d="M25 52h14" fill="none" stroke="#fff2dd" stroke-width="2.6" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16 8-8 8 8-8 4zM12 8l4-4 4 4-4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>`
+  },
+  "2.1.4": {
+    tone: "tone-finishes",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="15" y="14" width="42" height="44" rx="5" fill="#f7f3ff" stroke="#8a74b8" stroke-width="3"></rect><path d="M25 22h22M25 30h22M25 38h22M25 46h14" fill="none" stroke="#bcaee0" stroke-width="3" stroke-linecap="round"></path><path d="M15 22h8M15 38h8M49 30h8M49 46h8" fill="none" stroke="#6f5a97" stroke-width="3" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect><path d="M9 8h6M9 12h6M9 16h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
+  },
+  "2.1.4W": {
+    tone: "tone-finishes",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="14" y="15" width="44" height="42" rx="6" fill="#f7fffd" stroke="#2f9e87" stroke-width="3"></rect><path d="M14 29h44M29 15v42M43 15v42" fill="none" stroke="#7fd9c7" stroke-width="2.8"></path><path d="M20 23h8M34 37h8M46 23h6M22 45h10" fill="none" stroke="#2f9e87" stroke-width="3" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5zM12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2"></path><circle cx="8" cy="8" r="1.3" fill="currentColor"></circle></svg>`
+  },
+  "2.1.5": {
+    tone: "tone-finishes",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M16 51h12V39h10V27h10V15h8v36H16z" fill="#ffd68c" stroke="#a66a1e" stroke-width="3" stroke-linejoin="round"></path><path d="M28 39h10M38 27h10M48 15h8" fill="none" stroke="#fff0cf" stroke-width="2.6" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18h4v-4h4v-4h4V6h4v12H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>`
+  },
+  "3.1.1": {
+    tone: "tone-openings",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="chk-glass" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#dff6ff"/><stop offset="1" stop-color="#b7dcff"/></linearGradient></defs><path d="M14 13h44v46H14z" fill="#eef7ff" stroke="#375a76" stroke-width="3"></path><path d="M19 18h16v36H19zM37 18h16v36H37z" fill="url(#chk-glass)" stroke="#5a80a0" stroke-width="2.5"></path><path d="M36 13v46" fill="none" stroke="#32526d" stroke-width="3"></path><path d="M24 24c3 2 4 5 5 8M44 21c-2 2-4 6-5 10" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"></path><path d="M18 54h36" fill="none" stroke="#6a8dab" stroke-width="2.5" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM12 4v16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>`
+  },
+  "3.1.2": {
+    tone: "tone-openings",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M22 12h26v48H22z" fill="#c78a54" stroke="#7a4d25" stroke-width="3"></path><path d="M27 18h16v36H27z" fill="#edc79e"></path><circle cx="39" cy="36" r="2.7" fill="#7a4d25"></circle></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v16H7z" fill="none" stroke="currentColor" stroke-width="2"></path><circle cx="14" cy="12" r="1.2" fill="currentColor"></circle></svg>`
+  },
+  "3.1.3": {
+    tone: "tone-openings",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M18 15h12v42H18zM42 15h12v42H42z" fill="#d9e2ea" stroke="#60758a" stroke-width="3"></path><path d="M30 21h12v8H30zM30 35h12v22H30z" fill="#aebdca" stroke="#60758a" stroke-width="3"></path><path d="M24 21h24M24 51h24" fill="none" stroke="#f5fbff" stroke-width="2.4" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h4v14H5zM15 5h4v14h-4zM9 9h6v6H9z" fill="none" stroke="currentColor" stroke-width="2"></path></svg>`
+  },
+  "3.1.4": {
+    tone: "tone-openings",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M18 21h36v30H18z" fill="#fffaf3" stroke="#caa45b" stroke-width="3" rx="7"></path><path d="M24 28h24v16H24z" fill="#ffd698" stroke="#caa45b" stroke-width="2.6" rx="4"></path><path d="M28 36h16" fill="none" stroke="#fff3d8" stroke-width="2.4" stroke-linecap="round"></path><path d="M14 18c8 0 8 6 16 6s8-6 16-6 8 6 16 6" fill="none" stroke="#de7f44" stroke-width="3" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="8" width="14" height="8" rx="3" fill="none" stroke="currentColor" stroke-width="2"></rect><path d="M3 7c3 0 3 2 6 2s3-2 6-2 3 2 6 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
+  },
+  "4.1.2": {
+    tone: "tone-plumbing",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M19 17h24v8H29v9h13a11 11 0 0 1 0 22H26" fill="none" stroke="#1576a6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M26 41c4 5 7 8 7 12a7 7 0 0 1-14 0c0-4 3-7 7-12Z" fill="#67d8ff" stroke="#1576a6" stroke-width="3"></path><circle cx="48" cy="45" r="6" fill="#e7fbff" stroke="#4bb8de" stroke-width="3"></circle></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h9v4h-5v4h5a4 4 0 1 1 0 8H9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M7 13c2 2 3 3.5 3 5a3 3 0 1 1-6 0c0-1.5 1-3 3-5Z" fill="currentColor"></path></svg>`
+  },
+  "4.1.3": {
+    tone: "tone-plumbing",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M16 47h40" fill="none" stroke="#88c8e9" stroke-width="3"></path><path d="m19 25 16 16 18-18" fill="none" stroke="#1276a8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path><path d="m48 23 5 0-1 5" fill="none" stroke="#1276a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 8 7 7 7-7M18 8h-4m4 0v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`
+  },
+  "4.1.4": {
+    tone: "tone-plumbing",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="18" fill="#effcff" stroke="#1683b6" stroke-width="3"></circle><circle cx="36" cy="36" r="9" fill="#c5f1ff" stroke="#1683b6" stroke-width="2.8"></circle><path d="M26 36h20M36 26v20M29 29l14 14M43 29 29 43" fill="none" stroke="#6ac7ea" stroke-width="2.6" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M12 6v12M6 12h12" fill="none" stroke="currentColor" stroke-width="2"></path></svg>`
+  },
+  "5.1.1": {
+    tone: "tone-electric",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="18" y="16" width="36" height="40" rx="5" fill="#f7fff0" stroke="#66942a" stroke-width="3"></rect><path d="M26 18v36M36 18v36M46 18v36" fill="none" stroke="#96c84a" stroke-width="4" stroke-linecap="round"></path><path d="M18 26h36M18 46h36" fill="none" stroke="#dff2bd" stroke-width="2.4"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect><path d="M9 4v16M15 4v16" fill="none" stroke="currentColor" stroke-width="2"></path></svg>`
+  },
+  "5.1.2": {
+    tone: "tone-electric",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M22 18h28a8 8 0 0 1 8 8v18a8 8 0 0 1-8 8H22z" fill="#eefbe8" stroke="#4d8a2d" stroke-width="3"></path><path d="M30 46v-8l-7-7M42 46v-8l7-7" fill="none" stroke="#76b53c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path><path d="M36 14v12" fill="none" stroke="#4d8a2d" stroke-width="4" stroke-linecap="round"></path><circle cx="36" cy="30" r="5" fill="#a9db5e" stroke="#4d8a2d" stroke-width="2.5"></circle></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="2" fill="currentColor"></circle><path d="M12 4v3M8 13l-3 3M16 13l3 3M9 19h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
+  },
+  "5.1.5": {
+    tone: "tone-electric",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="16" y="20" width="40" height="16" rx="8" fill="#f4fff2" stroke="#4f8b30" stroke-width="3"></rect><circle cx="36" cy="46" r="10" fill="#dff7ca" stroke="#4f8b30" stroke-width="3"></circle><path d="M36 36v20M26 46h20M29 39c4 0 5 3 7 7M43 39c-4 0-5 3-7 7" fill="none" stroke="#78b94d" stroke-width="2.8" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.5 6.5l2.5 2.5M15 15l2.5 2.5M17.5 6.5 15 9M9 15l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
+  },
+  "6.1.1": {
+    tone: "tone-outdoor",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="m14 34 22-18 22 18" fill="none" stroke="#9a6039" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path><path d="M21 32h30l-4 19H25z" fill="#ffd9bf" stroke="#bf7a4b" stroke-width="3" stroke-linejoin="round"></path><path d="M31 28c6 7 10 11 10 16a10 10 0 1 1-20 0c0-5 4-9 10-16Z" fill="#7bdcff" stroke="#1380b3" stroke-width="2.8"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 12 8-6 8 6M7 10v8h10v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M12 11c2 2 3 3.2 3 4.8a3 3 0 1 1-6 0c0-1.6 1-2.8 3-4.8Z" fill="currentColor"></path></svg>`
+  },
+  "6.1.2": {
+    tone: "tone-outdoor",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M16 50h40" fill="none" stroke="#d8af8c" stroke-width="3"></path><path d="m18 26 16 16 20-20" fill="none" stroke="#a46536" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path><path d="m46 22 10 0-2 10" fill="none" stroke="#a46536" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 8 7 7 7-7M19 8h-5m5 0v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`
+  },
+  "6.1.3": {
+    tone: "tone-outdoor",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M18 20h36v10H18z" fill="#ffe7ce" stroke="#ab6a3c" stroke-width="3"></path><path d="M36 30v20" fill="none" stroke="#ab6a3c" stroke-width="4" stroke-linecap="round"></path><circle cx="36" cy="55" r="6" fill="#a6e7ff" stroke="#1a86b7" stroke-width="3"></circle><path d="M28 38h16" fill="none" stroke="#6ebfe2" stroke-width="2.6" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v4H5zM12 10v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><circle cx="12" cy="20" r="1.5" fill="currentColor"></circle></svg>`
+  },
+  "6.1.4": {
+    tone: "tone-outdoor",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M36 16c7 0 12 5 12 12 0 6-4 11-9 13v13H33V41c-5-2-9-7-9-13 0-7 5-12 12-12Z" fill="#9fd86d" stroke="#5f8f32" stroke-width="3"></path><path d="M36 54V29" fill="none" stroke="#5f8f32" stroke-width="4" stroke-linecap="round"></path><path d="M19 54h34" fill="none" stroke="#c48a52" stroke-width="4" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4c3.5 0 6 2.5 6 6 0 3-2 5.5-5 6.3V20h-2v-3.7C8 15.5 6 13 6 10c0-3.5 2.5-6 6-6Z" fill="none" stroke="currentColor" stroke-width="2"></path></svg>`
+  },
+  "6.1.5": {
+    tone: "tone-outdoor",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M18 48c8-17 15-24 32-24" fill="none" stroke="#d29663" stroke-width="10" stroke-linecap="round"></path><path d="M18 48c8-17 15-24 32-24" fill="none" stroke="#f5d4b4" stroke-width="5" stroke-linecap="round"></path><path d="M24 32h6M33 27h6M42 24h6" fill="none" stroke="#a46b41" stroke-width="2.6" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18c4-7 7-10 14-10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path><path d="M8 14h2M12 11h2M16 9h2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
+  },
+  "6.1.6": {
+    tone: "tone-outdoor",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M18 54V24M28 54V18M38 54V24M48 54V18M58 54V24" fill="none" stroke="#8b5d39" stroke-width="4" stroke-linecap="round"></path><path d="M16 29h44M16 45h44" fill="none" stroke="#c78d59" stroke-width="4" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V6M12 20V4M18 20V6M4 10h16M4 16h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
+  },
+  "7.1.2": {
+    tone: "tone-safety",
+    icon: `<svg viewBox="0 0 72 72" aria-hidden="true"><path d="M18 54V22M30 54V16M42 54V22M54 54V16" fill="none" stroke="#b86f4a" stroke-width="4" stroke-linecap="round"></path><path d="M16 28h40M16 44h40" fill="none" stroke="#ffd7c5" stroke-width="4" stroke-linecap="round"></path><path d="M14 56h44" fill="none" stroke="#8d4d2d" stroke-width="4.5" stroke-linecap="round"></path></svg>`,
+    badgeIcon: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V8M12 20V5M19 20V8M4 11h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`
+  }
+};
+
 function getCheckVisual(check) {
   const category = check.category || "";
   const code = check.code || "";
+  const codeVisual = CHECK_VISUALS_BY_CODE[code];
+  if (codeVisual) {
+    return codeVisual;
+  }
   if (category.includes("שלד")) {
     return {
       tone: "tone-structure",
