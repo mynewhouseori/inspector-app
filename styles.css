@@ -347,18 +347,31 @@ textarea {
   justify-self: start;
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   padding: 3px 8px;
   border-radius: 999px;
-  background: rgba(42, 127, 98, 0.12);
-  color: #1e6b53;
-  border: 1px solid rgba(42, 127, 98, 0.22);
+  background: rgba(31, 129, 83, 0.18);
+  color: #145f43;
+  border: 1px solid rgba(31, 129, 83, 0.34);
   font-size: 11px;
   font-weight: 800;
 }
 
+.owner-apartment-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #1f8153;
+}
+
 .owner-apartment-card.is-inspected {
+  border-color: rgba(31, 129, 83, 0.7);
+  background:
+    radial-gradient(circle at top left, rgba(31, 129, 83, 0.2), transparent 30%),
+    linear-gradient(160deg, rgba(245, 255, 250, 0.99), rgba(214, 242, 226, 0.98));
   box-shadow:
-    inset 0 0 0 1px rgba(42, 127, 98, 0.2),
+    inset 0 0 0 2px rgba(31, 129, 83, 0.2),
     0 12px 26px rgba(24, 34, 38, 0.08);
 }
 
