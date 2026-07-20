@@ -213,6 +213,31 @@ function isOwnerApartmentName(value) {
   return ownerApartmentLabels.includes(String(value || "").trim());
 }
 
+function getOwnerApartmentSavedProject(apartmentName) {
+  return state.savedProjects.find((project) => (
+    project?.data?.inspectionMode === "owner"
+    && project?.data?.propertyName === apartmentName
+  ));
+}
+
+function hasInspectionData(projectData) {
+  const areas = Array.isArray(projectData?.areas) ? projectData.areas : [];
+  return areas.some((area) => (
+    area?.locked
+    || (Array.isArray(area?.photoCaptures) && area.photoCaptures.length > 0)
+    || (Array.isArray(area?.checks) && area.checks.some((check) => (
+      check?.status === "ok"
+      || check?.status === "issue"
+      || String(check?.note || "").trim()
+    )))
+  ));
+}
+
+function isOwnerApartmentInspected(apartmentName) {
+  const project = getOwnerApartmentSavedProject(apartmentName);
+  return hasInspectionData(project?.data);
+}
+
 const AREA_ICON_MARKUP = {
   dry: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18.5h16v1.5H4zM6 11.5h4.5c1.9 0 2.9.8 3.3 2H18V8.8c0-.9-.7-1.6-1.6-1.6H7.6C6.7 7.2 6 7.9 6 8.8v2.7Zm12 3.5h-3.8c-.4 1.1-1.4 1.8-3 1.8H6v-1.8H4v-1.5h14v3.3Z"></path></svg>`,
   wet: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c2.4 3 4.8 5.8 4.8 8.9A4.8 4.8 0 1 1 7.2 12.4c0-3.1 2.4-5.9 4.8-8.9Zm0 14.2c1.5 0 2.8-1 3.2-2.4-.8.6-1.7.9-2.7.9-1.5 0-2.9-.7-3.8-1.9.2 1.9 1.7 3.4 3.3 3.4Z"></path></svg>`,
@@ -2050,10 +2075,7 @@ function selectInspectionMode(mode) {
 }
 
 function openOwnerApartment(apartmentName) {
-  const existingProject = state.savedProjects.find((project) => (
-    project?.data?.inspectionMode === "owner"
-    && project?.data?.propertyName === apartmentName
-  ));
+  const existingProject = getOwnerApartmentSavedProject(apartmentName);
 
   state.inspectionMode = "owner";
 
@@ -2361,12 +2383,16 @@ function renderAreas() {
 
 function renderOwnerApartments() {
   if (!els.ownerApartmentsGrid) return;
-  els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => `
-    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"}" type="button" data-owner-apartment="${apartmentName}">
+  els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => {
+    const isInspected = isOwnerApartmentInspected(apartmentName);
+    return `
+    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"} ${isInspected ? "is-inspected" : ""}" type="button" data-owner-apartment="${apartmentName}">
       <span class="owner-apartment-icon" aria-hidden="true">${STATUS_ICON_MARKUP.saved}</span>
       <strong>${apartmentName}</strong>
+      ${isInspected ? `<span class="owner-apartment-status">נבדקה</span>` : ""}
     </button>
-  `).join("");
+  `;
+  }).join("");
 
   els.ownerApartmentsGrid.querySelectorAll("[data-owner-apartment]").forEach((button) => {
     button.addEventListener("click", () => openOwnerApartment(button.dataset.ownerApartment));
