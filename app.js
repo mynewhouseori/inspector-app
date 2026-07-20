@@ -1111,12 +1111,22 @@ function classifyDelta(planValue, actualValue) {
   return "issue";
 }
 
+function isAreaComplete(area) {
+  const total = area.checks.length;
+  if (!total) return false;
+  return area.checks.every((check) => check.status !== "pending");
+}
+
 function getAreaProgress(area) {
-  if (area.locked) return { key: "locked", label: "הושלם וננעל" };
+  if (area.locked) {
+    return isAreaComplete(area)
+      ? { key: "locked", label: "הושלם וננעל" }
+      : { key: "locked-partial", label: "ננעל חלקית" };
+  }
   const total = area.checks.length;
   const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
   if (touchedChecks === 0) return { key: "pending", label: "לא נבדק" };
-  if (touchedChecks >= total && total > 0) return { key: "complete", label: "הושלם" };
+  if (isAreaComplete(area)) return { key: "complete", label: "הושלם" };
   return { key: "progress", label: "בבדיקה" };
 }
 
