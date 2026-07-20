@@ -1149,7 +1149,7 @@ function isAreaInspected(area) {
 }
 
 function getInspectedAreas() {
-  return selectedAreas().filter(isAreaInspected);
+ return state.areas.filter(isAreaInspected);
 }
 
 function computeAreaCompletion(area) {
