@@ -1516,6 +1516,16 @@ select {
   background: #fffdfa;
 }
 
+.report-check-ok {
+  border-color: rgba(44, 132, 94, 0.28);
+  background: rgba(44, 132, 94, 0.07);
+}
+
+.report-check-issue {
+  border-color: rgba(178, 75, 55, 0.32);
+  background: rgba(178, 75, 55, 0.07);
+}
+
 .report-check-note {
   margin: 0;
   line-height: 1.7;
@@ -2801,9 +2811,23 @@ textarea:focus {
     display: none !important;
   }
 
-  .report-document,
+  .report-document {
+    display: grid !important;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: white;
+  }
+
   .report-page-header {
-    display: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid #d8d0c4;
   }
 
   .report-section {
@@ -2828,8 +2852,7 @@ textarea:focus {
   }
 
   .print-pages {
-    display: grid;
-    gap: 0;
+    display: none !important;
   }
 
   .print-page {

@@ -1268,6 +1268,18 @@ function getCheckStatusLabel(status) {
   return "טרם נבדק";
 }
 
+function buildReportCheckNote(check) {
+  if (check.status === "issue") {
+    return `<p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
+      category: check.category,
+      note: check.note.trim(),
+      name: check.name
+    }))}</p>`;
+  }
+
+  return `<p class="report-check-note"><strong>סיכום:</strong> נבדק ונמצא תקין במועד הבדיקה.</p>`;
+}
+
 function buildExecutiveSummary(summary) {
   if (!summary.inspectedAreas) {
     return "טרם הושלמו נתוני בדיקה להצגה בדוח לקוח. לאחר הזנת ממצאים באזורים שנבדקו, יופיע כאן תקציר מקצועי ומוכן למשלוח.";
@@ -1397,32 +1409,27 @@ function renderReportDocument(summary, issues) {
       `).join("");
   }
 
-  const areaCards = reportAreas
-    .filter((area) => area.checks.some((check) => check.status === "issue"))
-    .map((area) => {
+  const areaCards = reportAreas.map((area) => {
     const total = area.checks.length;
     const issuesInArea = area.checks.filter((check) => check.status === "issue");
+    const completedChecksInArea = area.checks.filter((check) => check.status === "ok" || check.status === "issue");
     const okCount = area.checks.filter((check) => check.status === "ok").length;
     const pendingCount = area.checks.filter((check) => check.status === "pending").length;
     const progress = getAreaProgress(area);
     const completion = computeAreaCompletion(area);
-    const areaChecksMarkup = issuesInArea.length
-      ? issuesInArea.map((check) => `
-          <div class="report-check-item">
+    const areaChecksMarkup = completedChecksInArea.length
+      ? completedChecksInArea.map((check) => `
+          <div class="report-check-item report-check-${escapeHtml(check.status)}">
             <strong>${escapeHtml(check.name)}</strong>
             <div class="report-check-meta">${escapeHtml(check.category)} | ${escapeHtml(getCheckStatusLabel(check.status))}</div>
             ${check.note.trim()
               ? `<p class="report-check-note"><strong>הערה:</strong> ${escapeHtml(check.note.trim())}</p>`
               : ""
             }
-            <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
-              category: check.category,
-              note: check.note.trim(),
-              name: check.name
-            }))}</p>
+            ${buildReportCheckNote(check)}
           </div>
         `).join("")
-      : `<div class="report-empty">לא זוהו ליקויים בחדר זה.</div>`;
+      : `<div class="report-empty">טרם הושלמו סעיפי בדיקה בחדר זה.</div>`;
 
     return `
       <article class="report-area-card">
@@ -2565,7 +2572,7 @@ if (els.resetBtn) {
 
 els.printBtn.addEventListener("click", () => {
   setScreen("summary", { scroll: true });
-  buildPrintPages();
+  renderSummaryReports();
   setTimeout(() => window.print(), 80);
 });
 
@@ -2587,6 +2594,6 @@ document.addEventListener("focusout", () => {
 });
 
 window.addEventListener("beforeprint", () => {
-  buildPrintPages();
+  renderSummaryReports();
 });
 
