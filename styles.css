@@ -2881,10 +2881,10 @@ textarea:focus {
   }
 
   .report-cover-logo.report-brand-logo {
-    width: 118px;
+    width: 148px;
     min-height: 0;
-    max-height: 44px;
-    padding: 4px 8px;
+    max-height: 54px;
+    padding: 5px 9px;
     border-radius: 8px;
     box-shadow: none;
   }
