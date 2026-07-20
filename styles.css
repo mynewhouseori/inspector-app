@@ -287,7 +287,7 @@ textarea {
 }
 
 .owner-apartments-panel {
-  padding: 22px;
+  padding: 16px;
 }
 
 .owner-apartments-head {
@@ -297,15 +297,15 @@ textarea {
 .owner-apartments-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .owner-apartment-card {
   min-height: 0;
-  padding: 14px 16px;
+  padding: 10px 12px;
   border: 1px solid transparent;
-  border-radius: 18px;
+  border-radius: 14px;
   color: var(--ink);
   text-align: right;
   box-shadow: 0 12px 26px rgba(24, 34, 38, 0.08);
@@ -316,9 +316,9 @@ textarea {
 .owner-apartment-card::after {
   content: "";
   position: absolute;
-  inset-block: 14px;
-  inset-inline-end: 10px;
-  width: 6px;
+  inset-block: 10px;
+  inset-inline-end: 8px;
+  width: 4px;
   border-radius: 999px;
 }
 
@@ -339,20 +339,20 @@ textarea {
 .owner-apartment-card strong {
   display: block;
   margin: 0;
-  font-size: 19px;
-  line-height: 1.35;
+  font-size: 16px;
+  line-height: 1.25;
 }
 
 .owner-apartment-status {
   justify-self: start;
   display: inline-flex;
   align-items: center;
-  padding: 5px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
   background: rgba(42, 127, 98, 0.12);
   color: #1e6b53;
   border: 1px solid rgba(42, 127, 98, 0.22);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -1716,11 +1716,11 @@ body {
 
 .owner-apartment-card {
   display: grid;
-  gap: 10px;
+  gap: 6px;
   align-content: start;
-  min-height: 132px;
-  border-radius: 24px;
-  padding: 18px;
+  min-height: 82px;
+  border-radius: 14px;
+  padding: 10px 12px;
 }
 
 .owner-apartment-icon,
@@ -1739,9 +1739,9 @@ body {
 .saved-project-icon,
 .summary-card-icon,
 .issue-item-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.84);
   border: 1px solid rgba(19, 72, 80, 0.12);
   box-shadow: 0 12px 22px rgba(24, 52, 59, 0.1);
@@ -1754,8 +1754,8 @@ body {
 .room-pick-icon svg,
 .area-icon-badge svg,
 .check-icon-badge svg {
-  width: 22px;
-  height: 22px;
+  width: 19px;
+  height: 19px;
   fill: currentColor;
 }
 
