@@ -1119,7 +1119,7 @@ function isAreaComplete(area) {
 
 function getAreaProgress(area) {
   if (area.locked) {
-    return { key: "locked", label: "נעול" };
+    return { key: "locked", label: "הושלם וננעל" };
   }
   const total = area.checks.length;
   const touchedChecks = area.checks.filter((check) => check.status !== "pending" || check.note.trim()).length;
