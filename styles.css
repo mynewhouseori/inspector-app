@@ -2845,6 +2845,7 @@ textarea:focus {
 
   .report-document {
     display: grid !important;
+    gap: 8px;
     width: 100%;
     margin: 0;
     padding: 0;
@@ -2863,8 +2864,62 @@ textarea:focus {
   }
 
   .report-section {
+    gap: 6px;
+    padding: 8px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     break-inside: auto;
     page-break-inside: auto;
+  }
+
+  .report-section h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+  }
+
+  .report-area-details,
+  .report-area-checks {
+    gap: 4px;
+  }
+
+  .report-area-card {
+    gap: 5px;
+    padding: 8px 0;
+    border-width: 0 0 1px;
+    border-radius: 0;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .report-area-head {
+    gap: 8px;
+  }
+
+  .report-area-status {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .report-area-meta,
+  .report-check-meta {
+    margin-bottom: 3px;
+    font-size: 11px;
+  }
+
+  .report-check-item {
+    padding: 6px 8px;
+    border-radius: 8px;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .report-check-item strong {
+    margin-bottom: 3px;
+  }
+
+  .report-check-note {
+    line-height: 1.45;
   }
 
   .compact-print-rooms,
