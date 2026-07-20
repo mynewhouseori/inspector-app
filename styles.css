@@ -2860,8 +2860,10 @@ textarea:focus {
   }
 
   .report-cover {
-    display: block;
-    padding: 0 0 10px;
+    display: grid;
+    justify-items: center;
+    gap: 5px;
+    padding: 0 0 14px;
     border-radius: 0;
     border-bottom: 1px solid #d8d0c4;
     background: white !important;
@@ -2870,21 +2872,26 @@ textarea:focus {
   }
 
   .report-cover-top {
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 6px;
+    display: contents;
   }
 
   .report-cover-brand {
-    align-items: center;
-    gap: 10px;
+    display: contents;
+  }
+
+  .report-cover-brand > div {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    order: 2;
   }
 
   .report-cover-logo.report-brand-logo {
-    width: 148px;
+    order: 1;
+    width: 170px;
     min-height: 0;
-    max-height: 54px;
-    padding: 5px 9px;
+    max-height: 62px;
+    padding: 4px 8px;
     border-radius: 8px;
     box-shadow: none;
   }
@@ -2894,16 +2901,20 @@ textarea:focus {
   }
 
   .report-cover h2 {
-    font-size: 18px;
-    line-height: 1.25;
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.15;
+    font-weight: 900;
+    color: var(--ink);
   }
 
   .report-subtitle,
   .report-legal-note {
-    margin-top: 4px;
+    margin: 0;
     color: var(--muted);
-    font-size: 11px;
-    line-height: 1.35;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: center;
   }
 
   .report-cover-badge,
@@ -2917,14 +2928,22 @@ textarea:focus {
     font-size: 11px;
   }
 
+  .report-cover-badge {
+    order: 3;
+  }
+
   .report-cover-meta {
+    justify-content: center;
     gap: 5px;
-    margin-top: 6px;
+    margin-top: 2px;
+    order: 4;
   }
 
   .report-legal-note {
+    max-width: 58ch;
     padding-top: 0;
     border-top: 0;
+    order: 5;
   }
 
   .report-section::after,
