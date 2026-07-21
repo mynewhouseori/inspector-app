@@ -137,7 +137,6 @@ function roomSection(name, index) {
         <td class="box"></td>
         <td class="box"></td>
         <td class="notes"></td>
-        <td class="photo"></td>
       </tr>`).join("");
 
   return `
@@ -167,7 +166,6 @@ function roomSection(name, index) {
             <th>ליקוי</th>
             <th>לא רלוונטי</th>
             <th>הערה / ממצא להקלדה</th>
-            <th>מס׳ תמונה</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -273,10 +271,9 @@ const html = `<!doctype html>
     .code { width: 8%; text-align: center; direction: ltr; font-weight: 700; }
     .check-name { width: 25%; font-weight: 700; }
     .check-name div { margin-top: 1px; font-weight: 400; color: #687b82; font-size: 9px; }
-    .box { width: 6%; text-align: center; }
-    .box::before { content: "□"; font-size: 15px; line-height: 1; }
-    .notes { width: 37%; }
-    .photo { width: 8%; }
+    .box { width: 4.5%; text-align: center; }
+    .box::before { content: "□"; font-size: 14px; line-height: 1; }
+    .notes { width: 49.5%; }
     .room-notes {
       padding: 5px 7px;
       border-top: 1px solid #e1e8ea;
