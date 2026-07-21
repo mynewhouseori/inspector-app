@@ -189,7 +189,7 @@ const html = `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>טופס בדיקה חלופי מנייר - תסקיר דירות בעלים</title>
+  <title>טופס בדיקה חלופי מנייר - דירה כללית</title>
   <style>
     @page { size: A4; margin: 10mm 8mm; }
     * { box-sizing: border-box; }
@@ -309,7 +309,7 @@ const html = `<!doctype html>
     <img class="logo" src="assets/logo-report.png" alt="לוגו">
     <div>
       <h1>טופס בדיקה חלופי מנייר</h1>
-      <p class="subtitle">תסקיר דירות בעלים - למילוי בשטח במקרה שאין קליטה, תקלה באפליקציה או תקלה בנייד</p>
+      <p class="subtitle">דירה כללית - למילוי בשטח במקרה שאין קליטה, תקלה באפליקציה או תקלה בנייד</p>
     </div>
   </header>
 
@@ -318,7 +318,7 @@ const html = `<!doctype html>
     <div class="field"><strong>תאריך</strong></div>
     <div class="field"><strong>בודק</strong></div>
     <div class="field"><strong>טלפון / איש קשר</strong></div>
-    <div class="field"><strong>כתובת</strong> אברהם יפה 5, קריית אונו</div>
+    <div class="field"><strong>כתובת</strong></div>
     <div class="field"><strong>שעת התחלה</strong></div>
     <div class="field"><strong>שעת סיום</strong></div>
     <div class="field"><strong>הוקלד לאפליקציה בתאריך</strong></div>
@@ -335,6 +335,6 @@ const html = `<!doctype html>
 </body>
 </html>`;
 
-const outputHtml = path.join(root, "paper-inspection-form-owner.html");
+const outputHtml = path.join(root, "paper-inspection-form.html");
 fs.writeFileSync(outputHtml, html, "utf8");
 console.log(outputHtml);
