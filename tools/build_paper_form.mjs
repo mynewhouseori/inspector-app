@@ -327,6 +327,6 @@ const html = `<!doctype html>
 </body>
 </html>`;
 
-const outputHtml = path.join(root, "paper-inspection-form.html");
+const outputHtml = path.join(root, "paper-inspection-form-4rooms.html");
 fs.writeFileSync(outputHtml, html, "utf8");
 console.log(outputHtml);

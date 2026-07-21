@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>טופס בדיקה חלופי מנייר - דירה כללית</title>
+  <style>
+    @page { size: A4; margin: 10mm 8mm; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: #102a33;
+      font-family: Arial, "Noto Sans Hebrew", sans-serif;
+      font-size: 11px;
+      line-height: 1.35;
+      background: #fff;
+    }
+    header {
+      display: grid;
+      grid-template-columns: 148px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #1d5f68;
+      margin-bottom: 8px;
+    }
+    .logo { width: 138px; height: auto; }
+    h1 { margin: 0 0 3px; font-size: 22px; line-height: 1.1; }
+    .subtitle { margin: 0; color: #5f6f76; font-size: 12px; }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin: 8px 0;
+    }
+    .field {
+      min-height: 28px;
+      border: 1px solid #b8c7cc;
+      border-radius: 4px;
+      padding: 5px 7px;
+    }
+    .field strong { display: block; font-size: 9px; color: #466169; }
+    .instructions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 8px;
+      color: #334f58;
+    }
+    .instructions div {
+      border: 1px solid #d6e1e4;
+      border-radius: 4px;
+      padding: 6px 8px;
+      background: #f8fbfb;
+    }
+    .room {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      border: 1px solid #c8d5d9;
+      border-radius: 5px;
+      margin: 0 0 7px;
+      overflow: hidden;
+    }
+    .room-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 7px;
+      background: #eaf5f5;
+      border-bottom: 1px solid #c8d5d9;
+    }
+    .room-head strong { font-size: 13px; }
+    .room-head span { color: #4d666e; }
+    .room-flags {
+      display: flex;
+      gap: 12px;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+    .dimensions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      padding: 5px 7px;
+      border-bottom: 1px solid #e0e8ea;
+      color: #35525b;
+    }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border-bottom: 1px solid #e1e8ea; border-left: 1px solid #e1e8ea; padding: 3px 4px; vertical-align: top; }
+    th { background: #f6f8f8; font-size: 9px; color: #35525b; }
+    td { min-height: 22px; }
+    tr:last-child td { border-bottom: 0; }
+    th:last-child, td:last-child { border-left: 0; }
+    .code { width: 8%; text-align: center; direction: ltr; font-weight: 700; }
+    .check-name { width: 25%; font-weight: 700; }
+    .check-name div { margin-top: 1px; font-weight: 400; color: #687b82; font-size: 9px; }
+    .box { width: 6%; text-align: center; }
+    .box::before { content: "□"; font-size: 15px; line-height: 1; }
+    .notes { width: 37%; }
+    .photo { width: 8%; }
+    .room-notes {
+      padding: 5px 7px;
+      border-top: 1px solid #e1e8ea;
+      min-height: 24px;
+      color: #35525b;
+    }
+    footer {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px solid #d6e1e4;
+      color: #6f7f85;
+      font-size: 10px;
+      text-align: center;
+    }
+    @media print {
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img class="logo" src="assets/logo-report.png" alt="לוגו">
+    <div>
+      <h1>טופס בדיקה חלופי מנייר</h1>
+      <p class="subtitle">דירה כללית - למילוי בשטח במקרה שאין קליטה, תקלה באפליקציה או תקלה בנייד</p>
+    </div>
+  </header>
+
+  <div class="meta-grid">
+    <div class="field"><strong>דירה</strong></div>
+    <div class="field"><strong>תאריך</strong></div>
+    <div class="field"><strong>בודק</strong></div>
+    <div class="field"><strong>טלפון / איש קשר</strong></div>
+    <div class="field"><strong>כתובת</strong></div>
+    <div class="field"><strong>שעת התחלה</strong></div>
+    <div class="field"><strong>שעת סיום</strong></div>
+    <div class="field"><strong>הוקלד לאפליקציה בתאריך</strong></div>
+  </div>
+
+  <div class="instructions">
+    <div><strong>סימון:</strong> יש לסמן רק אחד: תקין / ליקוי / לא רלוונטי. אם יש ליקוי, חובה לכתוב הערה קצרה שאפשר להקליד לדוח.</div>
+    <div><strong>תמונות:</strong> כתוב מספר תמונה או תיאור קצר, למשל 03, 04, 05. לאחר מכן העלה את התמונות לאותו סעיף באפליקציה.</div>
+  </div>
+
+  
+    <section class="room">
+      <div class="room-head">
+        <div>
+          <strong>01. חדר שינה 01</strong>
+          <span>חדר יבש</span>
+        </div>
+        <div class="room-flags">
+          <span>נבדק □</span>
+          <span>הוזן לאפליקציה □</span>
+        </div>
+      </div>
+      <div class="dimensions">
+        <span>רוחב בתכנית: __________</span>
+        <span>אורך בתכנית: __________</span>
+        <span>רוחב בפועל: __________</span>
+        <span>אורך בפועל: __________</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>קוד</th>
+            <th>סעיף בדיקה</th>
+            <th>תקין</th>
+            <th>ליקוי</th>
+            <th>לא רלוונטי</th>
+            <th>הערה / ממצא להקלדה</th>
+            <th>מס׳ תמונה</th>
+          </tr>
+        </thead>
+        <tbody>
+      <tr>
+        <td class="code">1.1.1</td>
+        <td class="check-name">בדיקת סדקים<div>שלד ומעטפת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">1.1.6</td>
+        <td class="check-name">איתור סימני חדירת מים<div>שלד ומעטפת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.1</td>
+        <td class="check-name">בדיקות ריצוף (שיפועים, חללים, הפרשי גובה)<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.2</td>
+        <td class="check-name">צבע<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.2R</td>
+        <td class="check-name">רשתות<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.3</td>
+        <td class="check-name">טיח<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.4</td>
+        <td class="check-name">גבס<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.1</td>
+        <td class="check-name">זיגוג<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.2</td>
+        <td class="check-name">דלתות<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.3</td>
+        <td class="check-name">אלומיניום<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.1</td>
+        <td class="check-name">סורגים<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.2</td>
+        <td class="check-name">ספק תקשורת<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.5</td>
+        <td class="check-name">מזגן<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr></tbody>
+      </table>
+      <div class="room-notes">הערות כלליות לחדר: ________________________________________________________________________________________________</div>
+    </section>
+
+    <section class="room">
+      <div class="room-head">
+        <div>
+          <strong>02. חדר שינה 02</strong>
+          <span>חדר יבש</span>
+        </div>
+        <div class="room-flags">
+          <span>נבדק □</span>
+          <span>הוזן לאפליקציה □</span>
+        </div>
+      </div>
+      <div class="dimensions">
+        <span>רוחב בתכנית: __________</span>
+        <span>אורך בתכנית: __________</span>
+        <span>רוחב בפועל: __________</span>
+        <span>אורך בפועל: __________</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>קוד</th>
+            <th>סעיף בדיקה</th>
+            <th>תקין</th>
+            <th>ליקוי</th>
+            <th>לא רלוונטי</th>
+            <th>הערה / ממצא להקלדה</th>
+            <th>מס׳ תמונה</th>
+          </tr>
+        </thead>
+        <tbody>
+      <tr>
+        <td class="code">1.1.1</td>
+        <td class="check-name">בדיקת סדקים<div>שלד ומעטפת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">1.1.6</td>
+        <td class="check-name">איתור סימני חדירת מים<div>שלד ומעטפת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.1</td>
+        <td class="check-name">בדיקות ריצוף (שיפועים, חללים, הפרשי גובה)<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.2</td>
+        <td class="check-name">צבע<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.2R</td>
+        <td class="check-name">רשתות<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.3</td>
+        <td class="check-name">טיח<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.4</td>
+        <td class="check-name">גבס<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.1</td>
+        <td class="check-name">זיגוג<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.2</td>
+        <td class="check-name">דלתות<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.3</td>
+        <td class="check-name">אלומיניום<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.1</td>
+        <td class="check-name">סורגים<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.2</td>
+        <td class="check-name">ספק תקשורת<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.5</td>
+        <td class="check-name">מזגן<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr></tbody>
+      </table>
+      <div class="room-notes">הערות כלליות לחדר: ________________________________________________________________________________________________</div>
+    </section>
+
+    <section class="room">
+      <div class="room-head">
+        <div>
+          <strong>03. רחצה</strong>
+          <span>חדר רטוב</span>
+        </div>
+        <div class="room-flags">
+          <span>נבדק □</span>
+          <span>הוזן לאפליקציה □</span>
+        </div>
+      </div>
+      <div class="dimensions">
+        <span>רוחב בתכנית: __________</span>
+        <span>אורך בתכנית: __________</span>
+        <span>רוחב בפועל: __________</span>
+        <span>אורך בפועל: __________</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>קוד</th>
+            <th>סעיף בדיקה</th>
+            <th>תקין</th>
+            <th>ליקוי</th>
+            <th>לא רלוונטי</th>
+            <th>הערה / ממצא להקלדה</th>
+            <th>מס׳ תמונה</th>
+          </tr>
+        </thead>
+        <tbody>
+      <tr>
+        <td class="code">1.1.1</td>
+        <td class="check-name">בדיקת סדקים<div>שלד ומעטפת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">1.1.5</td>
+        <td class="check-name">איטומים<div>שלד ומעטפת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">1.1.6</td>
+        <td class="check-name">איתור סימני חדירת מים<div>שלד ומעטפת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.1</td>
+        <td class="check-name">בדיקות ריצוף (שיפועים, חללים, הפרשי גובה)<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.2</td>
+        <td class="check-name">צבע<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.2R</td>
+        <td class="check-name">רשתות<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.3</td>
+        <td class="check-name">טיח<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.4</td>
+        <td class="check-name">גבס<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.4W</td>
+        <td class="check-name">חיפוי<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.1</td>
+        <td class="check-name">זיגוג<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.2</td>
+        <td class="check-name">דלתות<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.3</td>
+        <td class="check-name">אלומיניום<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">4.1.2</td>
+        <td class="check-name">נזילות<div>אינסטלציה וניקוז</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">4.1.3</td>
+        <td class="check-name">שיפועים<div>אינסטלציה וניקוז</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">4.1.4</td>
+        <td class="check-name">ניקוזים ותפקוד מערכות<div>אינסטלציה וניקוז</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.1</td>
+        <td class="check-name">סורגים<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.2</td>
+        <td class="check-name">ספק תקשורת<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr></tbody>
+      </table>
+      <div class="room-notes">הערות כלליות לחדר: ________________________________________________________________________________________________</div>
+    </section>
+
+    <section class="room">
+      <div class="room-head">
+        <div>
+          <strong>04. מבואה</strong>
+          <span>חדר יבש</span>
+        </div>
+        <div class="room-flags">
+          <span>נבדק □</span>
+          <span>הוזן לאפליקציה □</span>
+        </div>
+      </div>
+      <div class="dimensions">
+        <span>רוחב בתכנית: __________</span>
+        <span>אורך בתכנית: __________</span>
+        <span>רוחב בפועל: __________</span>
+        <span>אורך בפועל: __________</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>קוד</th>
+            <th>סעיף בדיקה</th>
+            <th>תקין</th>
+            <th>ליקוי</th>
+            <th>לא רלוונטי</th>
+            <th>הערה / ממצא להקלדה</th>
+            <th>מס׳ תמונה</th>
+          </tr>
+        </thead>
+        <tbody>
+      <tr>
+        <td class="code">1.1.1</td>
+        <td class="check-name">בדיקת סדקים<div>שלד ומעטפת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">1.1.6</td>
+        <td class="check-name">איתור סימני חדירת מים<div>שלד ומעטפת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.1</td>
+        <td class="check-name">בדיקות ריצוף (שיפועים, חללים, הפרשי גובה)<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.2</td>
+        <td class="check-name">צבע<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.2R</td>
+        <td class="check-name">רשתות<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.3</td>
+        <td class="check-name">טיח<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">2.1.4</td>
+        <td class="check-name">גבס<div>גמר פנים</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.1</td>
+        <td class="check-name">זיגוג<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.2</td>
+        <td class="check-name">דלתות<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">3.1.3</td>
+        <td class="check-name">אלומיניום<div>פתחים ודלתות</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.1</td>
+        <td class="check-name">סורגים<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.2</td>
+        <td class="check-name">ספק תקשורת<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr>
+      <tr>
+        <td class="code">5.1.5</td>
+        <td class="check-name">מזגן<div>חשמל ותקשורת</div></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="box"></td>
+        <td class="notes"></td>
+        <td class="photo"></td>
+      </tr></tbody>
+      </table>
+      <div class="room-notes">הערות כלליות לחדר: ________________________________________________________________________________________________</div>
+    </section>
+
+  <footer>לאחר החזרה לקליטה: לפתוח את הדירה באפליקציה, להקליד את הסימונים וההערות, להעלות תמונות, ואז לשמור.</footer>
+</body>
+</html>
