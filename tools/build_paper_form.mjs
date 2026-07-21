@@ -78,8 +78,8 @@ const checkSets = {
 const ownerAreaPreset = [
   "חדר שינה 01",
   "חדר שינה 02",
+  "רחצה",
   "מבואה",
-  "רחצה כללי",
 ];
 
 const areaTypeLabels = {
