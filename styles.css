@@ -378,18 +378,16 @@ textarea {
 }
 
 .owner-apartment-card.is-inspected {
-  border-color: rgba(37, 99, 235, 0.95);
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.24), transparent 34%),
-    linear-gradient(160deg, rgba(239, 246, 255, 1), rgba(191, 219, 254, 0.98));
+  border-color: #005bff;
+  background: #dbeafe;
   box-shadow:
-    inset 0 0 0 2px rgba(37, 99, 235, 0.34),
+    inset 0 0 0 3px rgba(0, 91, 255, 0.42),
     0 12px 26px rgba(24, 34, 38, 0.08);
 }
 
 .owner-apartment-card.is-inspected::after {
-  width: 7px;
-  background: linear-gradient(180deg, #1d4ed8, #60a5fa);
+  width: 8px;
+  background: #005bff;
 }
 
 .owner-apartment-card.is-inspected .owner-apartment-icon {
