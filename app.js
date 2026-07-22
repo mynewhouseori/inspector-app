@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.local-photo-preserve-1";
+const APP_VERSION = "2026.07.22.export-reports-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -931,6 +931,7 @@ const els = {
   areaType: document.querySelector("#areaType"),
   addAreaBtn: document.querySelector("#addAreaBtn"),
   resetBtn: document.querySelector("#resetBtn"),
+  exportReportBtn: document.querySelector("#exportReportBtn"),
   printBtn: document.querySelector("#printBtn"),
   navButtons: [...document.querySelectorAll(".nav-btn")],
   screens: [...document.querySelectorAll(".screen")],
@@ -3205,11 +3206,17 @@ if (els.resetBtn) {
   });
 }
 
-els.printBtn.addEventListener("click", () => {
+function exportCurrentReport() {
   setScreen("summary", { scroll: true });
   renderSummaryReports();
   setTimeout(() => window.print(), 80);
-});
+}
+
+els.printBtn.addEventListener("click", exportCurrentReport);
+
+if (els.exportReportBtn) {
+  els.exportReportBtn.addEventListener("click", exportCurrentReport);
+}
 
 loadState();
 state.currentScreen = "home";
