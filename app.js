@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.report-visible-date-1";
+const APP_VERSION = "2026.07.22.report-subtitle-project-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2061,6 +2061,12 @@ function buildReportSignaturesMarkup() {
   `;
 }
 
+function getReportProjectNameForSubtitle() {
+  const address = normalizePropertyAddress(state.propertyAddress);
+  const firstPart = address.split(/[-,|]/)[0]?.trim();
+  return firstPart || "מגן אברהם";
+}
+
 function renderReportDocument(summary, issues) {
   const reportAreas = getInspectedAreas();
   const reportSummary = computeReportSummary(reportAreas);
@@ -2074,9 +2080,7 @@ function renderReportDocument(summary, issues) {
   const projectTitle = state.propertyName || "דוח בדיקה הנדסית";
   const headerBrandTitle = "אורי לוין";
   const headerBrandSubtitle = "ביצוע ופיקוח בבנייה";
-  const subtitle = state.propertyAddress
-    ? `${reportStatus} עבור ${state.propertyAddress}.`
-    : `${reportStatus} מוכן לשיתוף ולהפקה כ-PDF.`;
+  const subtitle = `${reportStatus} עבור ${getReportProjectNameForSubtitle()}`;
 
   els.reportDocTitle.textContent = projectTitle;
   els.reportDocSubtitle.textContent = subtitle;
