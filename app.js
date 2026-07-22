@@ -140,6 +140,7 @@ function isRemovedAreaName(name = "") {
 }
 
 const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5", "7.1.3"]);
+const entranceOnlyCheckCodes = new Set(["5.1.2"]);
 const SETTINGS = window.APP_CONFIG || window.DEFAULT_APP_CONFIG || {};
 const hasFirebaseConfig = Boolean(SETTINGS?.firebase?.apiKey);
 const firebaseApp = hasFirebaseConfig ? initializeApp(SETTINGS.firebase) : null;
@@ -184,7 +185,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.edit-unlock-2";
+const APP_VERSION = "2026.07.22.edit-unlock-3";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -980,7 +981,16 @@ function inferAreaType(name) {
 }
 
 function defaultChecks(type, areaName = "") {
-  let checks = checkSets[type] || [];
+  const isEntranceArea = areaName.includes("מבואה");
+  let checks = (checkSets[type] || []).filter((check) => (
+    !entranceOnlyCheckCodes.has(check.code) || isEntranceArea
+  ));
+  if (isEntranceArea) {
+    checks = uniqueChecks([
+      ...checks,
+      baseChecks.electricityCommunication.find((check) => check.code === "5.1.2")
+    ]);
+  }
   if (areaName.includes("מדרגות")) {
     checks = uniqueChecks([
       ...checks,
