@@ -184,7 +184,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.safe-restore-7";
+const APP_VERSION = "2026.07.22.edit-unlock-2";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1443,7 +1443,7 @@ function toggleAreaLock(area) {
   const shouldFocusAfterUnlock = area.locked === true;
   area.locked = !area.locked;
   pendingFocusAreaId = shouldFocusAfterUnlock && !area.locked ? area.id : null;
-  persistAndRender({}, { immediateCloud: true });
+  persistAndRender({}, { immediateCloud: true, allowEmptyOwnerDraft: true });
 }
 
 function buildPresetAreas(mode = state.inspectionMode) {
@@ -2186,10 +2186,11 @@ function buildProjectRecord(projectId = getCanonicalProjectId({
   };
 }
 
-function syncCurrentProjectDraft() {
+function syncCurrentProjectDraft(options = {}) {
+  const { allowEmptyOwnerDraft = false } = options;
   if (!state.currentProjectId) return null;
   const record = buildProjectRecord(state.currentProjectId);
-  if (state.inspectionMode === "owner" && !hasProjectDraftContent(record)) return null;
+  if (state.inspectionMode === "owner" && !allowEmptyOwnerDraft && !hasProjectDraftContent(record)) return null;
   clearProjectDeletionMarker(record.id);
   upsertSavedProjectRecord(record);
   saveProjectsLibrary();
@@ -2727,9 +2728,9 @@ function persistProjectRecordImmediately(record) {
 }
 
 function saveState(options = {}) {
-  const { immediateCloud = false } = options;
+  const { immediateCloud = false, allowEmptyOwnerDraft = false } = options;
   markLocalMutation();
-  const record = syncCurrentProjectDraft();
+  const record = syncCurrentProjectDraft({ allowEmptyOwnerDraft });
   try {
     localStorage.setItem(storageKey, JSON.stringify(compactStateForStorage()));
   } catch (error) {
