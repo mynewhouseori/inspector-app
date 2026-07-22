@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.mobile-room-open-1";
+const APP_VERSION = "2026.07.22.delete-check-photos-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1409,6 +1409,27 @@ async function handleCheckCameraCapture(area, check, fileInput) {
   const file = fileInput.files?.[0];
   fileInput.value = "";
   await handleCheckCameraFile(area, check, file);
+}
+
+function deleteCheckPhoto(area, check, photoId) {
+  if (area.locked) {
+    window.alert("פתח את החדר לעריכה לפני מחיקת צילום.");
+    return;
+  }
+
+  const photos = Array.isArray(area.photoCaptures) ? area.photoCaptures : [];
+  const targetPhoto = photos.find((photo) => getPhotoIdentity(photo) === photoId);
+  if (!targetPhoto) return;
+
+  const confirmed = window.confirm(`למחוק את הצילום מתוך "${check.name}"?`);
+  if (!confirmed) return;
+
+  area.photoCaptures = photos.filter((photo) => getPhotoIdentity(photo) !== photoId);
+  persistAndRender({ preserveScroll: true }, { immediateCloud: true });
+}
+
+function getPhotoIdentity(photo = {}) {
+  return photo.id || [photo.checkCode, photo.fileName, photo.capturedAt].filter(Boolean).join("|");
 }
 
 function openCameraPicker(fileInput) {
@@ -2976,11 +2997,21 @@ function renderAreas() {
         ? checkPhotos.map((photo) => {
             const src = photo.downloadURL || photo.previewDataUrl || "";
             const alt = photo.checkName || check.name;
+            const photoId = escapeHtml(getPhotoIdentity(photo));
+            const deleteButton = `<button class="photo-delete-btn" type="button" data-photo-delete="${photoId}" title="מחק צילום" aria-label="מחק צילום">×</button>`;
             return src
-              ? `<a class="check-photo-thumb" href="${escapeHtml(src)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"></a>`
-              : `<div class="check-photo-thumb is-pending" title="התמונה נשמרה, נטענת מהענן">נטען</div>`;
+              ? `<div class="check-photo-item"><a class="check-photo-thumb" href="${escapeHtml(src)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"></a>${deleteButton}</div>`
+              : `<div class="check-photo-item"><div class="check-photo-thumb is-pending" title="התמונה נשמרה, נטענת מהענן">נטען</div>${deleteButton}</div>`;
           }).join("")
         : "";
+      photoList.querySelectorAll("[data-photo-delete]").forEach((button) => {
+        button.disabled = area.locked;
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          deleteCheckPhoto(area, check, button.dataset.photoDelete);
+        });
+      });
       cameraInput.disabled = !cameraAllowed;
       statusSelect.addEventListener("change", (event) => {
         check.status = event.target.value;
