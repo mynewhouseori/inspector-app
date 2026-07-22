@@ -1617,6 +1617,27 @@ select {
   color: var(--ink);
 }
 
+.report-topic-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-topic-list span {
+  padding: 7px 10px;
+  border: 1px solid rgba(24, 90, 97, 0.16);
+  border-radius: 999px;
+  background: rgba(24, 90, 97, 0.07);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.report-topic-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
 .report-area-card {
   display: grid;
   gap: 12px;
@@ -1697,6 +1718,11 @@ select {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.report-area-brief-issue {
+  background: rgba(178, 75, 55, 0.07);
+  color: var(--issue);
 }
 
 .report-empty {
@@ -3104,6 +3130,30 @@ textarea:focus {
     background: transparent;
     break-inside: auto;
     page-break-inside: auto;
+  }
+
+  .report-findings-section {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .report-rooms-section {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .report-topics-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-topic-list {
+    gap: 5px;
+  }
+
+  .report-topic-list span {
+    padding: 4px 7px;
+    font-size: 10.5px;
   }
 
   .report-section h3 {

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inspector</title>
-  <link rel="stylesheet" href="./styles.css?v=20260722-report-compact-findings-1">
+  <link rel="stylesheet" href="./styles.css?v=20260722-report-three-page-base-1">
 </head>
 <body>
   <main class="mobile-app">
@@ -217,9 +217,14 @@
             </div>
           </section>
 
-          <section class="report-section">
+          <section class="report-section report-intro-section">
             <h3 id="reportIntroTitle">חשיבות בדק בית</h3>
             <div id="reportIntroBlock" class="report-intro-block"></div>
+          </section>
+
+          <section class="report-section report-topics-section">
+            <h3>נושאי הבדיקה שנכללו בתסקיר</h3>
+            <div id="reportInspectionTopics" class="report-topic-list"></div>
           </section>
 
           <section id="reportGeneralNotesSection" class="report-section" hidden>
@@ -227,17 +232,17 @@
             <div id="reportGeneralNotes" class="report-text-block"></div>
           </section>
 
-          <section class="report-section">
+          <section class="report-section report-findings-section">
             <h3>ממצאים עיקריים</h3>
             <div id="reportCriticalFindings" class="report-findings"></div>
           </section>
 
-          <section class="report-section">
+          <section class="report-section report-rooms-section">
             <h3>חדרים שנבדקו</h3>
             <div id="reportAreaDetails" class="report-area-details"></div>
           </section>
 
-          <section class="report-section">
+          <section class="report-section report-summary-section">
             <h3>סיכום</h3>
             <div id="reportClosingNote" class="report-text-block"></div>
           </section>
@@ -329,8 +334,8 @@
     </article>
   </template>
 
-  <script src="./config.demo.js?v=20260722-report-compact-findings-1"></script>
-  <script type="module" src="./app.js?v=20260722-report-compact-findings-1"></script>
+  <script src="./config.demo.js?v=20260722-report-three-page-base-1"></script>
+  <script type="module" src="./app.js?v=20260722-report-three-page-base-1"></script>
 </body>
 </html>
 

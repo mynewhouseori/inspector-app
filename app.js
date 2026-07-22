@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.report-compact-findings-1";
+const APP_VERSION = "2026.07.22.report-three-page-base-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1113,6 +1113,7 @@ const els = {
   reportPageHeaderDate: document.querySelector("#reportPageHeaderDate"),
   reportIntroTitle: document.querySelector("#reportIntroTitle"),
   reportIntroBlock: document.querySelector("#reportIntroBlock"),
+  reportInspectionTopics: document.querySelector("#reportInspectionTopics"),
   reportGeneralNotesSection: document.querySelector("#reportGeneralNotesSection"),
   reportGeneralNotes: document.querySelector("#reportGeneralNotes"),
   reportOverview: document.querySelector("#reportOverview"),
@@ -1278,6 +1279,7 @@ function updateAppVersionLabel() {
 function ensureReportPlaceholders() {
   els.reportOverview = document.querySelector("#reportOverview");
   els.reportSummaryStats = document.querySelector("#reportSummaryStats");
+  els.reportInspectionTopics = document.querySelector("#reportInspectionTopics");
 }
 
 function updateWelcomeTitle() {
@@ -1997,19 +1999,37 @@ function buildReportPhotosMarkup(area, check) {
   `;
 }
 
+function getInspectionTopicNames(reportAreas) {
+  const topics = new Set();
+  reportAreas.forEach((area) => {
+    area.checks.forEach((check) => {
+      if (check.name) topics.add(check.name);
+    });
+  });
+  return [...topics];
+}
+
+function buildInspectionTopicsMarkup(reportAreas) {
+  const topics = getInspectionTopicNames(reportAreas);
+  if (!topics.length) {
+    return `<p class="report-topic-empty">טרם הוגדרו נושאי בדיקה לתסקיר.</p>`;
+  }
+  return topics.map((topic) => `<span>${escapeHtml(topic)}</span>`).join("");
+}
+
 function buildExecutiveSummary(summary) {
   if (!summary.inspectedAreas) {
     return "טרם הושלמו נתוני בדיקה להצגה בדוח לקוח. לאחר הזנת ממצאים באזורים שנבדקו, יופיע כאן תקציר מקצועי ומוכן למשלוח.";
   }
 
   const issueTone = summary.issues
-    ? `במהלך הבדיקה זוהו ${summary.issues} ליקויים הדורשים טיפול או בדיקה חוזרת.`
-    : "במהלך הבדיקה לא זוהו ליקויים שסומנו לטיפול.";
+    ? "במהלך הבדיקה זוהו ממצאים חריגים המפורטים בדוח."
+    : "במהלך הבדיקה לא זוהו ממצאים חריגים.";
   const scopeTone = summary.notStartedAreas
     ? `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל, בעוד ${summary.notStartedAreas} אזורים נוספים טרם הושלמו ולכן אינם מפורטים במסמך זה.`
     : `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל ומציג את עיקרי הממצאים.`;
 
-  return `${scopeTone} ${issueTone} שיעור ההשלמה באזורים הנכללים בדוח עומד על ${summary.completionRate}%.`;
+  return `${scopeTone} ${issueTone}`;
 }
 
 function buildClosingNote(summary) {
@@ -2018,7 +2038,7 @@ function buildClosingNote(summary) {
   }
 
   if (summary.issues > 0) {
-    return "המסמך מרכז את הממצאים החריגים שתועדו בשלב זה, לפי החדרים והסעיפים שנבדקו בפועל.";
+    return "המסמך מרכז את הממצאים החריגים שתועדו בשלב זה, לפי החדרים שנבדקו בפועל.";
   }
 
   return "לא סומנו ממצאים חריגים באזורים שנבדקו. לאחר השלמת יתר האזורים, ניתן להפיק דוח מסכם סופי למסירה.";
@@ -2028,6 +2048,11 @@ function renderReportDocument(summary, issues) {
   const reportAreas = getInspectedAreas();
   const reportSummary = computeReportSummary(reportAreas);
   const reportIssues = getReportIssues(reportAreas);
+  const reportIssueEntries = reportAreas.flatMap((area) =>
+    area.checks
+      .filter((check) => check.status === "issue")
+      .map((check) => ({ area, check }))
+  );
   const reportStatus = getReportStatus(reportSummary);
   const projectTitle = state.propertyName || "דוח בדיקה הנדסית";
   const headerBrandTitle = "אורי לוין";
@@ -2095,6 +2120,10 @@ function renderReportDocument(summary, issues) {
     els.reportExecutiveSummary.innerHTML = `<p>${escapeHtml(buildExecutiveSummary(reportSummary))}</p>`;
   }
 
+  if (els.reportInspectionTopics) {
+    els.reportInspectionTopics.innerHTML = buildInspectionTopicsMarkup(reportAreas);
+  }
+
   const generalNotes = String(state.generalNotes || "").trim();
   if (els.reportGeneralNotesSection && els.reportGeneralNotes) {
     els.reportGeneralNotesSection.hidden = !generalNotes;
@@ -2103,10 +2132,8 @@ function renderReportDocument(summary, issues) {
 
   const statItems = [
     ["חדרים שנבדקו", reportSummary.inspectedAreas],
-    ["סעיפים שנבדקו", reportSummary.completedChecks],
-    ["תקין", reportSummary.ok],
-    ["ליקויים", reportSummary.issues],
-    ["השלמה", `${reportSummary.completionRate}%`]
+    ["ממצאים חריגים", reportSummary.issues],
+    ["סטטוס", reportStatus]
   ];
 
   if (els.reportSummaryStats) {
@@ -2119,49 +2146,35 @@ function renderReportDocument(summary, issues) {
   }
 
   if (!reportIssues.length) {
-    els.reportCriticalFindings.innerHTML = `<div class="report-empty">לא זוהו ליקויים באזורים שנבדקו בפועל. ניתן להשתמש במסמך זה כדוח ביניים או להמשיך להשלמת יתר האזורים.</div>`;
+    els.reportCriticalFindings.innerHTML = `<div class="report-empty">לא זוהו ממצאים חריגים באזורים שנבדקו בפועל.</div>`;
   } else {
-    els.reportCriticalFindings.innerHTML = reportIssues
-      .map((issue) => `
+    els.reportCriticalFindings.innerHTML = reportIssueEntries
+      .map(({ area, check }) => `
         <article class="report-finding-item">
-          <strong>${escapeHtml(issue.area)} | ${escapeHtml(issue.name)}</strong>
-          <div class="report-finding-meta">קוד סעיף: ${escapeHtml(issue.code)} | ${escapeHtml(issue.category)}</div>
-          <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(issue.note || "נדרש פירוט נוסף מצד הבודק.")}</p>
+          <strong>${escapeHtml(area.name)} | ${escapeHtml(check.name)}</strong>
+          <div class="report-finding-meta">קוד סעיף: ${escapeHtml(check.code)} | ${escapeHtml(check.category)}</div>
+          <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(check.note.trim() || "נדרש פירוט נוסף מצד הבודק.")}</p>
+          ${buildReportPhotosMarkup(area, check)}
         </article>
       `).join("");
   }
 
   const areaCards = reportAreas.map((area) => {
-    const total = area.checks.length;
     const issuesInArea = area.checks.filter((check) => check.status === "issue");
-    const okCount = area.checks.filter((check) => check.status === "ok").length;
-    const pendingCount = area.checks.filter((check) => check.status === "pending").length;
-    const progress = getAreaProgress(area);
-    const completion = computeAreaCompletion(area);
     const areaChecksMarkup = issuesInArea.length
-      ? issuesInArea.map((check) => `
-          <div class="report-check-item report-check-${escapeHtml(check.status)}">
-            <strong>${escapeHtml(check.name)}</strong>
-            <div class="report-check-meta">${escapeHtml(check.category)} | ${escapeHtml(getCheckStatusLabel(check.status))}</div>
-            ${check.note.trim()
-              ? `<p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(check.note.trim())}</p>`
-              : ""
-            }
-            ${buildReportPhotosMarkup(area, check)}
-          </div>
-        `).join("")
-      : `<div class="report-area-brief">נבדקו ${escapeHtml(okCount)} סעיפים ללא ממצא חריג בדוח זה.</div>`;
+      ? `<div class="report-area-brief report-area-brief-issue">זוהו ממצאים חריגים. הפירוט מופיע בעמוד הממצאים.</div>`
+      : `<div class="report-area-brief">לא זוהו ממצאים חריגים.</div>`;
+    const areaStatusLabel = issuesInArea.length ? "ממצא חריג" : "ללא ממצא חריג";
 
     return `
       <article class="report-area-card">
         <div class="report-area-head">
           <div>
             <strong>${escapeHtml(area.name)}</strong>
-            <div class="report-area-meta">${escapeHtml(areaTypeLabels[area.type])} | ${escapeHtml(total)} סעיפי בדיקה | ${escapeHtml(progress.label)}</div>
+            <div class="report-area-meta">${escapeHtml(areaTypeLabels[area.type])}</div>
           </div>
-          <span class="report-area-status">${escapeHtml(completion)}% הושלם</span>
+          <span class="report-area-status">${escapeHtml(areaStatusLabel)}</span>
         </div>
-        <div class="report-area-meta">תקין: ${escapeHtml(okCount)} | ממצאים חריגים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
         <div class="report-area-checks">${areaChecksMarkup}</div>
       </article>
       `;
@@ -2170,7 +2183,7 @@ function renderReportDocument(summary, issues) {
   if (els.reportAreaDetails) {
     els.reportAreaDetails.innerHTML = areaCards.length
       ? areaCards.join("")
-      : `<div class="report-empty">לא זוהו ליקויים בחדרים שנבדקו.</div>`;
+      : `<div class="report-empty">לא זוהו ממצאים חריגים בחדרים שנבדקו.</div>`;
   }
 
   els.reportClosingNote.innerHTML = `<p>${escapeHtml(buildClosingNote(reportSummary))}</p>`;
@@ -2216,11 +2229,7 @@ function buildCompactPrintBody() {
       }))
       .filter((photo) => photo.src)
   ));
-  const topAreaLines = reportAreas.slice(0, 4).map((area) => {
-    const issuesCount = area.checks.filter((check) => check.status === "issue").length;
-    const completion = computeAreaCompletion(area);
-    return `${area.name} | ${completion}% הושלם | ליקויים: ${issuesCount}`;
-  });
+  const topicMarkup = buildInspectionTopicsMarkup(reportAreas);
 
   const issueMarkup = reportIssues.length
     ? reportIssues.map((issue) => `
@@ -2229,7 +2238,7 @@ function buildCompactPrintBody() {
           ${escapeHtml(issue.note || issue.name)}
         </li>
       `).join("")
-    : `<li>לא זוהו ליקויים באזורים שנבדקו.</li>`;
+    : `<li>לא זוהו ממצאים חריגים באזורים שנבדקו.</li>`;
 
   const photoMarkup = reportPhotos.length
     ? `
@@ -2277,13 +2286,13 @@ function buildCompactPrintBody() {
                     ${buildReportPhotosMarkup(area, check)}
                   </div>
                 `).join("")
-              : `<div class="report-empty">לא זוהו ליקויים בחדר זה.</div>`;
+              : `<div class="report-empty">לא זוהו ממצאים חריגים בחדר זה.</div>`;
             return `
               <article class="report-area-card">
                 <div class="report-area-head">
                   <div>
                     <strong>${escapeHtml(area.name)}</strong>
-                    <div class="report-area-meta">${escapeHtml(areaTypeLabels[area.type])} | ${escapeHtml(getAreaProgress(area).label)}</div>
+                    <div class="report-area-meta">${escapeHtml(areaTypeLabels[area.type])}</div>
                   </div>
                 </div>
                 <div class="report-area-checks">${checkMarkup}</div>
@@ -2296,7 +2305,7 @@ function buildCompactPrintBody() {
     : `
       <section class="report-section compact-print-rooms">
         <h3>חדרים שנבדקו</h3>
-        <div class="report-empty">לא זוהו ליקויים בחדרים שנבדקו.</div>
+        <div class="report-empty">לא זוהו ממצאים חריגים בחדרים שנבדקו.</div>
       </section>
     `;
 
@@ -2309,6 +2318,10 @@ function buildCompactPrintBody() {
       <div class="report-text-block">
         <p>דוח זה מרכז ממצאים עיקריים ותמונת מצב תמציתית, לצורך מסירה ללקוח ותיעוד מקצועי מסודר.</p>
       </div>
+    </section>
+    <section class="report-section compact-print-topics">
+      <h3>נושאי הבדיקה שנכללו בתסקיר</h3>
+      <div class="report-topic-list">${topicMarkup}</div>
     </section>
     <section class="report-section compact-print-grid">
       <div class="compact-print-card">
@@ -2332,22 +2345,8 @@ function buildCompactPrintBody() {
         <span>${escapeHtml(reportSummary.inspectedAreas)}</span>
       </div>
       <div class="compact-print-card">
-        <strong>ליקויים</strong>
+        <strong>ממצאים חריגים</strong>
         <span>${escapeHtml(reportSummary.issues)}</span>
-      </div>
-    </section>
-    <section class="report-section compact-print-grid compact-print-stats">
-      <div class="compact-print-card">
-        <strong>סעיפים שנבדקו</strong>
-        <span>${escapeHtml(reportSummary.completedChecks)}</span>
-      </div>
-      <div class="compact-print-card">
-        <strong>תקין</strong>
-        <span>${escapeHtml(reportSummary.ok)}</span>
-      </div>
-      <div class="compact-print-card">
-        <strong>השלמה</strong>
-        <span>${escapeHtml(`${reportSummary.completionRate}%`)}</span>
       </div>
       <div class="compact-print-card">
         <strong>סטטוס</strong>
