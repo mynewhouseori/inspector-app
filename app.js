@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.mobile-room-edit-1";
+const APP_VERSION = "2026.07.22.mobile-buttons-audit-2";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -765,13 +765,35 @@ function compactStateForStorage() {
   return clone;
 }
 
+function isQuotaExceededError(error) {
+  return error?.name === "QuotaExceededError"
+    || error?.code === 22
+    || String(error?.message || "").includes("quota");
+}
+
+function writeLocalStorageWithFallback(key, values = []) {
+  let lastError = null;
+  for (const value of values) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      lastError = error;
+      if (!isQuotaExceededError(error)) throw error;
+    }
+  }
+  if (lastError) console.error(lastError);
+  return false;
+}
+
 function backupProjectRecordLocally(record, reason = "replace") {
   if (!record?.id || !record?.data) return;
   try {
     const compactRecord = compactProjectRecordForStorage(record, { keepLocalPreviews: true });
+    const slimRecord = compactProjectRecordForStorage(record, { keepLocalPreviews: false });
     const existingBackups = JSON.parse(localStorage.getItem(projectBackupsKey) || "[]").map((backup) => ({
       ...backup,
-      record: compactProjectRecordForStorage(backup.record, { keepLocalPreviews: true })
+      record: compactProjectRecordForStorage(backup.record, { keepLocalPreviews: false })
     }));
     const signature = projectDataSignature(compactRecord.data);
     const filteredBackups = existingBackups.filter((backup) => (
@@ -786,7 +808,19 @@ function backupProjectRecordLocally(record, reason = "replace") {
       footprint: getProjectInspectionFootprint(compactRecord),
       record: compactRecord
     });
-    localStorage.setItem(projectBackupsKey, JSON.stringify(filteredBackups.slice(0, 20)));
+    const slimBackups = filteredBackups.map((backup, index) => (
+      index === 0
+        ? { ...backup, record: slimRecord }
+        : { ...backup, record: compactProjectRecordForStorage(backup.record, { keepLocalPreviews: false }) }
+    ));
+    const stored = writeLocalStorageWithFallback(projectBackupsKey, [
+      JSON.stringify(filteredBackups.slice(0, 20)),
+      JSON.stringify(slimBackups.slice(0, 10)),
+      JSON.stringify(slimBackups.slice(0, 5)),
+      JSON.stringify(slimBackups.slice(0, 2)),
+      JSON.stringify(slimBackups.slice(0, 1))
+    ]);
+    if (!stored) localStorage.removeItem(projectBackupsKey);
   } catch (error) {
     console.error(error);
   }
@@ -1581,6 +1615,26 @@ function openCameraPicker(fileInput) {
   fileInput.click();
 }
 
+function bindPressAction(element, handler, options = {}) {
+  if (!element || typeof handler !== "function") return;
+  const { delay = 350 } = options;
+  let handledAt = 0;
+  const run = (event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const now = Date.now();
+    if (now - handledAt < delay) return;
+    handledAt = now;
+    handler(event);
+  };
+
+  element.addEventListener("click", run);
+  element.addEventListener("pointerup", run);
+  element.addEventListener("touchend", run, { passive: false });
+}
+
 function applyCheckVisualState(checkNode, check) {
   const statusSelect = checkNode.querySelector(".status-select");
   const noteInput = checkNode.querySelector(".note-input");
@@ -1671,21 +1725,7 @@ function toggleAreaLock(area) {
 }
 
 function bindAreaLockButton(lockBtn, area) {
-  let handledAt = 0;
-  const handleLockToggle = (event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    const now = Date.now();
-    if (now - handledAt < 350) return;
-    handledAt = now;
-    toggleAreaLock(area);
-  };
-
-  lockBtn.addEventListener("click", handleLockToggle);
-  lockBtn.addEventListener("pointerup", handleLockToggle);
-  lockBtn.addEventListener("touchend", handleLockToggle, { passive: false });
+  bindPressAction(lockBtn, () => toggleAreaLock(area));
 }
 
 function buildPresetAreas(mode = state.inspectionMode) {
@@ -2454,9 +2494,25 @@ function serializeCurrentProject() {
 }
 
 function saveProjectsLibrary() {
-  localStorage.setItem(projectsKey, JSON.stringify(state.savedProjects.map((project) => (
+  const richProjects = state.savedProjects.map((project) => (
     compactProjectRecordForStorage(project, { keepLocalPreviews: true })
-  ))));
+  ));
+  const slimProjects = state.savedProjects.map((project) => (
+    compactProjectRecordForStorage(project, { keepLocalPreviews: false })
+  ));
+  const stored = writeLocalStorageWithFallback(projectsKey, [
+    JSON.stringify(richProjects),
+    JSON.stringify(slimProjects),
+    JSON.stringify(slimProjects.slice(0, 24)),
+    JSON.stringify(slimProjects.slice(0, 16))
+  ]);
+  if (!stored) {
+    localStorage.removeItem(projectBackupsKey);
+    writeLocalStorageWithFallback(projectsKey, [
+      JSON.stringify(slimProjects),
+      JSON.stringify(slimProjects.slice(0, 16))
+    ]);
+  }
 }
 
 function upsertSavedProjectRecord(record, options = {}) {
@@ -2949,15 +3005,15 @@ function renderSavedProjects() {
   }).join("");
 
   els.savedProjectsList.querySelectorAll("[data-action='open-project']").forEach((button) => {
-    button.addEventListener("click", () => loadProject(button.dataset.projectId));
+    bindPressAction(button, () => loadProject(button.dataset.projectId));
   });
 
   els.savedProjectsList.querySelectorAll("[data-action='delete-project']").forEach((button) => {
-    button.addEventListener("click", () => deleteProject(button.dataset.projectId));
+    bindPressAction(button, () => deleteProject(button.dataset.projectId));
   });
 
   els.savedProjectsList.querySelectorAll("[data-action='restore-project']").forEach((button) => {
-    button.addEventListener("click", () => restoreProjectBackup(button.dataset.projectId));
+    bindPressAction(button, () => restoreProjectBackup(button.dataset.projectId));
   });
 }
 
@@ -3153,7 +3209,7 @@ function renderAreas() {
       bindAreaLockButton(lockBtn, area);
     });
 
-    node.querySelector(".delete-btn").addEventListener("click", () => {
+    bindPressAction(node.querySelector(".delete-btn"), () => {
       const confirmed = window.confirm(`למחוק את "${area.name}" מהבדיקה הנוכחית?\n\nהמחיקה תסיר את החדר הזה מהדירה הפעילה ותמחק ממנו את כל המידות, ההערות, התמונות והממצאים שנשמרו בו.`);
       if (!confirmed) return;
       state.areas = state.areas.filter((item) => item.id !== area.id);
@@ -3240,8 +3296,7 @@ function renderAreas() {
         applyCheckVisualState(checkNode, check);
         refreshProgressAndSummary();
       });
-      cameraBtn.addEventListener("click", (event) => {
-        event.preventDefault();
+      bindPressAction(cameraBtn, () => {
         if (!isCameraAllowedForCheck(area, check)) return;
         openCameraPicker(cameraInput);
       });
@@ -3283,7 +3338,7 @@ function renderOwnerApartments() {
   }).join("");
 
   els.ownerApartmentsGrid.querySelectorAll("[data-owner-apartment]").forEach((button) => {
-    button.addEventListener("click", () => openOwnerApartment(button.dataset.ownerApartment));
+    bindPressAction(button, () => openOwnerApartment(button.dataset.ownerApartment));
   });
 }
 
@@ -3386,38 +3441,38 @@ function addArea(name, type) {
   persistAndRender({}, { immediateCloud: true });
 }
 
-els.saveProjectBtn.addEventListener("click", async () => {
+bindPressAction(els.saveProjectBtn, async () => {
   if (await saveCurrentProject()) {
     window.alert("הבדיקה נשמרה ותופיע ברשימת הבדיקות השמורות.");
   }
 });
 
 if (els.jumpToSavedProjectsBtn) {
-  els.jumpToSavedProjectsBtn.addEventListener("click", () => {
+  bindPressAction(els.jumpToSavedProjectsBtn, () => {
     els.savedProjectsList.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 }
 
 if (els.restoreLatestBackupBtn) {
-  els.restoreLatestBackupBtn.addEventListener("click", () => {
+  bindPressAction(els.restoreLatestBackupBtn, () => {
     restoreProjectBackup(state.currentProjectId);
   });
 }
 
 if (els.selectNewPropertyBtn) {
-  els.selectNewPropertyBtn.addEventListener("click", () => {
+  bindPressAction(els.selectNewPropertyBtn, () => {
     selectInspectionMode("new");
   });
 }
 
 if (els.selectOwnerReportBtn) {
-  els.selectOwnerReportBtn.addEventListener("click", () => {
+  bindPressAction(els.selectOwnerReportBtn, () => {
     selectInspectionMode("owner");
   });
 }
 
 if (els.welcomeNavBtn) {
-  els.welcomeNavBtn.addEventListener("click", () => {
+  bindPressAction(els.welcomeNavBtn, () => {
     updateProjectFields();
     if (!state.propertyName) {
       window.alert("יש להזין שם נכס לפני מעבר לחדרים.");
@@ -3436,13 +3491,13 @@ if (els.welcomeNavBtn) {
 }
 
 if (els.backToHomeFromOwnerBtn) {
-  els.backToHomeFromOwnerBtn.addEventListener("click", () => {
+  bindPressAction(els.backToHomeFromOwnerBtn, () => {
     setScreen("home", { scroll: true });
   });
 }
 
 if (els.newProjectBtn) {
-  els.newProjectBtn.addEventListener("click", () => {
+  bindPressAction(els.newProjectBtn, () => {
     const hasContent = state.propertyName
       || state.propertyAddress
       || state.clientName
@@ -3459,20 +3514,16 @@ if (els.newProjectBtn) {
   });
 }
 
-els.backToWelcomeBtn.addEventListener("click", () => {
+bindPressAction(els.backToWelcomeBtn, () => {
   setScreen("welcome", { scroll: true });
 });
 
 if (els.addAreaBtn && els.areaName && els.areaType) {
-  els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
+  bindPressAction(els.addAreaBtn, () => addArea(els.areaName.value, els.areaType.value));
 }
 
 if (els.roomJumpBtn) {
-  els.roomJumpBtn.addEventListener("click", openSelectedRoomFromControl);
-  els.roomJumpBtn.addEventListener("touchend", (event) => {
-    event.preventDefault();
-    openSelectedRoomFromControl();
-  }, { passive: false });
+  bindPressAction(els.roomJumpBtn, openSelectedRoomFromControl);
 }
 
 if (els.roomJumpSelect) {
@@ -3493,18 +3544,9 @@ if (els.areaName && els.areaType) {
   });
 }
 
-let lastBottomNavHandledAt = 0;
-
 function openBottomNavScreen(button, event) {
   const targetScreen = button?.dataset?.screen;
   if (!targetScreen) return;
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-  const now = Date.now();
-  if (now - lastBottomNavHandledAt < 350) return;
-  lastBottomNavHandledAt = now;
 
   if (targetScreen === "inspection") {
     syncActiveInspectionArea();
@@ -3517,13 +3559,11 @@ function openBottomNavScreen(button, event) {
 }
 
 els.navButtons.forEach((button) => {
-  button.addEventListener("click", (event) => openBottomNavScreen(button, event));
-  button.addEventListener("pointerup", (event) => openBottomNavScreen(button, event));
-  button.addEventListener("touchend", (event) => openBottomNavScreen(button, event), { passive: false });
+  bindPressAction(button, (event) => openBottomNavScreen(button, event));
 });
 
 if (els.resetBtn) {
-  els.resetBtn.addEventListener("click", () => {
+  bindPressAction(els.resetBtn, () => {
     const activeArea = ensureActiveInspectionArea();
     if (!activeArea) {
       window.alert("אין חדר פעיל לאיפוס כרגע.");
@@ -3536,7 +3576,7 @@ if (els.resetBtn) {
   });
 }
 
-els.printBtn.addEventListener("click", () => {
+bindPressAction(els.printBtn, () => {
   setScreen("summary", { scroll: true });
   renderSummaryReports();
   setTimeout(() => window.print(), 80);
