@@ -184,7 +184,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.safe-restore-6";
+const APP_VERSION = "2026.07.22.safe-restore-7";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -523,6 +523,41 @@ function getProjectInspectionFootprint(projectLike = {}) {
   };
 }
 
+const PROJECT_DETAIL_FIELDS = [
+  "inspectionMode",
+  "propertyName",
+  "propertyAddress",
+  "inspectionDate",
+  "clientName",
+  "clientPhone",
+  "clientEmail",
+  "inspectorName"
+];
+
+function mergeProjectDetailsIntoProtectedRecord(existingRecord, candidateRecord) {
+  const mergedRecord = compactProjectRecordForStorage(normalizeProjectRecord(existingRecord) || existingRecord);
+  const candidateData = candidateRecord?.data || {};
+  if (!mergedRecord?.data || !candidateData) return mergedRecord;
+
+  let changed = false;
+  PROJECT_DETAIL_FIELDS.forEach((field) => {
+    const candidateValue = String(candidateData[field] || "").trim();
+    if (!candidateValue || mergedRecord.data[field] === candidateValue) return;
+    mergedRecord.data[field] = candidateValue;
+    changed = true;
+  });
+
+  if (changed) {
+    mergedRecord.title = mergedRecord.data.propertyName || mergedRecord.title;
+    mergedRecord.propertyName = mergedRecord.data.propertyName || mergedRecord.propertyName;
+    mergedRecord.propertyAddress = normalizePropertyAddress(mergedRecord.data.propertyAddress);
+    mergedRecord.updatedAt = candidateRecord.updatedAt || new Date().toISOString();
+    mergedRecord.updatedAtMs = Math.max(candidateRecord.updatedAtMs || 0, existingRecord.updatedAtMs || 0, Date.now());
+  }
+
+  return mergedRecord;
+}
+
 function chooseProjectRecordToKeep(existingRecord, candidateRecord) {
   if (!existingRecord) return candidateRecord;
   if (!candidateRecord) return existingRecord;
@@ -530,7 +565,9 @@ function chooseProjectRecordToKeep(existingRecord, candidateRecord) {
   const existingFootprint = getProjectInspectionFootprint(existingRecord);
   const candidateFootprint = getProjectInspectionFootprint(candidateRecord);
 
-  if (existingFootprint.score > candidateFootprint.score) return existingRecord;
+  if (existingFootprint.score > candidateFootprint.score) {
+    return mergeProjectDetailsIntoProtectedRecord(existingRecord, candidateRecord);
+  }
   if (candidateFootprint.score > existingFootprint.score) return candidateRecord;
   return (candidateRecord.updatedAtMs || 0) >= (existingRecord.updatedAtMs || 0) ? candidateRecord : existingRecord;
 }
@@ -2171,6 +2208,20 @@ async function saveProjectRecordToCloud(record) {
   const recordToSave = keepRicherProjectRecord(existingRecord, normalizedRecord);
 
   if (recordToSave !== normalizedRecord) {
+    if (existingRecord && projectDataSignature(existingRecord.data) !== projectDataSignature(recordToSave.data)) {
+      backupProjectRecordLocally(existingRecord, "cloud-before-protected-merge");
+      try {
+        await setDoc(doc(db, PROJECT_BACKUPS_COLLECTION, `${normalizedRecord.id}_${Date.now()}`), {
+          ...existingRecord,
+          backedUpAt: new Date().toISOString(),
+          backupReason: "cloud-before-protected-merge",
+          sourceProjectId: normalizedRecord.id
+        });
+      } catch (error) {
+        console.error(error);
+      }
+      await setDoc(projectRef, recordToSave);
+    }
     upsertSavedProjectRecord(recordToSave);
     saveProjectsLibrary();
     updateCurrentProjectFromProtectedRecord(recordToSave);
