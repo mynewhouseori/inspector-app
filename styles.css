@@ -3102,3 +3102,23 @@ textarea:focus {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+.room-pick.status-pending .room-pick-status {
+  color: #7f1d1d;
+}
+
+.room-pick.status-pending {
+  background: linear-gradient(180deg, #fff1f1, #fffafa);
+  border-color: rgba(127, 29, 29, 0.46);
+}
+
+.room-pick.active.status-pending {
+  background: linear-gradient(180deg, rgba(127, 29, 29, 0.18), #fff1f1);
+  border-color: rgba(127, 29, 29, 0.64);
+}
+
+.status-select.status-pending {
+  color: #7f1d1d;
+  border-color: rgba(127, 29, 29, 0.58);
+  background: linear-gradient(180deg, rgba(127, 29, 29, 0.13), rgba(255, 241, 241, 0.96));
+}
