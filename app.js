@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.report-header-date-only-1";
+const APP_VERSION = "2026.07.22.report-visible-date-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1104,6 +1104,7 @@ const els = {
   reportDocument: document.querySelector("#reportDocument"),
   reportDocTitle: document.querySelector("#reportDocTitle"),
   reportDocSubtitle: document.querySelector("#reportDocSubtitle"),
+  reportCoverInspectionDate: document.querySelector("#reportCoverInspectionDate"),
   reportCoverBadge: document.querySelector("#reportCoverBadge"),
   reportCoverMeta: document.querySelector("#reportCoverMeta"),
   printPages: document.querySelector("#printPages"),
@@ -2079,6 +2080,9 @@ function renderReportDocument(summary, issues) {
 
   els.reportDocTitle.textContent = projectTitle;
   els.reportDocSubtitle.textContent = subtitle;
+  if (els.reportCoverInspectionDate) {
+    els.reportCoverInspectionDate.textContent = `תאריך הבדיקה: ${formatGeneratedDateOnly()}`;
+  }
   els.reportCoverBadge.textContent = reportStatus;
   els.reportPageHeaderTitle.textContent = headerBrandTitle;
   els.reportPageHeaderInspector.textContent = headerBrandSubtitle;
@@ -2109,8 +2113,7 @@ function renderReportDocument(summary, issues) {
     state.clientPhone && `נייד: ${state.clientPhone}`,
     state.clientEmail && `Email: ${state.clientEmail}`,
     state.inspectorName && `בודק: ${state.inspectorName}`,
-    state.propertyAddress && `מיקום: ${state.propertyAddress}`,
-    `תאריך הבדיקה: ${formatGeneratedAt()}`
+    state.propertyAddress && `מיקום: ${state.propertyAddress}`
   ].filter(Boolean);
   els.reportCoverMeta.innerHTML = coverMetaItems.map((item) => `<span>${escapeHtml(item)}</span>`).join("");
 

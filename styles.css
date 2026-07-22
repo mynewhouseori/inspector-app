@@ -1487,6 +1487,19 @@ select {
   line-height: 1.6;
 }
 
+.report-cover-inspection-date {
+  display: inline-flex;
+  justify-content: center;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  font-weight: 800;
+}
+
 .report-cover-badge {
   padding: 10px 16px;
   border-radius: 999px;
@@ -3103,12 +3116,25 @@ textarea:focus {
   }
 
   .report-subtitle,
+  .report-cover-inspection-date,
   .report-legal-note {
     margin: 0;
     color: var(--muted);
     font-size: 12px;
     line-height: 1.3;
     text-align: center;
+  }
+
+  .report-cover-inspection-date {
+    display: inline-flex;
+    margin-top: 4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #f4f8f9;
+    color: var(--accent);
+    border: 1px solid #d8d0c4;
+    font-size: 11px;
+    font-weight: 800;
   }
 
   .report-cover-badge,
