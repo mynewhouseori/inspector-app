@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.photo-preview-preserve-1";
+const APP_VERSION = "2026.07.22.mobile-room-open-2";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1625,6 +1625,17 @@ function moveInspectionArea(direction) {
   render({ preserveScroll: false });
 }
 
+function openInspectionArea(areaId) {
+  const area = state.areas.find((item) => item.id === areaId);
+  if (!area) return;
+
+  area.selected = true;
+  state.activeInspectionAreaId = area.id;
+  saveState({ immediateCloud: true });
+  render({});
+  setScreen("inspection", { scroll: true });
+}
+
 function normalizeNumber(value) {
   if (value === "" || value === null || value === undefined) return null;
   const normalized = String(value).trim().replace(",", ".");
@@ -2949,16 +2960,13 @@ function renderRoomSelection() {
     button.querySelector(".room-pick-name").textContent = area.name;
     button.querySelector(".room-pick-type").textContent = areaTypeLabels[area.type];
     button.querySelector(".room-pick-status").textContent = progress.label;
+    button.dataset.areaId = area.id;
     button.classList.toggle("active", area.selected);
     button.classList.toggle("is-current", area.id === state.activeInspectionAreaId);
     button.classList.add(`status-${progress.key}`);
     button.classList.add(`room-${area.type}`);
     const openRoom = () => {
-      area.selected = true;
-      state.activeInspectionAreaId = area.id;
-      saveState({ immediateCloud: true });
-      render({});
-      setScreen("inspection", { scroll: true });
+      openInspectionArea(area.id);
     };
     button.addEventListener("click", openRoom);
     button.addEventListener("touchend", (event) => {
@@ -2968,6 +2976,25 @@ function renderRoomSelection() {
     els.roomsSelection.appendChild(button);
   });
   els.selectedRoomsCount.textContent = `${selectedAreas().length} חדרים`;
+}
+
+function bindRoomSelectionOpenHandler() {
+  if (!els.roomsSelection) return;
+  let handledAt = 0;
+  const handleRoomOpen = (event) => {
+    const button = event.target.closest("[data-area-id]");
+    if (!button || !els.roomsSelection.contains(button)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const now = Date.now();
+    if (now - handledAt < 450) return;
+    handledAt = now;
+    openInspectionArea(button.dataset.areaId);
+  };
+
+  els.roomsSelection.addEventListener("click", handleRoomOpen);
+  els.roomsSelection.addEventListener("pointerup", handleRoomOpen);
+  els.roomsSelection.addEventListener("touchend", handleRoomOpen, { passive: false });
 }
 
 function renderAreas() {
@@ -3358,6 +3385,7 @@ state.currentScreen = "home";
 if (!state.areas.length) state.areas = buildPresetAreas();
 updateAppVersionLabel();
 ensureReportPlaceholders();
+bindRoomSelectionOpenHandler();
 render();
 subscribeToCloudProjects();
 
