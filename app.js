@@ -514,7 +514,7 @@ function getProjectInspectionFootprint(projectLike = {}) {
   });
 
   return {
-    score: lockedAreas * 40 + photoCount * 30 + completedChecks * 10 + notedChecks * 8 + measuredValues * 3,
+    score: photoCount * 30 + completedChecks * 10 + notedChecks * 8 + measuredValues * 3,
     lockedAreas,
     completedChecks,
     notedChecks,
