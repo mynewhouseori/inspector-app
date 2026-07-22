@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.mobile-room-open-3";
+const APP_VERSION = "2026.07.22.room-select-open-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -978,6 +978,8 @@ const els = {
   navButtons: [...document.querySelectorAll(".nav-btn")],
   screens: [...document.querySelectorAll(".screen")],
   roomsSelection: document.querySelector("#roomsSelection"),
+  roomJumpSelect: document.querySelector("#roomJumpSelect"),
+  roomJumpBtn: document.querySelector("#roomJumpBtn"),
   roomChipTemplate: document.querySelector("#roomChipTemplate"),
   selectedRoomsCount: document.querySelector("#selectedRoomsCount"),
   roomsPropertyName: document.querySelector("#roomsPropertyName"),
@@ -1634,6 +1636,13 @@ function openInspectionArea(areaId) {
   saveState({ immediateCloud: true });
   render({});
   setScreen("inspection", { scroll: true });
+}
+
+function openSelectedRoomFromControl() {
+  const selectedRoomId = els.roomJumpSelect?.value || state.activeInspectionAreaId || selectedAreas()[0]?.id || state.areas[0]?.id;
+  if (selectedRoomId) {
+    openInspectionArea(selectedRoomId);
+  }
 }
 
 function normalizeNumber(value) {
@@ -2953,6 +2962,11 @@ function renderRoomSelection() {
   if (els.roomsPropertyName) {
     els.roomsPropertyName.textContent = state.propertyName ? `דירה פעילה: ${state.propertyName}` : "";
   }
+  if (els.roomJumpSelect) {
+    els.roomJumpSelect.innerHTML = state.areas.map((area) => (
+      `<option value="${escapeHtml(area.id)}" ${area.id === state.activeInspectionAreaId ? "selected" : ""}>${escapeHtml(area.name)}</option>`
+    )).join("");
+  }
   state.areas.forEach((area) => {
     const button = els.roomChipTemplate.content.firstElementChild.cloneNode(true);
     const progress = getAreaProgress(area);
@@ -3345,6 +3359,18 @@ els.backToWelcomeBtn.addEventListener("click", () => {
 
 if (els.addAreaBtn && els.areaName && els.areaType) {
   els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
+}
+
+if (els.roomJumpBtn) {
+  els.roomJumpBtn.addEventListener("click", openSelectedRoomFromControl);
+  els.roomJumpBtn.addEventListener("touchend", (event) => {
+    event.preventDefault();
+    openSelectedRoomFromControl();
+  }, { passive: false });
+}
+
+if (els.roomJumpSelect) {
+  els.roomJumpSelect.addEventListener("change", openSelectedRoomFromControl);
 }
 
 [els.propertyName, els.propertyAddress, els.inspectionDate, els.clientName, els.clientPhone, els.clientEmail, els.inspectorName, els.generalNotes].filter(Boolean).forEach((input) => {

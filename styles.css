@@ -643,6 +643,23 @@ select {
   margin-top: 12px;
 }
 
+.room-jump-control {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.room-jump-control label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.room-jump-control select {
+  min-height: 44px;
+  font-weight: 800;
+}
+
 .saved-projects-list {
   display: grid;
   gap: 10px;
