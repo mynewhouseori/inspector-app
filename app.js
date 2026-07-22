@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.general-notes-1";
+const APP_VERSION = "2026.07.22.local-photo-preserve-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -636,16 +636,25 @@ function describeProjectFootprint(projectLike = {}) {
   ].join(", ");
 }
 
-function compactProjectRecordForStorage(record) {
+function shouldKeepLocalPhotoPreview(photo = {}, keepLocalPreviews = false) {
+  return keepLocalPreviews && !photo.downloadURL && !photo.storagePath && Boolean(photo.previewDataUrl);
+}
+
+function compactPhotoForStorage(photo = {}, keepLocalPreviews = false) {
+  return {
+    ...photo,
+    previewDataUrl: shouldKeepLocalPhotoPreview(photo, keepLocalPreviews) ? photo.previewDataUrl : ""
+  };
+}
+
+function compactProjectRecordForStorage(record, options = {}) {
+  const { keepLocalPreviews = false } = options;
   if (!record) return record;
   const clone = JSON.parse(JSON.stringify(record));
   const areas = Array.isArray(clone?.data?.areas) ? clone.data.areas : [];
   areas.forEach((area) => {
     if (!Array.isArray(area.photoCaptures)) return;
-    area.photoCaptures = area.photoCaptures.map((photo) => ({
-      ...photo,
-      previewDataUrl: ""
-    }));
+    area.photoCaptures = area.photoCaptures.map((photo) => compactPhotoForStorage(photo, keepLocalPreviews));
   });
   return clone;
 }
@@ -658,10 +667,7 @@ function compactStateForStorage() {
   };
   clone.areas.forEach((area) => {
     if (!Array.isArray(area.photoCaptures)) return;
-    area.photoCaptures = area.photoCaptures.map((photo) => ({
-      ...photo,
-      previewDataUrl: ""
-    }));
+    area.photoCaptures = area.photoCaptures.map((photo) => compactPhotoForStorage(photo, true));
   });
   return clone;
 }
@@ -669,10 +675,10 @@ function compactStateForStorage() {
 function backupProjectRecordLocally(record, reason = "replace") {
   if (!record?.id || !record?.data) return;
   try {
-    const compactRecord = compactProjectRecordForStorage(record);
+    const compactRecord = compactProjectRecordForStorage(record, { keepLocalPreviews: true });
     const existingBackups = JSON.parse(localStorage.getItem(projectBackupsKey) || "[]").map((backup) => ({
       ...backup,
-      record: compactProjectRecordForStorage(backup.record)
+      record: compactProjectRecordForStorage(backup.record, { keepLocalPreviews: true })
     }));
     const signature = projectDataSignature(compactRecord.data);
     const filteredBackups = existingBackups.filter((backup) => (
@@ -2206,7 +2212,9 @@ function serializeCurrentProject() {
 }
 
 function saveProjectsLibrary() {
-  localStorage.setItem(projectsKey, JSON.stringify(state.savedProjects.map(compactProjectRecordForStorage)));
+  localStorage.setItem(projectsKey, JSON.stringify(state.savedProjects.map((project) => (
+    compactProjectRecordForStorage(project, { keepLocalPreviews: true })
+  ))));
 }
 
 function upsertSavedProjectRecord(record) {
