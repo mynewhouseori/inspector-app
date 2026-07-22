@@ -1576,9 +1576,10 @@ select {
 
 .report-area-photos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 150px));
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   align-items: start;
+  max-width: 100%;
 }
 
 .report-area-photos img {
