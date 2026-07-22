@@ -2142,7 +2142,7 @@ textarea:focus {
 .check-row {
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr) 126px;
-  grid-template-rows: auto auto;
+  grid-template-rows: auto auto auto;
   align-items: stretch;
   direction: ltr;
   padding: 0;
@@ -2159,7 +2159,7 @@ textarea:focus {
 
 .check-icon-badge {
   grid-column: 1;
-  grid-row: 1 / span 2;
+  grid-row: 1 / span 3;
   width: auto;
   height: auto;
   min-height: 100%;
@@ -2400,11 +2400,11 @@ textarea:focus {
 
 .check-photo-list {
   grid-column: 2 / 4;
-  grid-row: 2;
-  align-self: end;
-  padding: 0 8px 6px 6px;
+  grid-row: 3;
+  align-self: start;
+  padding: 0 8px 8px 6px;
   direction: rtl;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .status-cell,
@@ -3115,4 +3115,11 @@ textarea:focus {
 .room-pick.active.status-pending {
   background: linear-gradient(180deg, rgba(127, 29, 29, 0.18), #fff1f1);
   border-color: rgba(127, 29, 29, 0.64);
+}
+
+.check-row .check-photo-thumb,
+.check-row .check-photo-thumb.is-pending {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
 }

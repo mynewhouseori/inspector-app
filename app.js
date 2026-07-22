@@ -185,7 +185,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.not-checked-red-1";
+const APP_VERSION = "2026.07.22.photo-visible-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2878,7 +2878,7 @@ function renderAreas() {
             const alt = photo.checkName || check.name;
             return src
               ? `<a class="check-photo-thumb" href="${escapeHtml(src)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"></a>`
-              : `<div class="check-photo-thumb is-pending">ממתין</div>`;
+              : `<div class="check-photo-thumb is-pending" title="התמונה נשמרה, נטענת מהענן">נטען</div>`;
           }).join("")
         : "";
       cameraInput.disabled = !cameraAllowed;
