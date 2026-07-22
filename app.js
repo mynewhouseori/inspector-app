@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.photo-ghost-cleanup-1";
+const APP_VERSION = "2026.07.22.cloud-save-unblock-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -942,6 +942,29 @@ function markProjectSavedLocally(record, options = {}) {
   dedupeSavedProjectsLibrary();
   sortSavedProjectsLibrary();
   return keptRecord;
+}
+
+function writeProjectBackupToCloud(record, reason, sourceProjectId) {
+  if (!db || !record) return;
+  const backupRecord = compactProjectRecordForStorage(record, { keepLocalPreviews: false });
+  setDoc(doc(db, PROJECT_BACKUPS_COLLECTION, `${backupRecord.id}_${Date.now()}`), {
+    ...backupRecord,
+    backedUpAt: new Date().toISOString(),
+    backupReason: reason,
+    sourceProjectId: sourceProjectId || backupRecord.id
+  }).catch((error) => {
+    console.error(error);
+  });
+}
+
+function withTimeout(promise, ms, message) {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    window.clearTimeout(timeoutId);
+  });
 }
 
 const state = {
@@ -2422,16 +2445,7 @@ async function saveProjectRecordToCloud(record, options = {}) {
   if (recordToSave !== normalizedRecord) {
     if (existingRecord && projectDataSignature(existingRecord.data) !== projectDataSignature(recordToSave.data)) {
       backupProjectRecordLocally(existingRecord, "cloud-before-protected-merge");
-      try {
-        await setDoc(doc(db, PROJECT_BACKUPS_COLLECTION, `${normalizedRecord.id}_${Date.now()}`), {
-          ...existingRecord,
-          backedUpAt: new Date().toISOString(),
-          backupReason: "cloud-before-protected-merge",
-          sourceProjectId: normalizedRecord.id
-        });
-      } catch (error) {
-        console.error(error);
-      }
+      writeProjectBackupToCloud(existingRecord, "cloud-before-protected-merge", normalizedRecord.id);
       await setDoc(projectRef, recordToSave);
     }
     upsertSavedProjectRecord(recordToSave);
@@ -2442,30 +2456,12 @@ async function saveProjectRecordToCloud(record, options = {}) {
 
   if (existingRecord && projectDataSignature(existingRecord.data) !== projectDataSignature(normalizedRecord.data)) {
     backupProjectRecordLocally(existingRecord, "cloud-before-overwrite");
-    try {
-      await setDoc(doc(db, PROJECT_BACKUPS_COLLECTION, `${normalizedRecord.id}_${Date.now()}`), {
-        ...existingRecord,
-        backedUpAt: new Date().toISOString(),
-        backupReason: "cloud-before-overwrite",
-        sourceProjectId: normalizedRecord.id
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    writeProjectBackupToCloud(existingRecord, "cloud-before-overwrite", normalizedRecord.id);
   }
 
   await setDoc(projectRef, normalizedRecord);
   if (hasProjectDraftContent(normalizedRecord)) {
-    try {
-      await setDoc(doc(db, PROJECT_BACKUPS_COLLECTION, `${normalizedRecord.id}_${Date.now()}`), {
-        ...normalizedRecord,
-        backedUpAt: new Date().toISOString(),
-        backupReason: "saved-version",
-        sourceProjectId: normalizedRecord.id
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    writeProjectBackupToCloud(normalizedRecord, "saved-version", normalizedRecord.id);
   }
   return normalizedRecord;
 }
@@ -2568,7 +2564,11 @@ function queueCloudSync() {
       updateProjectFields();
       const record = buildProjectRecord(state.currentProjectId);
       if (state.inspectionMode === "owner" && !hasProjectDraftContent(record)) return;
-      const savedRecord = await saveProjectRecordToCloud(record);
+      const savedRecord = await withTimeout(
+        saveProjectRecordToCloud(record),
+        20000,
+        "Cloud save timed out"
+      );
       state.currentProjectId = savedRecord?.id || record.id;
       lastCloudAppliedAt = savedRecord?.updatedAtMs || record.updatedAtMs;
       if (!savedRecord?.protectedFromOverwrite) {
@@ -2927,7 +2927,11 @@ function persistProjectRecordImmediately(record, options = {}) {
   clearTimeout(cloudSyncTimer);
   pendingCloudSync = false;
   lastCloudAppliedAt = record.updatedAtMs;
-  saveProjectRecordToCloud(record, { forceOverwrite })
+  withTimeout(
+    saveProjectRecordToCloud(record, { forceOverwrite }),
+    20000,
+    "Cloud save timed out"
+  )
     .then((savedRecord) => {
       if (savedRecord) {
         state.currentProjectId = savedRecord.id;
