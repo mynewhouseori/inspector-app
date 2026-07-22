@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.report-signatures-1";
+const APP_VERSION = "2026.07.22.report-inspection-date-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2089,7 +2089,7 @@ function renderReportDocument(summary, issues) {
   els.reportPageHeaderStatus.textContent = reportStatus;
   els.reportPageHeaderDate.textContent = formatGeneratedDateOnly();
   if (els.reportInlineDate) {
-    els.reportInlineDate.textContent = `תאריך הפקה: ${formatGeneratedAt()}`;
+    els.reportInlineDate.textContent = `תאריך הבדיקה: ${formatGeneratedAt()}`;
   }
 
   if (els.reportIntroTitle && els.reportIntroBlock) {
@@ -2114,7 +2114,7 @@ function renderReportDocument(summary, issues) {
     state.clientEmail && `Email: ${state.clientEmail}`,
     state.inspectorName && `בודק: ${state.inspectorName}`,
     state.propertyAddress && `מיקום: ${state.propertyAddress}`,
-    `תאריך הפקה: ${formatGeneratedAt()}`
+    `תאריך הבדיקה: ${formatGeneratedAt()}`
   ].filter(Boolean);
   els.reportCoverMeta.innerHTML = coverMetaItems.map((item) => `<span>${escapeHtml(item)}</span>`).join("");
 
