@@ -313,6 +313,10 @@ textarea {
 }
 
 .owner-apartment-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
   min-height: 0;
   padding: 10px 12px;
   border: 1px solid transparent;
@@ -347,6 +351,13 @@ textarea {
     linear-gradient(160deg, rgba(255, 251, 247, 0.99), rgba(246, 217, 192, 0.98));
 }
 
+.owner-apartment-copy {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  min-width: 0;
+}
+
 .owner-apartment-card strong {
   display: block;
   margin: 0;
@@ -355,7 +366,7 @@ textarea {
 }
 
 .owner-apartment-status {
-  justify-self: start;
+  justify-self: end;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -367,6 +378,12 @@ textarea {
   font-size: 11px;
   font-weight: 800;
   box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+}
+
+.owner-apartment-status.status-saved {
+  background: #475569;
+  border-color: rgba(71, 85, 105, 0.72);
+  box-shadow: 0 6px 14px rgba(71, 85, 105, 0.18);
 }
 
 .owner-apartment-status::before {
@@ -538,6 +555,7 @@ select {
 
 .primary-btn,
 .ghost-btn,
+.restore-btn,
 .delete-btn,
 .room-pick,
 .nav-btn {
@@ -549,6 +567,7 @@ select {
 
 .primary-btn:hover,
 .ghost-btn:hover,
+.restore-btn:hover,
 .delete-btn:hover,
 .room-pick:hover,
 .nav-btn:hover {
@@ -556,7 +575,8 @@ select {
 }
 
 .primary-btn,
-.ghost-btn {
+.ghost-btn,
+.restore-btn {
   padding: 12px 14px;
 }
 
@@ -589,6 +609,14 @@ select {
   background: linear-gradient(135deg, rgba(194, 120, 79, 0.14), rgba(194, 120, 79, 0.24));
   color: #8a5535;
   border: 1px solid rgba(194, 120, 79, 0.34);
+}
+
+.restore-btn {
+  margin-top: 8px;
+  background: linear-gradient(135deg, rgba(209, 124, 34, 0.14), rgba(209, 124, 34, 0.24));
+  color: #8a4d12;
+  border: 1px solid rgba(209, 124, 34, 0.38);
+  font-weight: 700;
 }
 
 .full-width {
@@ -654,6 +682,7 @@ select {
 }
 
 .saved-project-actions .ghost-btn,
+.saved-project-actions .restore-btn,
 .saved-project-actions .delete-btn {
   flex: 1;
 }

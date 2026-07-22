@@ -5,6 +5,7 @@ import {
   doc,
   setDoc,
   deleteDoc,
+  getDoc,
   getDocs,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
@@ -100,14 +101,13 @@ const defaultAreaPreset = [
   "חדר שינה 02",
   "חדר שינה 03",
   "חדר שינה 04",
-  "רחצה הורים",
+  "רחצה",
   "רחצה כללי",
   "מבואה 01",
   "מבואה 02",
   "מרפסת שרות",
   "סלון",
   "מטבח",
-  "ש.אורחים",
   "ממד",
   "מרפסת",
   "חלל 05",
@@ -119,17 +119,25 @@ const defaultAreaPreset = [
 const ownerAreaPreset = [
   "חדר שינה 01",
   "חדר שינה 02",
-  "חדר שינה 03",
-  "רחצה הורים",
-  "רחצה כללי",
+  "רחצה",
   "מבואה 01",
   "מטבח",
-  "סלון",
   "מרפסת שרות",
   "מרפסת",
   "ממד",
-  "ש.אורחים"
 ];
+
+const removedAreaNames = new Set(["ש.אורחים", "שירותי אורחים"]);
+
+function normalizeAreaName(name = "") {
+  const trimmedName = String(name || "").trim();
+  if (trimmedName === "רחצה הורים") return "רחצה";
+  return trimmedName;
+}
+
+function isRemovedAreaName(name = "") {
+  return removedAreaNames.has(normalizeAreaName(name));
+}
 
 const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5", "7.1.3"]);
 const SETTINGS = window.APP_CONFIG || window.DEFAULT_APP_CONFIG || {};
@@ -138,6 +146,8 @@ const firebaseApp = hasFirebaseConfig ? initializeApp(SETTINGS.firebase) : null;
 const db = firebaseApp ? getFirestore(firebaseApp) : null;
 const storage = firebaseApp ? getStorage(firebaseApp) : null;
 const PROJECTS_COLLECTION = SETTINGS?.firestoreCollections?.projects || "inspector_projects";
+const PROJECT_BACKUPS_COLLECTION = `${PROJECTS_COLLECTION}_backups`;
+const PROJECT_DELETIONS_COLLECTION = `${PROJECTS_COLLECTION}_deletions`;
 
 let projectsUnsubscribe = null;
 let cloudSyncTimer = null;
@@ -174,7 +184,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.11.173";
+const APP_VERSION = "2026.07.22.safe-restore-6";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -226,8 +236,7 @@ function hasInspectionData(projectData) {
     area?.locked
     || (Array.isArray(area?.photoCaptures) && area.photoCaptures.length > 0)
     || (Array.isArray(area?.checks) && area.checks.some((check) => (
-      check?.status === "ok"
-      || check?.status === "issue"
+      (check?.status && check.status !== "pending")
       || String(check?.note || "").trim()
     )))
   ));
@@ -236,6 +245,13 @@ function hasInspectionData(projectData) {
 function isOwnerApartmentInspected(apartmentName) {
   const project = getOwnerApartmentSavedProject(apartmentName);
   return hasInspectionData(project?.data);
+}
+
+function getOwnerApartmentCardStatus(apartmentName) {
+  const project = getOwnerApartmentSavedProject(apartmentName);
+  if (!project?.data) return { key: "empty", label: "" };
+  if (hasInspectionData(project.data)) return { key: "inspected", label: "נבדקה" };
+  return { key: "saved", label: "שמורה" };
 }
 
 const AREA_ICON_MARKUP = {
@@ -476,29 +492,345 @@ function getCanonicalProjectId(projectLike = {}) {
   return projectLike?.id || null;
 }
 
+function getProjectInspectionFootprint(projectLike = {}) {
+  const data = projectLike?.data || projectLike || {};
+  const areas = Array.isArray(data.areas) ? data.areas : [];
+  let lockedAreas = 0;
+  let completedChecks = 0;
+  let notedChecks = 0;
+  let photoCount = 0;
+  let measuredValues = 0;
+
+  areas.forEach((area) => {
+    if (area?.locked) lockedAreas += 1;
+    photoCount += Array.isArray(area?.photoCaptures) ? area.photoCaptures.length : 0;
+    (Array.isArray(area?.checks) ? area.checks : []).forEach((check) => {
+      if (check?.status && check.status !== "pending") completedChecks += 1;
+      if (String(check?.note || "").trim()) notedChecks += 1;
+    });
+    Object.values(area?.dimensions || {}).forEach((value) => {
+      if (String(value || "").trim()) measuredValues += 1;
+    });
+  });
+
+  return {
+    score: lockedAreas * 40 + photoCount * 30 + completedChecks * 10 + notedChecks * 8 + measuredValues * 3,
+    lockedAreas,
+    completedChecks,
+    notedChecks,
+    photoCount,
+    measuredValues
+  };
+}
+
+function chooseProjectRecordToKeep(existingRecord, candidateRecord) {
+  if (!existingRecord) return candidateRecord;
+  if (!candidateRecord) return existingRecord;
+
+  const existingFootprint = getProjectInspectionFootprint(existingRecord);
+  const candidateFootprint = getProjectInspectionFootprint(candidateRecord);
+
+  if (existingFootprint.score > candidateFootprint.score) return existingRecord;
+  if (candidateFootprint.score > existingFootprint.score) return candidateRecord;
+  return (candidateRecord.updatedAtMs || 0) >= (existingRecord.updatedAtMs || 0) ? candidateRecord : existingRecord;
+}
+
 function dedupeProjectRecords(projects = []) {
-  const sortedProjects = [...projects].sort((a, b) => (b?.updatedAtMs || 0) - (a?.updatedAtMs || 0));
-  const seenProjectIds = new Set();
-  const dedupedProjects = [];
+  const projectsById = new Map();
   const duplicateProjects = [];
 
-  sortedProjects.forEach((project) => {
+  projects.forEach((project) => {
     const canonicalId = getCanonicalProjectId(project);
     const dedupeKey = canonicalId || project?.id;
     if (!dedupeKey) return;
 
-    if (seenProjectIds.has(dedupeKey)) {
-      duplicateProjects.push(project);
-      return;
-    }
-
-    seenProjectIds.add(dedupeKey);
     const normalizedProject = normalizeProjectRecord({ ...project, id: canonicalId || project.id });
     if (!normalizedProject) return;
-    dedupedProjects.push(normalizedProject);
+    if (isProjectDeletedLocally(normalizedProject)) return;
+
+    const existingProject = projectsById.get(dedupeKey);
+    const projectToKeep = chooseProjectRecordToKeep(existingProject, normalizedProject);
+    if (existingProject) {
+      duplicateProjects.push(projectToKeep === existingProject ? normalizedProject : existingProject);
+    }
+    projectsById.set(dedupeKey, projectToKeep);
+  });
+
+  const dedupedProjects = [...projectsById.values()].sort((a, b) => {
+    const footprintDelta = getProjectInspectionFootprint(b).score - getProjectInspectionFootprint(a).score;
+    if (footprintDelta) return footprintDelta;
+    return (b?.updatedAtMs || 0) - (a?.updatedAtMs || 0);
   });
 
   return { dedupedProjects, duplicateProjects };
+}
+
+function hasProjectInspectionData(projectLike = {}) {
+  return getProjectInspectionFootprint(projectLike).score > 0;
+}
+
+function hasProjectDraftContent(projectLike = {}) {
+  const data = projectLike?.data || projectLike || {};
+  return (
+    hasProjectInspectionData(projectLike)
+    || Boolean(String(data.clientName || "").trim())
+    || Boolean(String(data.clientPhone || "").trim())
+    || Boolean(String(data.clientEmail || "").trim())
+    || Boolean(String(data.inspectorName || "").trim())
+  );
+}
+
+function shouldProtectExistingProject(existingRecord, candidateRecord) {
+  if (!existingRecord || !candidateRecord) return false;
+  return getProjectInspectionFootprint(existingRecord).score > getProjectInspectionFootprint(candidateRecord).score;
+}
+
+function describeProjectFootprint(projectLike = {}) {
+  const footprint = getProjectInspectionFootprint(projectLike);
+  return [
+    `${footprint.completedChecks} בדיקות`,
+    `${footprint.notedChecks} הערות`,
+    `${footprint.photoCount} תמונות`,
+    `${footprint.lockedAreas} חדרים נעולים`
+  ].join(", ");
+}
+
+function compactProjectRecordForStorage(record) {
+  if (!record) return record;
+  const clone = JSON.parse(JSON.stringify(record));
+  const areas = Array.isArray(clone?.data?.areas) ? clone.data.areas : [];
+  areas.forEach((area) => {
+    if (!Array.isArray(area.photoCaptures)) return;
+    area.photoCaptures = area.photoCaptures.map((photo) => ({
+      ...photo,
+      previewDataUrl: ""
+    }));
+  });
+  return clone;
+}
+
+function compactStateForStorage() {
+  const clone = {
+    ...state,
+    areas: JSON.parse(JSON.stringify(state.areas)),
+    savedProjects: state.savedProjects.map(compactProjectRecordForStorage)
+  };
+  clone.areas.forEach((area) => {
+    if (!Array.isArray(area.photoCaptures)) return;
+    area.photoCaptures = area.photoCaptures.map((photo) => ({
+      ...photo,
+      previewDataUrl: ""
+    }));
+  });
+  return clone;
+}
+
+function backupProjectRecordLocally(record, reason = "replace") {
+  if (!record?.id || !record?.data) return;
+  try {
+    const compactRecord = compactProjectRecordForStorage(record);
+    const existingBackups = JSON.parse(localStorage.getItem(projectBackupsKey) || "[]").map((backup) => ({
+      ...backup,
+      record: compactProjectRecordForStorage(backup.record)
+    }));
+    const signature = projectDataSignature(compactRecord.data);
+    const filteredBackups = existingBackups.filter((backup) => (
+      backup?.projectId !== compactRecord.id
+      || projectDataSignature(backup?.record?.data || {}) !== signature
+    ));
+    filteredBackups.unshift({
+      backedUpAt: new Date().toISOString(),
+      reason,
+      projectId: compactRecord.id,
+      title: compactRecord.data.propertyName || compactRecord.title || compactRecord.id,
+      footprint: getProjectInspectionFootprint(compactRecord),
+      record: compactRecord
+    });
+    localStorage.setItem(projectBackupsKey, JSON.stringify(filteredBackups.slice(0, 20)));
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function readProjectBackups() {
+  try {
+    return JSON.parse(localStorage.getItem(projectBackupsKey) || "[]").filter((backup) => backup?.record?.id);
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+function getLatestProjectBackup(projectId) {
+  const canonicalId = getCanonicalProjectId({ id: projectId }) || projectId;
+  return readProjectBackups().find((backup) => {
+    const backupId = getCanonicalProjectId(backup.record) || backup.record.id;
+    return backupId === canonicalId;
+  });
+}
+
+function hasProjectBackup(projectId) {
+  return Boolean(getLatestProjectBackup(projectId));
+}
+
+function backupProjectSnapshot(record, reason = "snapshot") {
+  if (!record?.id || !record?.data || !hasProjectDraftContent(record)) return;
+  backupProjectRecordLocally(record, reason);
+}
+
+function backupSavedProjectSnapshots(reason = "library-snapshot") {
+  state.savedProjects.forEach((project) => backupProjectSnapshot(project, reason));
+}
+
+function readProjectDeletionMarkers() {
+  try {
+    return JSON.parse(localStorage.getItem(projectDeletionsKey) || "{}");
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+}
+
+function writeProjectDeletionMarkers(markers) {
+  localStorage.setItem(projectDeletionsKey, JSON.stringify(markers));
+}
+
+function markProjectDeletedLocally(project) {
+  const projectId = getCanonicalProjectId(project) || project?.id;
+  if (!projectId) return null;
+  const marker = {
+    id: projectId,
+    title: project?.data?.propertyName || project?.title || projectId,
+    deletedAt: new Date().toISOString(),
+    deletedAtMs: Date.now()
+  };
+  const markers = readProjectDeletionMarkers();
+  markers[projectId] = marker;
+  writeProjectDeletionMarkers(markers);
+  return marker;
+}
+
+function clearProjectDeletionMarker(projectId) {
+  const canonicalId = getCanonicalProjectId({ id: projectId }) || projectId;
+  const markers = readProjectDeletionMarkers();
+  delete markers[canonicalId];
+  writeProjectDeletionMarkers(markers);
+}
+
+function isProjectDeletedLocally(project) {
+  const projectId = getCanonicalProjectId(project) || project?.id;
+  if (!projectId) return false;
+  const marker = readProjectDeletionMarkers()[projectId];
+  if (!marker) return false;
+  return Number(marker.deletedAtMs || 0) >= Number(project?.updatedAtMs || 0);
+}
+
+function isProjectDeletedByMarkers(project, markers = readProjectDeletionMarkers()) {
+  const projectId = getCanonicalProjectId(project) || project?.id;
+  if (!projectId) return false;
+  const marker = markers[projectId];
+  if (!marker) return false;
+  return Number(marker.deletedAtMs || 0) >= Number(project?.updatedAtMs || 0);
+}
+
+async function getMergedDeletionMarkersFromCloud() {
+  const markers = readProjectDeletionMarkers();
+  if (!db) return markers;
+  try {
+    const snapshot = await getDocs(collection(db, PROJECT_DELETIONS_COLLECTION));
+    snapshot.docs.forEach((item) => {
+      const marker = { id: item.id, ...item.data() };
+      const existing = markers[item.id];
+      if (!existing || Number(marker.deletedAtMs || 0) > Number(existing.deletedAtMs || 0)) {
+        markers[item.id] = marker;
+      }
+    });
+    writeProjectDeletionMarkers(markers);
+  } catch (error) {
+    console.error(error);
+  }
+  return markers;
+}
+
+function mergeProjectRecordIntoLibrary(record) {
+  const canonicalRecordId = getCanonicalProjectId(record) || record.id;
+  const normalizedRecord = normalizeProjectRecord({ ...record, id: canonicalRecordId });
+  if (!normalizedRecord) return null;
+  if (isProjectDeletedLocally(normalizedRecord)) return null;
+
+  const existingIndex = state.savedProjects.findIndex((project) => (
+    (getCanonicalProjectId(project) || project.id) === normalizedRecord.id
+  ));
+  if (existingIndex >= 0) {
+    const projectToKeep = chooseProjectRecordToKeep(state.savedProjects[existingIndex], normalizedRecord);
+    if (projectDataSignature(state.savedProjects[existingIndex].data) !== projectDataSignature(projectToKeep.data)) {
+      backupProjectRecordLocally(state.savedProjects[existingIndex], "local-library-replace");
+    }
+    state.savedProjects[existingIndex] = projectToKeep;
+    backupProjectSnapshot(projectToKeep, "local-current-version");
+    return projectToKeep;
+  }
+
+  state.savedProjects.unshift(normalizedRecord);
+  backupProjectSnapshot(normalizedRecord, "local-current-version");
+  return normalizedRecord;
+}
+
+function sortSavedProjectsLibrary() {
+  state.savedProjects.sort((a, b) => {
+    const footprintDelta = getProjectInspectionFootprint(b).score - getProjectInspectionFootprint(a).score;
+    if (footprintDelta) return footprintDelta;
+    return (b.updatedAtMs || 0) - (a.updatedAtMs || 0);
+  });
+}
+
+function dedupeSavedProjectsLibrary() {
+  const { dedupedProjects } = dedupeProjectRecords(state.savedProjects);
+  state.savedProjects = dedupedProjects;
+}
+
+function updateCurrentProjectFromProtectedRecord(record) {
+  if (!record?.data || record.id !== state.currentProjectId) return;
+  isApplyingCloudProject = true;
+  try {
+    applyProjectData(record.data);
+    lastCloudAppliedAt = record.updatedAtMs || Date.now();
+    render({ preserveScroll: false });
+  } finally {
+    isApplyingCloudProject = false;
+  }
+}
+
+function warnProtectedProjectOverwrite(existingRecord, candidateRecord) {
+  const title = existingRecord?.data?.propertyName || existingRecord?.title || "הבדיקה הקיימת";
+  updateCloudStatus(`שמירה ריקה לא דרסה את ${title}.`, "warn");
+  console.warn(
+    "Protected an existing inspection from being overwritten by a smaller draft.",
+    {
+      existing: describeProjectFootprint(existingRecord),
+      candidate: describeProjectFootprint(candidateRecord)
+    }
+  );
+}
+
+/*
+ * Owner inspections often happen on mobile in the field. These guards keep a
+ * late empty draft or stale tab from replacing a record that already has work.
+ */
+function keepRicherProjectRecord(existingRecord, candidateRecord) {
+  if (shouldProtectExistingProject(existingRecord, candidateRecord)) {
+    warnProtectedProjectOverwrite(existingRecord, candidateRecord);
+    return existingRecord;
+  }
+
+  return candidateRecord || existingRecord;
+}
+
+function markProjectSavedLocally(record) {
+  const keptRecord = mergeProjectRecordIntoLibrary(record);
+  dedupeSavedProjectsLibrary();
+  sortSavedProjectsLibrary();
+  return keptRecord;
 }
 
 const state = {
@@ -519,6 +851,8 @@ const state = {
 
 const storageKey = "inspector-mobile-state-v2";
 const projectsKey = "inspector-mobile-projects-v1";
+const projectBackupsKey = "inspector-mobile-project-backups-v1";
+const projectDeletionsKey = "inspector-mobile-project-deletions-v1";
 
 const els = {
   welcomeTitle: document.querySelector("#welcomeTitle"),
@@ -530,6 +864,7 @@ const els = {
   clientNameLabel: document.querySelector("#clientNameLabel"),
   inspectorNameField: document.querySelector("#inspectorNameField"),
   welcomeNavBtn: document.querySelector("#welcomeNavBtn"),
+  restoreLatestBackupBtn: document.querySelector("#restoreLatestBackupBtn"),
   propertyName: document.querySelector("#propertyName"),
   propertyAddress: document.querySelector("#propertyAddress"),
   inspectionDate: document.querySelector("#inspectionDate"),
@@ -658,6 +993,7 @@ function hydrateArea(area) {
 
   return {
     ...area,
+    name: normalizeAreaName(area.name),
     selected: area.selected !== false,
     locked: area.locked === true,
     checks: mergeChecksWithDefaults(areaChecks, expectedChecks),
@@ -672,12 +1008,16 @@ function hydrateArea(area) {
 }
 
 function normalizeAreasForMode(areas = [], mode = state.inspectionMode) {
+  const activeAreas = (Array.isArray(areas) ? areas : []).filter((area) => !isRemovedAreaName(area?.name));
   if (mode !== "owner") {
-    return Array.isArray(areas) ? areas.map((area) => hydrateArea(area)) : buildPresetAreas(mode);
+    return Array.isArray(areas) ? activeAreas.map((area) => hydrateArea(area)) : buildPresetAreas(mode);
   }
 
   const existingByName = new Map(
-    (Array.isArray(areas) ? areas : []).map((area) => [area.name, hydrateArea(area)])
+    activeAreas.map((area) => {
+      const hydratedArea = hydrateArea(area);
+      return [hydratedArea.name, hydratedArea];
+    })
   );
 
   return ownerAreaPreset.map((name) => existingByName.get(name) || createArea(name, inferAreaType(name), true));
@@ -736,10 +1076,14 @@ function updateWelcomeFormMode() {
     els.clientName.placeholder = isOwnerMode ? "הזן שם דייר" : "הזן שם לקוח";
   }
   if (els.welcomeNavBtn) {
-    els.welcomeNavBtn.hidden = isOwnerMode;
+    els.welcomeNavBtn.hidden = false;
+    els.welcomeNavBtn.textContent = isOwnerMode ? "המשך לחדרי הדירה" : "המשך לחדרים";
   }
   if (els.newProjectBtn) {
     els.newProjectBtn.hidden = isOwnerMode;
+  }
+  if (els.restoreLatestBackupBtn) {
+    els.restoreLatestBackupBtn.hidden = !state.currentProjectId || !hasProjectBackup(state.currentProjectId);
   }
 }
 
@@ -1781,22 +2125,11 @@ function serializeCurrentProject() {
 }
 
 function saveProjectsLibrary() {
-  localStorage.setItem(projectsKey, JSON.stringify(state.savedProjects));
+  localStorage.setItem(projectsKey, JSON.stringify(state.savedProjects.map(compactProjectRecordForStorage)));
 }
 
 function upsertSavedProjectRecord(record) {
-  const canonicalRecordId = getCanonicalProjectId(record) || record.id;
-  const normalizedRecord = normalizeProjectRecord({ ...record, id: canonicalRecordId });
-  if (!normalizedRecord) return;
-  const existingIndex = state.savedProjects.findIndex((project) => (
-    (getCanonicalProjectId(project) || project.id) === normalizedRecord.id
-  ));
-  if (existingIndex >= 0) {
-    state.savedProjects[existingIndex] = normalizedRecord;
-  } else {
-    state.savedProjects.unshift(normalizedRecord);
-  }
-  state.savedProjects.sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
+  markProjectSavedLocally(record);
 }
 
 function buildProjectRecord(projectId = getCanonicalProjectId({
@@ -1819,6 +2152,8 @@ function buildProjectRecord(projectId = getCanonicalProjectId({
 function syncCurrentProjectDraft() {
   if (!state.currentProjectId) return null;
   const record = buildProjectRecord(state.currentProjectId);
+  if (state.inspectionMode === "owner" && !hasProjectDraftContent(record)) return null;
+  clearProjectDeletionMarker(record.id);
   upsertSavedProjectRecord(record);
   saveProjectsLibrary();
   return record;
@@ -1826,7 +2161,50 @@ function syncCurrentProjectDraft() {
 
 async function saveProjectRecordToCloud(record) {
   if (!db) return;
-  await setDoc(doc(db, PROJECTS_COLLECTION, record.id), record);
+  const normalizedRecord = compactProjectRecordForStorage(normalizeProjectRecord(record) || record);
+  if (isProjectDeletedLocally(normalizedRecord)) return null;
+  const projectRef = doc(db, PROJECTS_COLLECTION, normalizedRecord.id);
+  const existingSnapshot = await getDoc(projectRef);
+  const existingRecord = existingSnapshot.exists()
+    ? normalizeProjectRecord({ id: existingSnapshot.id, rawCloudId: existingSnapshot.id, ...existingSnapshot.data() })
+    : null;
+  const recordToSave = keepRicherProjectRecord(existingRecord, normalizedRecord);
+
+  if (recordToSave !== normalizedRecord) {
+    upsertSavedProjectRecord(recordToSave);
+    saveProjectsLibrary();
+    updateCurrentProjectFromProtectedRecord(recordToSave);
+    return { ...recordToSave, protectedFromOverwrite: true };
+  }
+
+  if (existingRecord && projectDataSignature(existingRecord.data) !== projectDataSignature(normalizedRecord.data)) {
+    backupProjectRecordLocally(existingRecord, "cloud-before-overwrite");
+    try {
+      await setDoc(doc(db, PROJECT_BACKUPS_COLLECTION, `${normalizedRecord.id}_${Date.now()}`), {
+        ...existingRecord,
+        backedUpAt: new Date().toISOString(),
+        backupReason: "cloud-before-overwrite",
+        sourceProjectId: normalizedRecord.id
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  await setDoc(projectRef, normalizedRecord);
+  if (hasProjectDraftContent(normalizedRecord)) {
+    try {
+      await setDoc(doc(db, PROJECT_BACKUPS_COLLECTION, `${normalizedRecord.id}_${Date.now()}`), {
+        ...normalizedRecord,
+        backedUpAt: new Date().toISOString(),
+        backupReason: "saved-version",
+        sourceProjectId: normalizedRecord.id
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  return normalizedRecord;
 }
 
 async function cleanupDuplicateOwnerProjects(duplicateProjects = []) {
@@ -1880,7 +2258,9 @@ function normalizeProjectRecord(project) {
     updatedAtMs: Number(project.updatedAtMs || 0),
     data: {
       ...project.data,
-      areas: Array.isArray(project.data.areas) ? project.data.areas.map((area) => hydrateArea(area)) : buildPresetAreas()
+      areas: Array.isArray(project.data.areas)
+        ? normalizeAreasForMode(project.data.areas, project.data.inspectionMode || state.inspectionMode)
+        : buildPresetAreas(project.data.inspectionMode || state.inspectionMode)
     }
   };
 }
@@ -1889,11 +2269,23 @@ async function bootstrapCloudProjects(localProjects = []) {
   if (!db || hasBootstrappedCloud) return;
   hasBootstrappedCloud = true;
   try {
+    const deletionMarkers = await getMergedDeletionMarkersFromCloud();
     const cloudSnapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
-    const cloudIds = new Set(cloudSnapshot.docs.map((item) => item.id));
-    const missingLocalProjects = localProjects.filter((project) => project?.id && !cloudIds.has(project.id));
-    for (const project of missingLocalProjects) {
-      await saveProjectRecordToCloud(normalizeProjectRecord(project) || project);
+    const cloudProjectsById = new Map(
+      cloudSnapshot.docs
+        .map((item) => normalizeProjectRecord({ id: item.id, rawCloudId: item.id, ...item.data() }))
+        .filter((project) => !isProjectDeletedByMarkers(project, deletionMarkers))
+        .filter(Boolean)
+        .map((project) => [project.id, project])
+    );
+    for (const project of localProjects) {
+      const normalizedProject = normalizeProjectRecord(project);
+      if (!normalizedProject?.id) continue;
+      if (isProjectDeletedByMarkers(normalizedProject, deletionMarkers)) continue;
+      const cloudProject = cloudProjectsById.get(normalizedProject.id);
+      if (!cloudProject || getProjectInspectionFootprint(normalizedProject).score > getProjectInspectionFootprint(cloudProject).score) {
+        await saveProjectRecordToCloud(normalizedProject);
+      }
     }
   } catch (error) {
     updateCloudStatus("הסנכרון לענן זמין חלקית. אפשר להמשיך לעבוד ולשמור ידנית.", "warn");
@@ -1912,10 +2304,13 @@ function queueCloudSync() {
     try {
       updateProjectFields();
       const record = buildProjectRecord(state.currentProjectId);
-      await saveProjectRecordToCloud(record);
-      state.currentProjectId = record.id;
-      lastCloudAppliedAt = record.updatedAtMs;
-      updateCloudStatus("הבדיקה מסונכרנת לענן בין מחשב לנייד.", "ok");
+      if (state.inspectionMode === "owner" && !hasProjectDraftContent(record)) return;
+      const savedRecord = await saveProjectRecordToCloud(record);
+      state.currentProjectId = savedRecord?.id || record.id;
+      lastCloudAppliedAt = savedRecord?.updatedAtMs || record.updatedAtMs;
+      if (!savedRecord?.protectedFromOverwrite) {
+        updateCloudStatus("הבדיקה מסונכרנת לענן בין מחשב לנייד.", "ok");
+      }
     } catch (error) {
       updateCloudStatus("שמירה מקומית פועלת, אבל הסנכרון לענן נכשל כרגע.", "error");
       console.error(error);
@@ -1935,11 +2330,17 @@ function subscribeToCloudProjects() {
   projectsUnsubscribe = onSnapshot(
     collection(db, PROJECTS_COLLECTION),
     async (snapshot) => {
+      const deletionMarkers = await getMergedDeletionMarkersFromCloud();
       const incomingProjects = snapshot.docs
         .map((item) => normalizeProjectRecord({ id: item.id, rawCloudId: item.id, ...item.data() }))
+        .filter((project) => !isProjectDeletedByMarkers(project, deletionMarkers))
         .filter(Boolean);
-      const { dedupedProjects, duplicateProjects } = dedupeProjectRecords(incomingProjects);
+      const { dedupedProjects, duplicateProjects } = dedupeProjectRecords([
+        ...state.savedProjects,
+        ...incomingProjects
+      ]);
       state.savedProjects = dedupedProjects;
+      backupSavedProjectSnapshots("cloud-library-snapshot");
       saveProjectsLibrary();
       renderSavedProjects();
       updateCloudStatus("סנכרון ענן פעיל. אותם פרויקטים זמינים במחשב ובנייד.", "ok");
@@ -1982,14 +2383,22 @@ async function saveCurrentProject() {
   }) || state.currentProjectId || uid();
   const record = buildProjectRecord(id);
 
+  if (state.inspectionMode === "owner" && !hasProjectDraftContent(record)) {
+    window.alert("אין עדיין נתוני בדיקה לשמירה בדירת הבעלים. סמן בדיקה, הוסף הערה, תמונה או פרטי דייר ואז שמור.");
+    return false;
+  }
+
+  clearProjectDeletionMarker(id);
   state.currentProjectId = id;
   upsertSavedProjectRecord(record);
   saveProjectsLibrary();
   saveState();
   try {
-    await saveProjectRecordToCloud(record);
-    lastCloudAppliedAt = record.updatedAtMs;
-    updateCloudStatus("הבדיקה נשמרה בענן וזמינה גם במחשב וגם בנייד.", "ok");
+    const savedRecord = await saveProjectRecordToCloud(record);
+    lastCloudAppliedAt = savedRecord?.updatedAtMs || record.updatedAtMs;
+    if (!savedRecord?.protectedFromOverwrite) {
+      updateCloudStatus("הבדיקה נשמרה בענן וזמינה גם במחשב וגם בנייד.", "ok");
+    }
   } catch (error) {
     updateCloudStatus("הבדיקה נשמרה מקומית, אבל לא הועלתה לענן.", "error");
     console.error(error);
@@ -2014,6 +2423,54 @@ function loadProject(projectId) {
   setScreen(targetScreen, { scroll: true });
 }
 
+async function restoreProjectBackup(projectId = state.currentProjectId) {
+  const backup = getLatestProjectBackup(projectId);
+  if (!backup?.record?.data) {
+    window.alert("לא נמצא גיבוי לשחזור בדירה הזו.");
+    return false;
+  }
+
+  const backupTitle = backup.title || backup.record.data.propertyName || backup.record.title || "הגיבוי";
+  const backupTime = backup.backedUpAt
+    ? new Date(backup.backedUpAt).toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })
+    : "ללא תאריך";
+  const confirmed = window.confirm(`לשחזר את "${backupTitle}" מהגיבוי האחרון?\n\nתאריך גיבוי: ${backupTime}\n${describeProjectFootprint(backup.record)}\n\nהמצב הנוכחי יישמר קודם כגיבוי נוסף.`);
+  if (!confirmed) return false;
+
+  const currentRecord = state.currentProjectId ? buildProjectRecord(state.currentProjectId) : null;
+  backupProjectSnapshot(currentRecord, "before-manual-restore");
+
+  const restoredRecord = normalizeProjectRecord({
+    ...backup.record,
+    updatedAt: new Date().toISOString(),
+    updatedAtMs: Date.now()
+  });
+  if (!restoredRecord) return false;
+
+  clearProjectDeletionMarker(restoredRecord.id);
+  state.currentProjectId = restoredRecord.id;
+  upsertSavedProjectRecord(restoredRecord);
+  saveProjectsLibrary();
+  isApplyingCloudProject = true;
+  try {
+    applyProjectData(restoredRecord.data);
+  } finally {
+    isApplyingCloudProject = false;
+  }
+
+  try {
+    await saveProjectRecordToCloud(restoredRecord);
+    updateCloudStatus("הגיבוי שוחזר ונשמר בענן.", "ok");
+  } catch (error) {
+    updateCloudStatus("הגיבוי שוחזר מקומית, אבל לא עלה לענן כרגע.", "warn");
+    console.error(error);
+  }
+
+  render({ preserveScroll: false });
+  setScreen("rooms", { scroll: true });
+  return true;
+}
+
 async function deleteProject(projectId) {
   const project = state.savedProjects.find((item) => item.id === projectId);
   if (!project) return;
@@ -2021,21 +2478,26 @@ async function deleteProject(projectId) {
   if (!confirmed) return;
 
   const canonicalId = getCanonicalProjectId(project) || projectId;
+  const deletionMarker = markProjectDeletedLocally({ ...project, id: canonicalId });
   state.savedProjects = state.savedProjects.filter((item) => (
     (getCanonicalProjectId(item) || item.id) !== canonicalId
   ));
-  if (state.currentProjectId === projectId) {
+  if ((getCanonicalProjectId({ id: state.currentProjectId }) || state.currentProjectId) === canonicalId) {
     state.currentProjectId = null;
   }
   saveProjectsLibrary();
   saveState();
   if (db) {
     try {
+      if (deletionMarker) {
+        await setDoc(doc(db, PROJECT_DELETIONS_COLLECTION, canonicalId), deletionMarker);
+      }
       if (project?.data?.inspectionMode === "owner") {
         await deleteOwnerApartmentProjectCopies(project);
       } else {
-        await deleteDoc(doc(db, PROJECTS_COLLECTION, projectId));
+        await deleteDoc(doc(db, PROJECTS_COLLECTION, canonicalId));
       }
+      updateCloudStatus("הפרויקט נמחק ולא יחזור מהענן.", "ok");
     } catch (error) {
       updateCloudStatus("הפרויקט נמחק מקומית, אבל המחיקה בענן נכשלה.", "error");
       console.error(error);
@@ -2086,7 +2548,7 @@ function openOwnerApartment(apartmentName) {
     lastCloudAppliedAt = existingProject.updatedAtMs || Date.now();
     isApplyingCloudProject = false;
   } else {
-    state.currentProjectId = getOwnerApartmentProjectId(apartmentName);
+    state.currentProjectId = null;
     state.propertyName = apartmentName;
     state.propertyAddress = DEFAULT_PROPERTY_ADDRESS;
     state.inspectionDate = getTodayInputValue();
@@ -2104,7 +2566,6 @@ function openOwnerApartment(apartmentName) {
     els.clientEmail.value = "";
     els.inspectorName.value = "";
     updateInspectionDateBadge();
-    saveState({ immediateCloud: true });
   }
 
   render({ preserveScroll: false });
@@ -2145,6 +2606,7 @@ function renderSavedProjects() {
         </div>
         <div class="saved-project-actions">
           <button class="ghost-btn" type="button" data-action="open-project" data-project-id="${project.id}">פתח</button>
+          <button class="restore-btn" type="button" data-action="restore-project" data-project-id="${project.id}" ${hasProjectBackup(project.id) ? "" : "hidden"}>שחזר גיבוי</button>
           <button class="delete-btn" type="button" data-action="delete-project" data-project-id="${project.id}">מחק</button>
         </div>
       </article>
@@ -2157,6 +2619,10 @@ function renderSavedProjects() {
 
   els.savedProjectsList.querySelectorAll("[data-action='delete-project']").forEach((button) => {
     button.addEventListener("click", () => deleteProject(button.dataset.projectId));
+  });
+
+  els.savedProjectsList.querySelectorAll("[data-action='restore-project']").forEach((button) => {
+    button.addEventListener("click", () => restoreProjectBackup(button.dataset.projectId));
   });
 }
 
@@ -2194,8 +2660,14 @@ function persistProjectRecordImmediately(record) {
   pendingCloudSync = false;
   lastCloudAppliedAt = record.updatedAtMs;
   saveProjectRecordToCloud(record)
-    .then(() => {
-      updateCloudStatus("הבדיקה מסונכרנת לענן בין מחשב לנייד.", "ok");
+    .then((savedRecord) => {
+      if (savedRecord) {
+        state.currentProjectId = savedRecord.id;
+        lastCloudAppliedAt = savedRecord.updatedAtMs || lastCloudAppliedAt;
+      }
+      if (!savedRecord?.protectedFromOverwrite) {
+        updateCloudStatus("הבדיקה מסונכרנת לענן בין מחשב לנייד.", "ok");
+      }
     })
     .catch((error) => {
       updateCloudStatus("שמירה מקומית פועלת, אבל הסנכרון לענן נכשל כרגע.", "error");
@@ -2207,7 +2679,12 @@ function saveState(options = {}) {
   const { immediateCloud = false } = options;
   markLocalMutation();
   const record = syncCurrentProjectDraft();
-  localStorage.setItem(storageKey, JSON.stringify(state));
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(compactStateForStorage()));
+  } catch (error) {
+    updateCloudStatus("הזיכרון המקומי מלא. הנתונים נשמרים לענן, וגיבויים כבדים צומצמו.", "warn");
+    console.error(error);
+  }
   if (immediateCloud) {
     persistProjectRecordImmediately(record);
     return;
@@ -2384,12 +2861,16 @@ function renderAreas() {
 function renderOwnerApartments() {
   if (!els.ownerApartmentsGrid) return;
   els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => {
-    const isInspected = isOwnerApartmentInspected(apartmentName);
+    const status = getOwnerApartmentCardStatus(apartmentName);
+    const isInspected = status.key === "inspected";
+    const isSaved = status.key === "saved";
     return `
-    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"} ${isInspected ? "is-inspected" : ""}" type="button" data-owner-apartment="${apartmentName}">
+    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"} ${isInspected ? "is-inspected" : ""} ${isSaved ? "is-saved" : ""}" type="button" data-owner-apartment="${apartmentName}">
       <span class="owner-apartment-icon" aria-hidden="true">${STATUS_ICON_MARKUP.saved}</span>
-      <strong>${apartmentName}</strong>
-      ${isInspected ? `<span class="owner-apartment-status">נבדקה</span>` : ""}
+      <span class="owner-apartment-copy">
+        <strong>${apartmentName}</strong>
+        ${status.label ? `<span class="owner-apartment-status status-${status.key}">${status.label}</span>` : ""}
+      </span>
     </button>
   `;
   }).join("");
@@ -2443,6 +2924,7 @@ function loadState() {
   const projectsRaw = localStorage.getItem(projectsKey);
   const localProjects = projectsRaw ? JSON.parse(projectsRaw) : [];
   state.savedProjects = dedupeProjectRecords(localProjects).dedupedProjects;
+  backupSavedProjectSnapshots("local-library-load");
   saveProjectsLibrary();
   const raw = localStorage.getItem(storageKey);
   if (!raw) {
@@ -2508,6 +2990,12 @@ if (els.jumpToSavedProjectsBtn) {
   });
 }
 
+if (els.restoreLatestBackupBtn) {
+  els.restoreLatestBackupBtn.addEventListener("click", () => {
+    restoreProjectBackup(state.currentProjectId);
+  });
+}
+
 if (els.selectNewPropertyBtn) {
   els.selectNewPropertyBtn.addEventListener("click", () => {
     selectInspectionMode("new");
@@ -2529,7 +3017,10 @@ if (els.welcomeNavBtn) {
       return;
     }
     if (!state.currentProjectId) {
-      state.currentProjectId = uid();
+      state.currentProjectId = getCanonicalProjectId({
+        inspectionMode: state.inspectionMode,
+        propertyName: state.propertyName
+      }) || uid();
     }
     saveState({ immediateCloud: true });
     setScreen("rooms", { scroll: true });
