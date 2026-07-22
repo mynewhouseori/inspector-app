@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.report-inspection-date-1";
+const APP_VERSION = "2026.07.22.report-header-date-only-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2048,10 +2048,6 @@ function buildReportSignaturesMarkup() {
   const signatureLabels = ["מנהל פרויקט", "מפקח דיירים", "דייר"];
   return `
     <div class="report-signatures">
-      <div class="report-signature-date">
-        <strong>תאריך הבדיקה</strong>
-        <span>${escapeHtml(formatGeneratedDateOnly())}</span>
-      </div>
       <div class="report-signature-grid">
         ${signatureLabels.map((label) => `
           <div class="report-signature-box">

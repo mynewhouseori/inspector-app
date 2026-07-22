@@ -1614,23 +1614,6 @@ select {
   margin-top: 16px;
 }
 
-.report-signature-date {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  justify-self: end;
-  padding: 8px 12px;
-  border: 1px solid rgba(24, 90, 97, 0.16);
-  border-radius: 999px;
-  background: rgba(24, 90, 97, 0.06);
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.report-signature-date strong {
-  color: var(--ink);
-}
-
 .report-signature-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3250,11 +3233,6 @@ textarea:focus {
   .report-signatures {
     gap: 8px;
     margin-top: 10px;
-  }
-
-  .report-signature-date {
-    padding: 4px 8px;
-    font-size: 11px;
   }
 
   .report-signature-grid {
