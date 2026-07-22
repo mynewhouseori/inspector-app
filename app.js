@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.owner-empty-no-sync-1";
+const APP_VERSION = "2026.07.22.mobile-reports-nav-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -3477,13 +3477,33 @@ if (els.areaName && els.areaType) {
   });
 }
 
+let lastBottomNavHandledAt = 0;
+
+function openBottomNavScreen(button, event) {
+  const targetScreen = button?.dataset?.screen;
+  if (!targetScreen) return;
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const now = Date.now();
+  if (now - lastBottomNavHandledAt < 350) return;
+  lastBottomNavHandledAt = now;
+
+  if (targetScreen === "inspection") {
+    syncActiveInspectionArea();
+  }
+  if (targetScreen === "summary") {
+    updateProjectFields();
+    renderSummaryReports();
+  }
+  setScreen(targetScreen, { scroll: true });
+}
+
 els.navButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    if (button.dataset.screen === "inspection") {
-      syncActiveInspectionArea();
-    }
-    setScreen(button.dataset.screen, { scroll: true });
-  });
+  button.addEventListener("click", (event) => openBottomNavScreen(button, event));
+  button.addEventListener("pointerup", (event) => openBottomNavScreen(button, event));
+  button.addEventListener("touchend", (event) => openBottomNavScreen(button, event), { passive: false });
 });
 
 if (els.resetBtn) {
