@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.delete-check-photos-1";
+const APP_VERSION = "2026.07.22.photo-delete-fix-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1412,11 +1412,6 @@ async function handleCheckCameraCapture(area, check, fileInput) {
 }
 
 function deleteCheckPhoto(area, check, photoId) {
-  if (area.locked) {
-    window.alert("פתח את החדר לעריכה לפני מחיקת צילום.");
-    return;
-  }
-
   const photos = Array.isArray(area.photoCaptures) ? area.photoCaptures : [];
   const targetPhoto = photos.find((photo) => getPhotoIdentity(photo) === photoId);
   if (!targetPhoto) return;
@@ -3005,12 +3000,13 @@ function renderAreas() {
           }).join("")
         : "";
       photoList.querySelectorAll("[data-photo-delete]").forEach((button) => {
-        button.disabled = area.locked;
-        button.addEventListener("click", (event) => {
+        const handleDelete = (event) => {
           event.preventDefault();
           event.stopPropagation();
           deleteCheckPhoto(area, check, button.dataset.photoDelete);
-        });
+        };
+        button.addEventListener("click", handleDelete);
+        button.addEventListener("touchend", handleDelete, { passive: false });
       });
       cameraInput.disabled = !cameraAllowed;
       statusSelect.addEventListener("change", (event) => {
