@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.mobile-room-open-2";
+const APP_VERSION = "2026.07.22.mobile-room-open-3";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2981,8 +2981,14 @@ function renderRoomSelection() {
 function bindRoomSelectionOpenHandler() {
   if (!els.roomsSelection) return;
   let handledAt = 0;
+
+  const getRoomButton = (event) => {
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    return target?.closest?.("[data-area-id]") || null;
+  };
+
   const handleRoomOpen = (event) => {
-    const button = event.target.closest("[data-area-id]");
+    const button = getRoomButton(event);
     if (!button || !els.roomsSelection.contains(button)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -2993,8 +2999,12 @@ function bindRoomSelectionOpenHandler() {
   };
 
   els.roomsSelection.addEventListener("click", handleRoomOpen);
+  els.roomsSelection.addEventListener("pointerdown", handleRoomOpen);
   els.roomsSelection.addEventListener("pointerup", handleRoomOpen);
+  els.roomsSelection.addEventListener("touchstart", handleRoomOpen, { passive: false });
   els.roomsSelection.addEventListener("touchend", handleRoomOpen, { passive: false });
+  document.addEventListener("pointerdown", handleRoomOpen, true);
+  document.addEventListener("touchstart", handleRoomOpen, { capture: true, passive: false });
 }
 
 function renderAreas() {
