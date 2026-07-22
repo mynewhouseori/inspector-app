@@ -3123,3 +3123,29 @@ textarea:focus {
   height: 56px;
   border-radius: 12px;
 }
+
+.rooms-general-notes {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid rgba(24, 87, 96, 0.16);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 252, 252, 0.86));
+  box-shadow: 0 8px 18px rgba(18, 40, 46, 0.08);
+}
+
+.rooms-general-notes label {
+  display: block;
+  margin-bottom: 8px;
+  color: #17343c;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.rooms-general-notes textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+}

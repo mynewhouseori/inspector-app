@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.service-balcony-checks-3";
+const APP_VERSION = "2026.07.22.general-notes-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -533,7 +533,8 @@ const PROJECT_DETAIL_FIELDS = [
   "clientName",
   "clientPhone",
   "clientEmail",
-  "inspectorName"
+  "inspectorName",
+  "generalNotes"
 ];
 
 function mergeProjectDetailsIntoProtectedRecord(existingRecord, candidateRecord) {
@@ -616,6 +617,7 @@ function hasProjectDraftContent(projectLike = {}) {
     || Boolean(String(data.clientPhone || "").trim())
     || Boolean(String(data.clientEmail || "").trim())
     || Boolean(String(data.inspectorName || "").trim())
+    || Boolean(String(data.generalNotes || "").trim())
   );
 }
 
@@ -882,6 +884,7 @@ const state = {
   clientPhone: "",
   clientEmail: "",
   inspectorName: "",
+  generalNotes: "",
   currentProjectId: null,
   activeInspectionAreaId: null,
   areas: [],
@@ -912,6 +915,7 @@ const els = {
   clientPhone: document.querySelector("#clientPhone"),
   clientEmail: document.querySelector("#clientEmail"),
   inspectorName: document.querySelector("#inspectorName"),
+  generalNotes: document.querySelector("#generalNotes"),
   cloudStatus: document.querySelector("#cloudStatus"),
   saveProjectBtn: document.querySelector("#saveProjectBtn"),
   jumpToSavedProjectsBtn: document.querySelector("#jumpToSavedProjectsBtn"),
@@ -947,6 +951,8 @@ const els = {
   reportPageHeaderDate: document.querySelector("#reportPageHeaderDate"),
   reportIntroTitle: document.querySelector("#reportIntroTitle"),
   reportIntroBlock: document.querySelector("#reportIntroBlock"),
+  reportGeneralNotesSection: document.querySelector("#reportGeneralNotesSection"),
+  reportGeneralNotes: document.querySelector("#reportGeneralNotes"),
   reportOverview: document.querySelector("#reportOverview"),
   reportExecutiveSummary: document.querySelector("#reportExecutiveSummary"),
   reportSummaryStats: document.querySelector("#reportSummaryStats"),
@@ -1083,6 +1089,7 @@ function applyProjectData(projectData) {
   state.clientPhone = projectData.clientPhone || "";
   state.clientEmail = projectData.clientEmail || "";
   state.inspectorName = projectData.inspectorName || "";
+  state.generalNotes = projectData.generalNotes || "";
   state.activeInspectionAreaId = projectData.activeInspectionAreaId || null;
   state.areas = Array.isArray(projectData.areas)
     ? normalizeAreasForMode(projectData.areas, state.inspectionMode)
@@ -1095,6 +1102,7 @@ function applyProjectData(projectData) {
   els.clientPhone.value = state.clientPhone;
   els.clientEmail.value = state.clientEmail;
   els.inspectorName.value = state.inspectorName;
+  if (els.generalNotes) els.generalNotes.value = state.generalNotes;
   updateInspectionDateBadge();
 }
 
@@ -1806,6 +1814,12 @@ function renderReportDocument(summary, issues) {
     els.reportExecutiveSummary.innerHTML = `<p>${escapeHtml(buildExecutiveSummary(reportSummary))}</p>`;
   }
 
+  const generalNotes = String(state.generalNotes || "").trim();
+  if (els.reportGeneralNotesSection && els.reportGeneralNotes) {
+    els.reportGeneralNotesSection.hidden = !generalNotes;
+    els.reportGeneralNotes.innerHTML = generalNotes ? `<p>${escapeHtml(generalNotes)}</p>` : "";
+  }
+
   const statItems = [
     ["חדרים שנבדקו", reportSummary.inspectedAreas],
     ["סעיפים שנבדקו", reportSummary.completedChecks],
@@ -1962,6 +1976,18 @@ function buildCompactPrintBody() {
     `
     : "";
 
+  const generalNotes = String(state.generalNotes || "").trim();
+  const generalNotesMarkup = generalNotes
+    ? `
+      <section class="report-section">
+        <h3>הערות כלליות</h3>
+        <div class="report-text-block">
+          <p>${escapeHtml(generalNotes)}</p>
+        </div>
+      </section>
+    `
+    : "";
+
   const roomMarkup = reportAreas.some((area) => area.checks.some((check) => check.status === "issue"))
     ? `
       <section class="report-section compact-print-rooms">
@@ -2075,6 +2101,7 @@ function buildCompactPrintBody() {
         <ul class="compact-print-list">${issueMarkup}</ul>
       </div>
     </section>
+    ${generalNotesMarkup}
     ${roomMarkup}
     ${photoMarkup}
     <section class="report-section">
@@ -2102,6 +2129,7 @@ function updateProjectFields() {
   state.clientPhone = els.clientPhone.value.trim();
   state.clientEmail = els.clientEmail.value.trim();
   state.inspectorName = els.inspectorName.value.trim();
+  state.generalNotes = els.generalNotes ? els.generalNotes.value.trim() : state.generalNotes;
   updateInspectionDateBadge();
 }
 
@@ -2119,6 +2147,7 @@ function projectDataSignature(projectData = {}) {
     clientPhone: projectData.clientPhone || "",
     clientEmail: projectData.clientEmail || "",
     inspectorName: projectData.inspectorName || "",
+    generalNotes: projectData.generalNotes || "",
     activeInspectionAreaId: projectData.activeInspectionAreaId || null,
     areas: Array.isArray(projectData.areas)
       ? projectData.areas.map((area) => ({
@@ -2170,6 +2199,7 @@ function serializeCurrentProject() {
     clientPhone: state.clientPhone,
     clientEmail: state.clientEmail,
     inspectorName: state.inspectorName,
+    generalNotes: state.generalNotes,
     activeInspectionAreaId: state.activeInspectionAreaId,
     areas: JSON.parse(JSON.stringify(state.areas))
   };
@@ -2582,6 +2612,7 @@ function startNewProject() {
   state.clientPhone = "";
   state.clientEmail = "";
   state.inspectorName = "";
+  state.generalNotes = "";
   state.activeInspectionAreaId = null;
   state.areas = buildPresetAreas();
   els.propertyName.value = "";
@@ -2591,6 +2622,7 @@ function startNewProject() {
   els.clientPhone.value = "";
   els.clientEmail.value = "";
   els.inspectorName.value = "";
+  if (els.generalNotes) els.generalNotes.value = "";
   updateInspectionDateBadge();
   render({ preserveScroll: false });
   setScreen("welcome", { scroll: true });
@@ -2622,6 +2654,7 @@ function openOwnerApartment(apartmentName) {
     state.clientPhone = "";
     state.clientEmail = "";
     state.inspectorName = "";
+    state.generalNotes = "";
     state.activeInspectionAreaId = null;
     state.areas = buildPresetAreas();
     els.propertyName.value = apartmentName;
@@ -2631,6 +2664,7 @@ function openOwnerApartment(apartmentName) {
     els.clientPhone.value = "";
     els.clientEmail.value = "";
     els.inspectorName.value = "";
+    if (els.generalNotes) els.generalNotes.value = "";
     updateInspectionDateBadge();
   }
 
@@ -3013,6 +3047,7 @@ function loadState() {
     clientPhone: parsed.clientPhone || "",
     clientEmail: parsed.clientEmail || "",
     inspectorName: parsed.inspectorName || "",
+    generalNotes: parsed.generalNotes || "",
     activeInspectionAreaId: parsed.activeInspectionAreaId || null,
     areas: Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas()
   });
@@ -3107,6 +3142,7 @@ if (els.newProjectBtn) {
       || state.clientPhone
       || state.clientEmail
       || state.inspectorName
+      || state.generalNotes
       || selectedAreas().some((area) => area.checks.some((check) => check.status !== "pending" || check.note.trim()));
     if (hasContent) {
       const confirmed = window.confirm("לפתוח בדיקה חדשה? הנתונים הנוכחיים יישארו רק אם שמרת אותם.");
@@ -3124,7 +3160,7 @@ if (els.addAreaBtn && els.areaName && els.areaType) {
   els.addAreaBtn.addEventListener("click", () => addArea(els.areaName.value, els.areaType.value));
 }
 
-[els.propertyName, els.propertyAddress, els.inspectionDate, els.clientName, els.clientPhone, els.clientEmail, els.inspectorName].forEach((input) => {
+[els.propertyName, els.propertyAddress, els.inspectionDate, els.clientName, els.clientPhone, els.clientEmail, els.inspectorName, els.generalNotes].filter(Boolean).forEach((input) => {
   input.addEventListener("input", () => {
     updateProjectFields();
     saveState();
