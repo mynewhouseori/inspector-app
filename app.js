@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.inspection-open-direct-1";
+const APP_VERSION = "2026.07.22.photo-ghost-cleanup-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -238,7 +238,7 @@ function hasInspectionData(projectData) {
   const areas = Array.isArray(projectData?.areas) ? projectData.areas : [];
   return areas.some((area) => (
     area?.locked
-    || (Array.isArray(area?.photoCaptures) && area.photoCaptures.length > 0)
+    || cleanPhotoCaptures(area?.photoCaptures).length > 0
     || (Array.isArray(area?.checks) && area.checks.some((check) => (
       (check?.status && check.status !== "pending")
       || String(check?.note || "").trim()
@@ -507,7 +507,7 @@ function getProjectInspectionFootprint(projectLike = {}) {
 
   areas.forEach((area) => {
     if (area?.locked) lockedAreas += 1;
-    photoCount += Array.isArray(area?.photoCaptures) ? area.photoCaptures.length : 0;
+    photoCount += cleanPhotoCaptures(area?.photoCaptures).length;
     (Array.isArray(area?.checks) ? area.checks : []).forEach((check) => {
       if (check?.status && check.status !== "pending") completedChecks += 1;
       if (String(check?.note || "").trim()) notedChecks += 1;
@@ -649,6 +649,27 @@ function compactPhotoForStorage(photo = {}, keepLocalPreviews = false) {
   };
 }
 
+function hasPhotoSource(photo = {}) {
+  return Boolean(photo.downloadURL || photo.previewDataUrl || photo.storagePath);
+}
+
+function isPendingPhotoRecord(photo = {}) {
+  const capturedAtMs = Date.parse(photo.capturedAt || "");
+  return Boolean(
+    photo.id
+    && !hasPhotoSource(photo)
+    && Number.isFinite(capturedAtMs)
+    && Date.now() - capturedAtMs < 5 * 60 * 1000
+  );
+}
+
+function cleanPhotoCaptures(photos = [], options = {}) {
+  const { keepPending = false } = options;
+  return (Array.isArray(photos) ? photos : []).filter((photo) => (
+    hasPhotoSource(photo) || (keepPending && isPendingPhotoRecord(photo))
+  ));
+}
+
 function compactProjectRecordForStorage(record, options = {}) {
   const { keepLocalPreviews = false } = options;
   if (!record) return record;
@@ -656,7 +677,7 @@ function compactProjectRecordForStorage(record, options = {}) {
   const areas = Array.isArray(clone?.data?.areas) ? clone.data.areas : [];
   areas.forEach((area) => {
     if (!Array.isArray(area.photoCaptures)) return;
-    area.photoCaptures = area.photoCaptures.map((photo) => compactPhotoForStorage(photo, keepLocalPreviews));
+    area.photoCaptures = cleanPhotoCaptures(area.photoCaptures).map((photo) => compactPhotoForStorage(photo, keepLocalPreviews));
   });
   return clone;
 }
@@ -706,7 +727,7 @@ function compactStateForStorage() {
   };
   clone.areas.forEach((area) => {
     if (!Array.isArray(area.photoCaptures)) return;
-    area.photoCaptures = area.photoCaptures.map((photo) => compactPhotoForStorage(photo, true));
+    area.photoCaptures = cleanPhotoCaptures(area.photoCaptures, { keepPending: true }).map((photo) => compactPhotoForStorage(photo, true));
   });
   return clone;
 }
@@ -1107,7 +1128,7 @@ function hydrateArea(area) {
     checks: mergeChecksWithDefaults(areaChecks, expectedChecks),
     dimensions: area.dimensions || createDimensions(),
     photoCaptures: Array.isArray(area.photoCaptures)
-      ? area.photoCaptures.map((photo) => ({
+      ? cleanPhotoCaptures(area.photoCaptures, { keepPending: true }).map((photo) => ({
           ...photo,
           previewDataUrl: photo.previewDataUrl || ""
         }))
@@ -1212,11 +1233,11 @@ function updateCloudStatus(message, tone = "") {
 }
 
 function getAreaPhotoCount(area) {
-  return Array.isArray(area.photoCaptures) ? area.photoCaptures.length : 0;
+  return cleanPhotoCaptures(area.photoCaptures, { keepPending: true }).length;
 }
 
 function getCheckPhotoCount(area, checkCode) {
-  return (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
+  return cleanPhotoCaptures(area.photoCaptures, { keepPending: true })
     .filter((photo) => photo.checkCode === checkCode)
     .length;
 }
@@ -1460,7 +1481,9 @@ function deleteCheckPhotoAtIndex(area, check, photoIndex) {
   const targetPhoto = photos[targetIndex];
   if (!Number.isInteger(targetIndex) || !targetPhoto || targetPhoto.checkCode !== check.code) return;
 
-  area.photoCaptures = photos.filter((_, index) => index !== targetIndex);
+  area.photoCaptures = photos.filter((photo, index) => (
+    index !== targetIndex && !(photo.checkCode === check.code && !hasPhotoSource(photo))
+  ));
   updateCloudStatus("הצילום נמחק", "ok");
   persistAndRender(
     { preserveScroll: true },
@@ -1710,7 +1733,7 @@ function getTouchedChecksCount(area) {
 }
 
 function isAreaInspected(area) {
-  const hasPhotos = Array.isArray(area.photoCaptures) && area.photoCaptures.length > 0;
+  const hasPhotos = cleanPhotoCaptures(area.photoCaptures).length > 0;
   return getTouchedChecksCount(area) > 0 || hasPhotos || area.locked;
 }
 
@@ -1847,7 +1870,7 @@ function buildReportCheckNote(check) {
 }
 
 function getReportPhotosForCheck(area, check) {
-  return (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
+  return cleanPhotoCaptures(area.photoCaptures)
     .filter((photo) => photo.checkCode === check.code && (photo.downloadURL || photo.previewDataUrl));
 }
 
@@ -2299,7 +2322,7 @@ function projectDataSignature(projectData = {}) {
             actualLength: area.dimensions?.actualLength || ""
           },
           photoCaptures: Array.isArray(area.photoCaptures)
-            ? area.photoCaptures.map((photo) => ({
+            ? cleanPhotoCaptures(area.photoCaptures).map((photo) => ({
                 id: photo.id || "",
                 checkCode: photo.checkCode || "",
                 checkName: photo.checkName || "",
@@ -3081,7 +3104,7 @@ function renderAreas() {
       const cameraAllowed = isCameraAllowedForCheck(area, check);
       const checkPhotos = (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
         .map((photo, sourceIndex) => ({ photo, sourceIndex }))
-        .filter(({ photo }) => photo.checkCode === check.code);
+        .filter(({ photo }) => photo.checkCode === check.code && (hasPhotoSource(photo) || isPendingPhotoRecord(photo)));
       statusSelect.value = check.status;
       noteInput.value = check.note;
       cameraCount.textContent = `${checkPhotoCount}/${MAX_CHECK_PHOTOS}`;
@@ -3104,7 +3127,7 @@ function renderAreas() {
             const deleteButton = `<button class="photo-delete-btn" type="button" data-photo-index="${sourceIndex}" title="מחק צילום" aria-label="מחק צילום">מחק</button>`;
             return src
               ? `<div class="check-photo-item"><a class="check-photo-thumb" href="${escapeHtml(src)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"></a>${deleteButton}</div>`
-              : `<div class="check-photo-item"><div class="check-photo-thumb is-pending" title="התמונה נשמרה, נטענת מהענן">נטען</div>${deleteButton}</div>`;
+              : `<div class="check-photo-item"><div class="check-photo-thumb is-pending" title="התמונה נשמרת כעת">שומר</div>${deleteButton}</div>`;
           }).join("")
         : "";
       photoList.querySelectorAll("[data-photo-index]").forEach((button) => {
