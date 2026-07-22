@@ -186,10 +186,12 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.large-report-logo-1";
+const APP_VERSION = "2026.07.22.cloud-photo-preview-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
+const PHOTO_RECORD_PREVIEW_MAX_DIMENSION = 720;
+const PHOTO_RECORD_PREVIEW_QUALITY = 0.58;
 const DEFAULT_PROPERTY_ADDRESS = "מגן אברהם-יפו";
 
 function getTodayInputValue() {
@@ -1297,6 +1299,45 @@ async function compressImageForUpload(file) {
   }
 }
 
+async function createCloudRecordPreviewDataUrl(file) {
+  if (!file || !file.type?.startsWith("image/")) return readFileAsDataUrl(file);
+  if (file.type === "image/gif" || file.type === "image/svg+xml") return readFileAsDataUrl(file);
+
+  let objectUrl = "";
+  try {
+    objectUrl = URL.createObjectURL(file);
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Image decode failed"));
+      img.src = objectUrl;
+    });
+
+    const sourceWidth = image.naturalWidth || image.width || 0;
+    const sourceHeight = image.naturalHeight || image.height || 0;
+    const longestSide = Math.max(sourceWidth, sourceHeight);
+    const scale = longestSide > PHOTO_RECORD_PREVIEW_MAX_DIMENSION
+      ? PHOTO_RECORD_PREVIEW_MAX_DIMENSION / longestSide
+      : 1;
+    const targetWidth = Math.max(1, Math.round(sourceWidth * scale));
+    const targetHeight = Math.max(1, Math.round(sourceHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+
+    const context = canvas.getContext("2d");
+    if (!context) return readFileAsDataUrl(file);
+
+    context.drawImage(image, 0, 0, targetWidth, targetHeight);
+    return canvas.toDataURL("image/jpeg", PHOTO_RECORD_PREVIEW_QUALITY);
+  } catch (error) {
+    console.error(error);
+    return readFileAsDataUrl(file);
+  } finally {
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+  }
+}
+
 async function uploadCapturedPhoto(file, area, check, fileName) {
   if (!storage) {
     throw new Error("Cloud storage is not configured.");
@@ -1318,7 +1359,7 @@ async function handleCheckCameraFile(area, check, file) {
   }
 
   const preparedFile = await compressImageForUpload(file);
-  const previewDataUrl = await readFileAsDataUrl(preparedFile).catch(() => "");
+  const previewDataUrl = await createCloudRecordPreviewDataUrl(preparedFile).catch(() => "");
   const fileName = buildCapturedPhotoName(area, check, preparedFile);
   const pendingPhotoId = uid();
   const pendingPhotoRecord = {
@@ -1341,9 +1382,9 @@ async function handleCheckCameraFile(area, check, file) {
   try {
     uploadedPhoto = await uploadCapturedPhoto(preparedFile, area, check, fileName);
   } catch (error) {
-    window.alert("התמונה נשמרה מקומית, אבל העלאה לענן נכשלה כרגע.");
     finishPhotoUpload(area.id, check.code);
     saveState({ immediateCloud: true });
+    updateCloudStatus("התמונה נשמרה לדוח ותסתנכרן למחשב כגרסה מכווצת. העלאת הקובץ המקורי לענן נכשלה.", "warn");
     render({ preserveScroll: true });
     console.error(error);
     return;
@@ -2251,7 +2292,9 @@ function syncCurrentProjectDraft(options = {}) {
 
 async function saveProjectRecordToCloud(record) {
   if (!db) return;
-  const normalizedRecord = compactProjectRecordForStorage(normalizeProjectRecord(record) || record);
+  const normalizedRecord = compactProjectRecordForStorage(normalizeProjectRecord(record) || record, {
+    keepLocalPreviews: true
+  });
   if (isProjectDeletedLocally(normalizedRecord)) return null;
   const projectRef = doc(db, PROJECTS_COLLECTION, normalizedRecord.id);
   const existingSnapshot = await getDoc(projectRef);
