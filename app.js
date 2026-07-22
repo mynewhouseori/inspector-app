@@ -160,6 +160,7 @@ let isApplyingCloudProject = false;
 let isPickerOpen = false;
 let pendingCloudSync = false;
 let pendingFocusAreaId = null;
+let cloudStatusWatchdogTimer = null;
 
 const inspectionModeLabels = {
   new: "בדיקת נכס חדש",
@@ -186,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.cloud-save-unblock-1";
+const APP_VERSION = "2026.07.22.cloud-status-watchdog-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1243,6 +1244,10 @@ function updateWelcomeFormMode() {
 
 function updateCloudStatus(message, tone = "") {
   if (!els.cloudStatus) return;
+  if (cloudStatusWatchdogTimer) {
+    window.clearTimeout(cloudStatusWatchdogTimer);
+    cloudStatusWatchdogTimer = null;
+  }
   const compactMessage = tone === "ok"
     ? "הענן מחובר"
     : tone === "warn"
@@ -1253,6 +1258,17 @@ function updateCloudStatus(message, tone = "") {
   els.cloudStatus.textContent = compactMessage;
   els.cloudStatus.classList.remove("status-ok", "status-warn", "status-error");
   if (tone) els.cloudStatus.classList.add(`status-${tone}`);
+  if (tone === "warn") {
+    cloudStatusWatchdogTimer = window.setTimeout(() => {
+      cloudStatusWatchdogTimer = null;
+      if (!els.cloudStatus?.classList.contains("status-warn")) return;
+      if (pendingPhotoUploads.size > 0 || pendingCloudSync) {
+        updateCloudStatus("הסנכרון לענן מתעכב.", "error");
+      } else {
+        updateCloudStatus("הענן מחובר.", "ok");
+      }
+    }, 30000);
+  }
 }
 
 function getAreaPhotoCount(area) {
@@ -2560,6 +2576,7 @@ function queueCloudSync() {
   }
   clearTimeout(cloudSyncTimer);
   cloudSyncTimer = window.setTimeout(async () => {
+    cloudSyncTimer = null;
     try {
       updateProjectFields();
       const record = buildProjectRecord(state.currentProjectId);
@@ -2925,6 +2942,7 @@ function persistProjectRecordImmediately(record, options = {}) {
   const { forceOverwrite = false } = options;
   if (!db || !record) return;
   clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = null;
   pendingCloudSync = false;
   lastCloudAppliedAt = record.updatedAtMs;
   withTimeout(
