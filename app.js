@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.room-select-open-1";
+const APP_VERSION = "2026.07.22.inspection-open-direct-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1628,14 +1628,18 @@ function moveInspectionArea(direction) {
 }
 
 function openInspectionArea(areaId) {
-  const area = state.areas.find((item) => item.id === areaId);
+  const area = state.areas.find((item) => item.id === areaId)
+    || selectedAreas()[0]
+    || state.areas[0];
   if (!area) return;
 
   area.selected = true;
   state.activeInspectionAreaId = area.id;
+  state.currentScreen = "inspection";
+  render({ preserveScroll: false });
+  applyScreenState("inspection");
+  window.scrollTo({ top: 0, behavior: "smooth" });
   saveState({ immediateCloud: true });
-  render({});
-  setScreen("inspection", { scroll: true });
 }
 
 function openSelectedRoomFromControl() {
@@ -3426,8 +3430,8 @@ render();
 subscribeToCloudProjects();
 
 window.addEventListener("pageshow", () => {
-  state.currentScreen = "home";
-  setScreen("home", { scroll: false });
+  updateAppVersionLabel();
+  applyScreenState(state.currentScreen || "home");
 });
 
 document.addEventListener("focusout", () => {
