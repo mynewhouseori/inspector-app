@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.large-report-photos-1";
+const APP_VERSION = "2026.07.22.check-photo-placement-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1763,6 +1763,26 @@ function buildReportCheckNote(check) {
   return `<p class="report-check-note"><strong>סיכום:</strong> נבדק ונמצא תקין במועד הבדיקה.</p>`;
 }
 
+function getReportPhotosForCheck(area, check) {
+  return (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
+    .filter((photo) => photo.checkCode === check.code && (photo.downloadURL || photo.previewDataUrl));
+}
+
+function buildReportPhotosMarkup(area, check) {
+  const photos = getReportPhotosForCheck(area, check);
+  if (!photos.length) return "";
+
+  return `
+    <div class="report-area-photos">
+      ${photos.map((photo) => {
+        const src = photo.downloadURL || photo.previewDataUrl || "";
+        const alt = photo.checkName || check.name || area.name;
+        return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">`;
+      }).join("")}
+    </div>
+  `;
+}
+
 function buildExecutiveSummary(summary) {
   if (!summary.inspectedAreas) {
     return "טרם הושלמו נתוני בדיקה להצגה בדוח לקוח. לאחר הזנת ממצאים באזורים שנבדקו, יופיע כאן תקציר מקצועי ומוכן למשלוח.";
@@ -1915,6 +1935,7 @@ function renderReportDocument(summary, issues) {
               ? `<p class="report-check-note"><strong>הערה:</strong> ${escapeHtml(check.note.trim())}</p>`
               : ""
             }
+            ${buildReportPhotosMarkup(area, check)}
             ${buildReportCheckNote(check)}
           </div>
         `).join("")
@@ -1930,14 +1951,6 @@ function renderReportDocument(summary, issues) {
           <span class="report-area-status">${escapeHtml(completion)}% הושלם</span>
         </div>
         <div class="report-area-meta">תקין: ${escapeHtml(okCount)} | ליקויים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
-        ${area.photoCaptures?.length ? `
-          <div class="report-area-photos">
-            ${area.photoCaptures.map((photo) => {
-              const src = photo.downloadURL || photo.previewDataUrl || "";
-              return src ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(photo.checkName || area.name)}">` : "";
-            }).join("")}
-          </div>
-        ` : ""}
         <div class="report-area-checks">${areaChecksMarkup}</div>
       </article>
       `;
@@ -2050,6 +2063,7 @@ function buildCompactPrintBody() {
                     <strong>${escapeHtml(check.name)}</strong>
                     <div class="report-check-meta">${escapeHtml(check.category)} | ${escapeHtml(getCheckStatusLabel(check.status))}</div>
                     ${check.note.trim() ? `<p class="report-check-note"><strong>הערה:</strong> ${escapeHtml(check.note.trim())}</p>` : ""}
+                    ${buildReportPhotosMarkup(area, check)}
                     <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
                       category: check.category,
                       note: check.note.trim(),
@@ -2066,14 +2080,6 @@ function buildCompactPrintBody() {
                     <div class="report-area-meta">${escapeHtml(areaTypeLabels[area.type])} | ${escapeHtml(getAreaProgress(area).label)}</div>
                   </div>
                 </div>
-                ${area.photoCaptures?.length ? `
-                  <div class="report-area-photos">
-                    ${area.photoCaptures.map((photo) => {
-                      const src = photo.downloadURL || photo.previewDataUrl || "";
-                      return src ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(photo.checkName || area.name)}">` : "";
-                    }).join("")}
-                  </div>
-                ` : ""}
                 <div class="report-area-checks">${checkMarkup}</div>
               </article>
             `;
