@@ -1164,10 +1164,10 @@ select {
 }
 
 .report-brand-logo {
-  width: min(240px, 42vw);
+  width: min(360px, 62vw);
   height: auto;
   min-height: 56px;
-  max-height: 92px;
+  max-height: 118px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.96);
   padding: 10px 14px;
@@ -1378,22 +1378,28 @@ select {
 }
 
 .report-cover-top {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  justify-items: center;
   gap: 18px;
   align-items: start;
   margin-bottom: 18px;
 }
 
 .report-cover-brand {
-  display: flex;
-  align-items: center;
+  display: grid;
+  justify-items: center;
   gap: 14px;
+  text-align: center;
 }
 
 .report-cover h2,
 .report-section h3 {
   margin: 0;
+}
+
+.report-cover h2 {
+  font-size: clamp(22px, 4.8vw, 30px);
+  line-height: 1.2;
 }
 
 .report-kicker {
@@ -2942,9 +2948,9 @@ textarea:focus {
 
   .report-cover-logo.report-brand-logo {
     display: block !important;
-    width: 190px;
+    width: 300px;
     min-height: 0;
-    max-height: 70px;
+    max-height: 96px;
     padding: 4px 8px;
     border-radius: 8px;
     box-shadow: none;
@@ -2957,7 +2963,7 @@ textarea:focus {
 
   .report-cover h2 {
     margin: 0;
-    font-size: 24px;
+    font-size: 20px;
     line-height: 1.15;
     font-weight: 900;
     color: var(--ink);
