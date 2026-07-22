@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.cloud-status-stable-1";
+const APP_VERSION = "2026.07.22.cloud-save-fallback-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -681,6 +681,38 @@ function compactProjectRecordForStorage(record, options = {}) {
     area.photoCaptures = cleanPhotoCaptures(area.photoCaptures).map((photo) => compactPhotoForStorage(photo, keepLocalPreviews));
   });
   return clone;
+}
+
+function hasInlinePhotoPreviews(record) {
+  return (Array.isArray(record?.data?.areas) ? record.data.areas : []).some((area) => (
+    (Array.isArray(area.photoCaptures) ? area.photoCaptures : []).some((photo) => Boolean(photo.previewDataUrl))
+  ));
+}
+
+function getJsonByteSize(value) {
+  try {
+    return new Blob([JSON.stringify(value)]).size;
+  } catch {
+    return JSON.stringify(value || "").length;
+  }
+}
+
+async function setProjectDocWithPreviewFallback(projectRef, record) {
+  try {
+    await setDoc(projectRef, record);
+    return record;
+  } catch (error) {
+    if (!hasInlinePhotoPreviews(record)) throw error;
+
+    const slimRecord = compactProjectRecordForStorage(record, { keepLocalPreviews: false });
+    await setDoc(projectRef, slimRecord);
+    console.warn("Cloud save retried without inline photo previews.", {
+      originalBytes: getJsonByteSize(record),
+      slimBytes: getJsonByteSize(slimRecord),
+      originalError: error
+    });
+    return slimRecord;
+  }
 }
 
 function getPhotoMergeKey(areaName, photo = {}) {
@@ -2462,7 +2494,7 @@ async function saveProjectRecordToCloud(record, options = {}) {
     if (existingRecord && projectDataSignature(existingRecord.data) !== projectDataSignature(recordToSave.data)) {
       backupProjectRecordLocally(existingRecord, "cloud-before-protected-merge");
       writeProjectBackupToCloud(existingRecord, "cloud-before-protected-merge", normalizedRecord.id);
-      await setDoc(projectRef, recordToSave);
+      await setProjectDocWithPreviewFallback(projectRef, recordToSave);
     }
     upsertSavedProjectRecord(recordToSave);
     saveProjectsLibrary();
@@ -2475,11 +2507,11 @@ async function saveProjectRecordToCloud(record, options = {}) {
     writeProjectBackupToCloud(existingRecord, "cloud-before-overwrite", normalizedRecord.id);
   }
 
-  await setDoc(projectRef, normalizedRecord);
-  if (hasProjectDraftContent(normalizedRecord)) {
-    writeProjectBackupToCloud(normalizedRecord, "saved-version", normalizedRecord.id);
+  const savedRecord = await setProjectDocWithPreviewFallback(projectRef, normalizedRecord);
+  if (hasProjectDraftContent(savedRecord)) {
+    writeProjectBackupToCloud(savedRecord, "saved-version", savedRecord.id);
   }
-  return normalizedRecord;
+  return savedRecord;
 }
 
 async function cleanupDuplicateOwnerProjects(duplicateProjects = []) {
