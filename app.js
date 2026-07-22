@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.photo-delete-force-1";
+const APP_VERSION = "2026.07.22.photo-preview-preserve-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -661,6 +661,43 @@ function compactProjectRecordForStorage(record, options = {}) {
   return clone;
 }
 
+function getPhotoMergeKey(areaName, photo = {}) {
+  return [
+    normalizeAreaName(areaName),
+    photo.id || "",
+    photo.checkCode || "",
+    photo.fileName || "",
+    photo.capturedAt || ""
+  ].join("|");
+}
+
+function preserveExistingPhotoSources(candidateRecord, existingRecord) {
+  if (!candidateRecord?.data?.areas || !existingRecord?.data?.areas) return candidateRecord;
+
+  const existingPhotosByKey = new Map();
+  existingRecord.data.areas.forEach((area) => {
+    (Array.isArray(area.photoCaptures) ? area.photoCaptures : []).forEach((photo) => {
+      existingPhotosByKey.set(getPhotoMergeKey(area.name, photo), photo);
+    });
+  });
+
+  candidateRecord.data.areas.forEach((area) => {
+    if (!Array.isArray(area.photoCaptures)) return;
+    area.photoCaptures = area.photoCaptures.map((photo) => {
+      const existingPhoto = existingPhotosByKey.get(getPhotoMergeKey(area.name, photo));
+      if (!existingPhoto) return photo;
+      return {
+        ...photo,
+        storagePath: photo.storagePath || existingPhoto.storagePath || "",
+        downloadURL: photo.downloadURL || existingPhoto.downloadURL || "",
+        previewDataUrl: photo.previewDataUrl || existingPhoto.previewDataUrl || ""
+      };
+    });
+  });
+
+  return candidateRecord;
+}
+
 function compactStateForStorage() {
   const clone = {
     ...state,
@@ -812,6 +849,7 @@ function mergeProjectRecordIntoLibrary(record, options = {}) {
     (getCanonicalProjectId(project) || project.id) === normalizedRecord.id
   ));
   if (existingIndex >= 0) {
+    preserveExistingPhotoSources(normalizedRecord, state.savedProjects[existingIndex]);
     const projectToKeep = forceOverwrite
       ? normalizedRecord
       : chooseProjectRecordToKeep(state.savedProjects[existingIndex], normalizedRecord);
@@ -2329,6 +2367,7 @@ async function saveProjectRecordToCloud(record, options = {}) {
   const existingRecord = existingSnapshot.exists()
     ? normalizeProjectRecord({ id: existingSnapshot.id, rawCloudId: existingSnapshot.id, ...existingSnapshot.data() })
     : null;
+  preserveExistingPhotoSources(normalizedRecord, existingRecord);
   const recordToSave = forceOverwrite
     ? normalizedRecord
     : keepRicherProjectRecord(existingRecord, normalizedRecord);
