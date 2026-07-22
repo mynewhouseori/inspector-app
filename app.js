@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.cloud-save-fallback-1";
+const APP_VERSION = "2026.07.22.owner-empty-no-sync-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -3003,6 +3003,7 @@ function saveState(options = {}) {
   const {
     immediateCloud = false,
     allowEmptyOwnerDraft = false,
+    skipCloud = false,
     forceCloudOverwrite = false,
     forceLibraryOverwrite = forceCloudOverwrite
   } = options;
@@ -3013,6 +3014,12 @@ function saveState(options = {}) {
   } catch (error) {
     updateCloudStatus("הזיכרון המקומי מלא. הנתונים נשמרים לענן, וגיבויים כבדים צומצמו.", "warn");
     console.error(error);
+  }
+  if (skipCloud || !record) {
+    if (!pendingPhotoUploads.size && els.cloudStatus?.classList.contains("status-error")) {
+      updateCloudStatus("הענן מחובר.", "ok");
+    }
+    return;
   }
   if (immediateCloud) {
     persistProjectRecordImmediately(record, { forceOverwrite: forceCloudOverwrite });
@@ -3036,7 +3043,7 @@ function setScreen(screen, options = {}) {
   const { scroll = true } = options;
   state.currentScreen = screen;
   applyScreenState(screen);
-  saveState();
+  saveState({ skipCloud: true });
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
