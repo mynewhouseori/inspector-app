@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.check-photo-placement-1";
+const APP_VERSION = "2026.07.22.single-report-photo-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1769,7 +1769,7 @@ function getReportPhotosForCheck(area, check) {
 }
 
 function buildReportPhotosMarkup(area, check) {
-  const photos = getReportPhotosForCheck(area, check);
+  const photos = getReportPhotosForCheck(area, check).slice(0, 1);
   if (!photos.length) return "";
 
   return `
