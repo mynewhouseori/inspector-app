@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.photo-delete-reliable-1";
+const APP_VERSION = "2026.07.22.photo-delete-immediate-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1411,18 +1411,14 @@ async function handleCheckCameraCapture(area, check, fileInput) {
   await handleCheckCameraFile(area, check, file);
 }
 
-function deleteCheckPhoto(area, check, targetPhoto) {
+function deleteCheckPhotoAtIndex(area, check, photoIndex) {
   const photos = Array.isArray(area.photoCaptures) ? area.photoCaptures : [];
-  const targetPhotoId = getPhotoIdentity(targetPhoto);
-  const targetIndex = photos.findIndex((photo) => (
-    photo === targetPhoto || (targetPhotoId && getPhotoIdentity(photo) === targetPhotoId)
-  ));
-  if (targetIndex < 0) return;
-
-  const confirmed = window.confirm(`למחוק את הצילום מתוך "${check.name}"?`);
-  if (!confirmed) return;
+  const targetIndex = Number(photoIndex);
+  const targetPhoto = photos[targetIndex];
+  if (!Number.isInteger(targetIndex) || !targetPhoto || targetPhoto.checkCode !== check.code) return;
 
   area.photoCaptures = photos.filter((_, index) => index !== targetIndex);
+  updateCloudStatus("הצילום נמחק", "ok");
   persistAndRender({ preserveScroll: true }, { immediateCloud: true });
 }
 
@@ -2975,7 +2971,8 @@ function renderAreas() {
       const uploadPending = isPhotoUploadPending(area.id, check.code);
       const cameraAllowed = isCameraAllowedForCheck(area, check);
       const checkPhotos = (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
-        .filter((photo) => photo.checkCode === check.code);
+        .map((photo, sourceIndex) => ({ photo, sourceIndex }))
+        .filter(({ photo }) => photo.checkCode === check.code);
       statusSelect.value = check.status;
       noteInput.value = check.note;
       cameraCount.textContent = `${checkPhotoCount}/${MAX_CHECK_PHOTOS}`;
@@ -2992,10 +2989,10 @@ function renderAreas() {
         cameraBtn.classList.add("field-locked");
       }
       photoList.innerHTML = checkPhotos.length
-        ? checkPhotos.map((photo, photoIndex) => {
+        ? checkPhotos.map(({ photo, sourceIndex }) => {
             const src = photo.downloadURL || photo.previewDataUrl || "";
             const alt = photo.checkName || check.name;
-            const deleteButton = `<button class="photo-delete-btn" type="button" data-photo-index="${photoIndex}" title="מחק צילום" aria-label="מחק צילום">מחק</button>`;
+            const deleteButton = `<button class="photo-delete-btn" type="button" data-photo-index="${sourceIndex}" title="מחק צילום" aria-label="מחק צילום">מחק</button>`;
             return src
               ? `<div class="check-photo-item"><a class="check-photo-thumb" href="${escapeHtml(src)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"></a>${deleteButton}</div>`
               : `<div class="check-photo-item"><div class="check-photo-thumb is-pending" title="התמונה נשמרה, נטענת מהענן">נטען</div>${deleteButton}</div>`;
@@ -3010,11 +3007,12 @@ function renderAreas() {
           if (now - handledAt < 450) return;
           handledAt = now;
           const photoIndex = Number(button.dataset.photoIndex);
-          const targetPhoto = checkPhotos[photoIndex];
-          deleteCheckPhoto(area, check, targetPhoto);
+          deleteCheckPhotoAtIndex(area, check, photoIndex);
         };
         button.addEventListener("click", handleDelete);
+        button.addEventListener("pointerdown", handleDelete);
         button.addEventListener("pointerup", handleDelete);
+        button.addEventListener("touchstart", handleDelete, { passive: false });
         button.addEventListener("touchend", handleDelete, { passive: false });
       });
       cameraInput.disabled = !cameraAllowed;
