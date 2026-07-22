@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.single-report-photo-1";
+const APP_VERSION = "2026.07.22.mobile-room-open-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2884,13 +2884,18 @@ function renderRoomSelection() {
     button.classList.toggle("is-current", area.id === state.activeInspectionAreaId);
     button.classList.add(`status-${progress.key}`);
     button.classList.add(`room-${area.type}`);
-    button.addEventListener("click", () => {
+    const openRoom = () => {
       area.selected = true;
       state.activeInspectionAreaId = area.id;
       saveState({ immediateCloud: true });
       render({});
       setScreen("inspection", { scroll: true });
-    });
+    };
+    button.addEventListener("click", openRoom);
+    button.addEventListener("touchend", (event) => {
+      event.preventDefault();
+      openRoom();
+    }, { passive: false });
     els.roomsSelection.appendChild(button);
   });
   els.selectedRoomsCount.textContent = `${selectedAreas().length} חדרים`;
