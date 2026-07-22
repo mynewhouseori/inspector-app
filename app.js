@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.mobile-buttons-audit-2";
+const APP_VERSION = "2026.07.22.report-no-recommendations-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1962,23 +1962,6 @@ function getReportStatus(summary) {
   return "דוח מסכם";
 }
 
-function buildIssueRecommendation(issue) {
-  const noteText = issue.note || issue.name;
-  if (issue.category.includes("בטיחות")) {
-    return `מומלץ להסיר את המפגע הבטיחותי, לאמת את העמידה בדרישות התקן ולתעד תיקון.`;
-  }
-  if (issue.category.includes("חשמל")) {
-    return `מומלץ להזמין בדיקה ותיקון של נקודת החשמל ולבצע אימות תפקודי לאחר הטיפול.`;
-  }
-  if (issue.category.includes("פתחים")) {
-    return `מומלץ לבצע כיוון, חיזוק או החלפה לפי הצורך ולאשר תקינות פתיחה, סגירה ואיטום.`;
-  }
-  if (issue.category.includes("גמר")) {
-    return `מומלץ להשלים תיקון גמר מקומי ולבצע ביקורת איכות לאחר ביצוע.`;
-  }
-  return `מומלץ לבדוק את הממצא בשטח, לבצע תיקון מתאים ולאשר השלמה בבדיקה חוזרת.`;
-}
-
 function getCheckStatusLabel(status) {
   if (status === "ok") return "תקין";
   if (status === "issue") return "ליקוי";
@@ -1988,11 +1971,7 @@ function getCheckStatusLabel(status) {
 
 function buildReportCheckNote(check) {
   if (check.status === "issue") {
-    return `<p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
-      category: check.category,
-      note: check.note.trim(),
-      name: check.name
-    }))}</p>`;
+    return "";
   }
 
   return `<p class="report-check-note"><strong>סיכום:</strong> נבדק ונמצא תקין במועד הבדיקה.</p>`;
@@ -2028,21 +2007,21 @@ function buildExecutiveSummary(summary) {
     : "במהלך הבדיקה לא זוהו ליקויים שסומנו לטיפול.";
   const scopeTone = summary.notStartedAreas
     ? `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל, בעוד ${summary.notStartedAreas} אזורים נוספים טרם הושלמו ולכן אינם מפורטים במסמך זה.`
-    : `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל ומציג את עיקרי הממצאים והמלצות ההמשך.`;
+    : `הדוח מתייחס ל-${summary.inspectedAreas} אזורים שנבדקו בפועל ומציג את עיקרי הממצאים.`;
 
   return `${scopeTone} ${issueTone} שיעור ההשלמה באזורים הנכללים בדוח עומד על ${summary.completionRate}%.`;
 }
 
 function buildClosingNote(summary) {
   if (!summary.inspectedAreas) {
-    return "מומלץ להשלים את הבדיקה בשטח ולהזין ממצאים לפני הפקת דוח לקוח.";
+    return "טרם הושלמה בדיקה בשטח וטרם הוזנו ממצאים להפקת דוח לקוח.";
   }
 
   if (summary.issues > 0) {
-    return "המסמך מרכז את הליקויים שדורשים טיפול בשלב זה. מומלץ להעבירו לגורם המבצע, לעקוב אחר תיקון הליקויים, ולהפיק דוח מעודכן לאחר ביקורת חוזרת.";
+    return "המסמך מרכז את הממצאים החריגים שתועדו בשלב זה, לפי החדרים והסעיפים שנבדקו בפועל.";
   }
 
-  return "לא סומנו ליקויים לטיפול באזורים שנבדקו. לאחר השלמת יתר האזורים, ניתן להפיק דוח מסכם סופי למסירה.";
+  return "לא סומנו ממצאים חריגים באזורים שנבדקו. לאחר השלמת יתר האזורים, ניתן להפיק דוח מסכם סופי למסירה.";
 }
 
 function renderReportDocument(summary, issues) {
@@ -2079,7 +2058,7 @@ function renderReportDocument(summary, issues) {
       els.reportIntroTitle.textContent = "חשיבות בדק בית";
       els.reportIntroBlock.innerHTML = `
         <p>בדק בית מקצועי נועד לוודא כי הנכס נבנה בהתאם לתקנים, לתוכניות ולדרישות הבטיחות, וכן לאתר ליקויים בשלב מוקדם ככל האפשר. איתור מוקדם מאפשר לצמצם עלויות תיקון עתידיות, לשפר את איכות הביצוע ולשמור על רמת גימור נאותה טרם מסירה או אכלוס.</p>
-        <p>מסמך זה מרכז ממצאים, הערות והמלצות להמשך טיפול, ומהווה כלי תיעודי חשוב להתנהלות מול הקבלן והגורמים המקצועיים. בדיקה מסודרת מעניקה לרוכש תמונת מצב אמינה, מסייעת במימוש זכויות האחריות ותורמת לשקט נפשי ולביטחון בהשקעה בנכס.</p>
+        <p>מסמך זה מרכז ממצאים והערות לפי החדרים שנבדקו בפועל, ומהווה כלי תיעודי חשוב להתנהלות מול הקבלן והגורמים המקצועיים. בדיקה מסודרת מעניקה לרוכש תמונת מצב אמינה, מסייעת במימוש זכויות האחריות ותורמת לשקט נפשי ולביטחון בהשקעה בנכס.</p>
       `;
     }
   }
@@ -2148,7 +2127,6 @@ function renderReportDocument(summary, issues) {
           <strong>${escapeHtml(issue.area)} | ${escapeHtml(issue.name)}</strong>
           <div class="report-finding-meta">קוד סעיף: ${escapeHtml(issue.code)} | ${escapeHtml(issue.category)}</div>
           <p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(issue.note || "נדרש פירוט נוסף מצד הבודק.")}</p>
-          <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation(issue))}</p>
         </article>
       `).join("");
   }
@@ -2299,11 +2277,6 @@ function buildCompactPrintBody() {
                     <div class="report-check-meta">${escapeHtml(check.category)} | ${escapeHtml(getCheckStatusLabel(check.status))}</div>
                     ${check.note.trim() ? `<p class="report-check-note"><strong>הערה:</strong> ${escapeHtml(check.note.trim())}</p>` : ""}
                     ${buildReportPhotosMarkup(area, check)}
-                    <p class="report-check-note"><strong>המלצה:</strong> ${escapeHtml(buildIssueRecommendation({
-                      category: check.category,
-                      note: check.note.trim(),
-                      name: check.name
-                    }))}</p>
                   </div>
                 `).join("")
               : `<div class="report-empty">לא זוהו ליקויים בחדר זה.</div>`;
@@ -2336,7 +2309,7 @@ function buildCompactPrintBody() {
       </div>
       <h3>מהות המסמך</h3>
       <div class="report-text-block">
-        <p>דוח זה מרכז ממצאים עיקריים, תמונת מצב תמציתית והמלצות פעולה להמשך טיפול, לצורך מסירה ללקוח ותיעוד מקצועי מסודר.</p>
+        <p>דוח זה מרכז ממצאים עיקריים ותמונת מצב תמציתית, לצורך מסירה ללקוח ותיעוד מקצועי מסודר.</p>
       </div>
     </section>
     <section class="report-section compact-print-grid">
@@ -2393,7 +2366,7 @@ function buildCompactPrintBody() {
     ${roomMarkup}
     ${photoMarkup}
     <section class="report-section">
-      <h3>סיכום והמלצות</h3>
+      <h3>סיכום</h3>
       <div class="report-text-block">
         <p>${escapeHtml(buildClosingNote(reportSummary))}</p>
       </div>
