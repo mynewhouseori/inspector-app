@@ -140,7 +140,7 @@ function isRemovedAreaName(name = "") {
 }
 
 const removedCheckCodes = new Set(["1.1.2", "1.1.3", "1.1.4", "3.1.5", "7.1.3"]);
-const serviceBalconyRemovedCheckCodes = new Set(["6.1.4", "6.1.5", "6.1.6"]);
+const serviceBalconyRemovedCheckCodes = new Set(["6.1.2", "6.1.4", "6.1.5", "6.1.6"]);
 const entranceOnlyCheckCodes = new Set(["5.1.2"]);
 const SETTINGS = window.APP_CONFIG || window.DEFAULT_APP_CONFIG || {};
 const hasFirebaseConfig = Boolean(SETTINGS?.firebase?.apiKey);
@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.service-balcony-checks-1";
+const APP_VERSION = "2026.07.22.service-balcony-checks-2";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
