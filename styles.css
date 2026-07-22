@@ -1575,14 +1575,15 @@ select {
 }
 
 .report-area-photos {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 150px));
   gap: 10px;
+  align-items: start;
 }
 
 .report-area-photos img {
-  width: 112px;
-  height: 112px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: 16px;
   border: 1px solid #e4ddd1;
@@ -3075,9 +3076,14 @@ textarea:focus {
   }
 
   .compact-print-rooms,
-  .compact-print-photos,
   .report-area-details {
     display: block;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .compact-print-photos {
+    display: grid;
     break-inside: auto;
     page-break-inside: auto;
   }
@@ -3115,6 +3121,20 @@ textarea:focus {
 
   .compact-photo-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .report-area-photos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    max-width: 88mm;
+  }
+
+  .report-area-photos img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
   }
 }
 
