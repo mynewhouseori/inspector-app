@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.mobile-reports-nav-1";
+const APP_VERSION = "2026.07.22.mobile-room-edit-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1670,6 +1670,24 @@ function toggleAreaLock(area) {
   persistAndRender({}, { immediateCloud: true, allowEmptyOwnerDraft: true });
 }
 
+function bindAreaLockButton(lockBtn, area) {
+  let handledAt = 0;
+  const handleLockToggle = (event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const now = Date.now();
+    if (now - handledAt < 350) return;
+    handledAt = now;
+    toggleAreaLock(area);
+  };
+
+  lockBtn.addEventListener("click", handleLockToggle);
+  lockBtn.addEventListener("pointerup", handleLockToggle);
+  lockBtn.addEventListener("touchend", handleLockToggle, { passive: false });
+}
+
 function buildPresetAreas(mode = state.inspectionMode) {
   const preset = mode === "owner" ? ownerAreaPreset : defaultAreaPreset;
   return preset.map((name) => createArea(name, inferAreaType(name), true));
@@ -3132,9 +3150,7 @@ function renderAreas() {
     node.querySelectorAll(".lock-btn").forEach((lockBtn) => {
       lockBtn.textContent = area.locked ? "לחץ לפתיחה לעריכה" : "לחץ לשמירה ונעילה";
       if (area.locked) lockBtn.classList.add("locked");
-      lockBtn.addEventListener("click", () => {
-        toggleAreaLock(area);
-      });
+      bindAreaLockButton(lockBtn, area);
     });
 
     node.querySelector(".delete-btn").addEventListener("click", () => {
