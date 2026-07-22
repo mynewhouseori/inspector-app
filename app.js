@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.report-three-page-base-1";
+const APP_VERSION = "2026.07.22.report-signatures-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2044,6 +2044,26 @@ function buildClosingNote(summary) {
   return "לא סומנו ממצאים חריגים באזורים שנבדקו. לאחר השלמת יתר האזורים, ניתן להפיק דוח מסכם סופי למסירה.";
 }
 
+function buildReportSignaturesMarkup() {
+  const signatureLabels = ["מנהל פרויקט", "מפקח דיירים", "דייר"];
+  return `
+    <div class="report-signatures">
+      <div class="report-signature-date">
+        <strong>תאריך הבדיקה</strong>
+        <span>${escapeHtml(formatGeneratedDateOnly())}</span>
+      </div>
+      <div class="report-signature-grid">
+        ${signatureLabels.map((label) => `
+          <div class="report-signature-box">
+            <span class="report-signature-line"></span>
+            <strong>${escapeHtml(label)}</strong>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
 function renderReportDocument(summary, issues) {
   const reportAreas = getInspectedAreas();
   const reportSummary = computeReportSummary(reportAreas);
@@ -2186,7 +2206,10 @@ function renderReportDocument(summary, issues) {
       : `<div class="report-empty">לא זוהו ממצאים חריגים בחדרים שנבדקו.</div>`;
   }
 
-  els.reportClosingNote.innerHTML = `<p>${escapeHtml(buildClosingNote(reportSummary))}</p>`;
+  els.reportClosingNote.innerHTML = `
+    <p>${escapeHtml(buildClosingNote(reportSummary))}</p>
+    ${buildReportSignaturesMarkup()}
+  `;
 }
 
 function padPageNumber(value) {
