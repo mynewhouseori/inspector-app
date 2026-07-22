@@ -186,7 +186,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.photo-delete-immediate-1";
+const APP_VERSION = "2026.07.22.photo-delete-force-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -801,7 +801,8 @@ async function getMergedDeletionMarkersFromCloud() {
   return markers;
 }
 
-function mergeProjectRecordIntoLibrary(record) {
+function mergeProjectRecordIntoLibrary(record, options = {}) {
+  const { forceOverwrite = false } = options;
   const canonicalRecordId = getCanonicalProjectId(record) || record.id;
   const normalizedRecord = normalizeProjectRecord({ ...record, id: canonicalRecordId });
   if (!normalizedRecord) return null;
@@ -811,7 +812,9 @@ function mergeProjectRecordIntoLibrary(record) {
     (getCanonicalProjectId(project) || project.id) === normalizedRecord.id
   ));
   if (existingIndex >= 0) {
-    const projectToKeep = chooseProjectRecordToKeep(state.savedProjects[existingIndex], normalizedRecord);
+    const projectToKeep = forceOverwrite
+      ? normalizedRecord
+      : chooseProjectRecordToKeep(state.savedProjects[existingIndex], normalizedRecord);
     if (projectDataSignature(state.savedProjects[existingIndex].data) !== projectDataSignature(projectToKeep.data)) {
       backupProjectRecordLocally(state.savedProjects[existingIndex], "local-library-replace");
     }
@@ -875,8 +878,8 @@ function keepRicherProjectRecord(existingRecord, candidateRecord) {
   return candidateRecord || existingRecord;
 }
 
-function markProjectSavedLocally(record) {
-  const keptRecord = mergeProjectRecordIntoLibrary(record);
+function markProjectSavedLocally(record, options = {}) {
+  const keptRecord = mergeProjectRecordIntoLibrary(record, options);
   dedupeSavedProjectsLibrary();
   sortSavedProjectsLibrary();
   return keptRecord;
@@ -1419,7 +1422,10 @@ function deleteCheckPhotoAtIndex(area, check, photoIndex) {
 
   area.photoCaptures = photos.filter((_, index) => index !== targetIndex);
   updateCloudStatus("הצילום נמחק", "ok");
-  persistAndRender({ preserveScroll: true }, { immediateCloud: true });
+  persistAndRender(
+    { preserveScroll: true },
+    { immediateCloud: true, forceCloudOverwrite: true, forceLibraryOverwrite: true }
+  );
 }
 
 function getPhotoIdentity(photo = {}) {
@@ -2279,8 +2285,8 @@ function saveProjectsLibrary() {
   ))));
 }
 
-function upsertSavedProjectRecord(record) {
-  markProjectSavedLocally(record);
+function upsertSavedProjectRecord(record, options = {}) {
+  markProjectSavedLocally(record, options);
 }
 
 function buildProjectRecord(projectId = getCanonicalProjectId({
@@ -2301,17 +2307,18 @@ function buildProjectRecord(projectId = getCanonicalProjectId({
 }
 
 function syncCurrentProjectDraft(options = {}) {
-  const { allowEmptyOwnerDraft = false } = options;
+  const { allowEmptyOwnerDraft = false, forceLibraryOverwrite = false } = options;
   if (!state.currentProjectId) return null;
   const record = buildProjectRecord(state.currentProjectId);
   if (state.inspectionMode === "owner" && !allowEmptyOwnerDraft && !hasProjectDraftContent(record)) return null;
   clearProjectDeletionMarker(record.id);
-  upsertSavedProjectRecord(record);
+  upsertSavedProjectRecord(record, { forceOverwrite: forceLibraryOverwrite });
   saveProjectsLibrary();
   return record;
 }
 
-async function saveProjectRecordToCloud(record) {
+async function saveProjectRecordToCloud(record, options = {}) {
+  const { forceOverwrite = false } = options;
   if (!db) return;
   const normalizedRecord = compactProjectRecordForStorage(normalizeProjectRecord(record) || record, {
     keepLocalPreviews: true
@@ -2322,7 +2329,9 @@ async function saveProjectRecordToCloud(record) {
   const existingRecord = existingSnapshot.exists()
     ? normalizeProjectRecord({ id: existingSnapshot.id, rawCloudId: existingSnapshot.id, ...existingSnapshot.data() })
     : null;
-  const recordToSave = keepRicherProjectRecord(existingRecord, normalizedRecord);
+  const recordToSave = forceOverwrite
+    ? normalizedRecord
+    : keepRicherProjectRecord(existingRecord, normalizedRecord);
 
   if (recordToSave !== normalizedRecord) {
     if (existingRecord && projectDataSignature(existingRecord.data) !== projectDataSignature(recordToSave.data)) {
@@ -2826,12 +2835,13 @@ function updateHeader() {
   els.reportMeta.textContent = parts.length ? parts.join(" | ") : "בחר חדרים ומלא את הבדיקות בשטח.";
 }
 
-function persistProjectRecordImmediately(record) {
+function persistProjectRecordImmediately(record, options = {}) {
+  const { forceOverwrite = false } = options;
   if (!db || !record) return;
   clearTimeout(cloudSyncTimer);
   pendingCloudSync = false;
   lastCloudAppliedAt = record.updatedAtMs;
-  saveProjectRecordToCloud(record)
+  saveProjectRecordToCloud(record, { forceOverwrite })
     .then((savedRecord) => {
       if (savedRecord) {
         state.currentProjectId = savedRecord.id;
@@ -2848,9 +2858,14 @@ function persistProjectRecordImmediately(record) {
 }
 
 function saveState(options = {}) {
-  const { immediateCloud = false, allowEmptyOwnerDraft = false } = options;
+  const {
+    immediateCloud = false,
+    allowEmptyOwnerDraft = false,
+    forceCloudOverwrite = false,
+    forceLibraryOverwrite = forceCloudOverwrite
+  } = options;
   markLocalMutation();
-  const record = syncCurrentProjectDraft({ allowEmptyOwnerDraft });
+  const record = syncCurrentProjectDraft({ allowEmptyOwnerDraft, forceLibraryOverwrite });
   try {
     localStorage.setItem(storageKey, JSON.stringify(compactStateForStorage()));
   } catch (error) {
@@ -2858,7 +2873,7 @@ function saveState(options = {}) {
     console.error(error);
   }
   if (immediateCloud) {
-    persistProjectRecordImmediately(record);
+    persistProjectRecordImmediately(record, { forceOverwrite: forceCloudOverwrite });
     return;
   }
   queueCloudSync();
