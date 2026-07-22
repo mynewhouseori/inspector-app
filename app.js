@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.report-no-recommendations-1";
+const APP_VERSION = "2026.07.22.report-compact-findings-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2134,25 +2134,23 @@ function renderReportDocument(summary, issues) {
   const areaCards = reportAreas.map((area) => {
     const total = area.checks.length;
     const issuesInArea = area.checks.filter((check) => check.status === "issue");
-    const completedChecksInArea = area.checks.filter((check) => check.status === "ok" || check.status === "issue");
     const okCount = area.checks.filter((check) => check.status === "ok").length;
     const pendingCount = area.checks.filter((check) => check.status === "pending").length;
     const progress = getAreaProgress(area);
     const completion = computeAreaCompletion(area);
-    const areaChecksMarkup = completedChecksInArea.length
-      ? completedChecksInArea.map((check) => `
+    const areaChecksMarkup = issuesInArea.length
+      ? issuesInArea.map((check) => `
           <div class="report-check-item report-check-${escapeHtml(check.status)}">
             <strong>${escapeHtml(check.name)}</strong>
             <div class="report-check-meta">${escapeHtml(check.category)} | ${escapeHtml(getCheckStatusLabel(check.status))}</div>
             ${check.note.trim()
-              ? `<p class="report-check-note"><strong>הערה:</strong> ${escapeHtml(check.note.trim())}</p>`
+              ? `<p class="report-check-note"><strong>ממצא:</strong> ${escapeHtml(check.note.trim())}</p>`
               : ""
             }
             ${buildReportPhotosMarkup(area, check)}
-            ${buildReportCheckNote(check)}
           </div>
         `).join("")
-      : `<div class="report-empty">טרם הושלמו סעיפי בדיקה בחדר זה.</div>`;
+      : `<div class="report-area-brief">נבדקו ${escapeHtml(okCount)} סעיפים ללא ממצא חריג בדוח זה.</div>`;
 
     return `
       <article class="report-area-card">
@@ -2163,7 +2161,7 @@ function renderReportDocument(summary, issues) {
           </div>
           <span class="report-area-status">${escapeHtml(completion)}% הושלם</span>
         </div>
-        <div class="report-area-meta">תקין: ${escapeHtml(okCount)} | ליקויים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
+        <div class="report-area-meta">תקין: ${escapeHtml(okCount)} | ממצאים חריגים: ${escapeHtml(issuesInArea.length)} | ממתין: ${escapeHtml(pendingCount)}</div>
         <div class="report-area-checks">${areaChecksMarkup}</div>
       </article>
       `;

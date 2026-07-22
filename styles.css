@@ -1690,6 +1690,15 @@ select {
   line-height: 1.7;
 }
 
+.report-area-brief {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(44, 132, 94, 0.07);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .report-empty {
   padding: 14px;
   border: 1px dashed #d8d0c4;
