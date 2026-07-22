@@ -3116,9 +3116,3 @@ textarea:focus {
   background: linear-gradient(180deg, rgba(127, 29, 29, 0.18), #fff1f1);
   border-color: rgba(127, 29, 29, 0.64);
 }
-
-.status-select.status-pending {
-  color: #7f1d1d;
-  border-color: rgba(127, 29, 29, 0.58);
-  background: linear-gradient(180deg, rgba(127, 29, 29, 0.13), rgba(255, 241, 241, 0.96));
-}
