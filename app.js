@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.cloud-status-watchdog-1";
+const APP_VERSION = "2026.07.22.cloud-status-stable-1";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1267,7 +1267,7 @@ function updateCloudStatus(message, tone = "") {
       } else {
         updateCloudStatus("הענן מחובר.", "ok");
       }
-    }, 30000);
+    }, 12000);
   }
 }
 
@@ -2581,6 +2581,7 @@ function queueCloudSync() {
       updateProjectFields();
       const record = buildProjectRecord(state.currentProjectId);
       if (state.inspectionMode === "owner" && !hasProjectDraftContent(record)) return;
+      updateCloudStatus("שומר לענן...", "warn");
       const savedRecord = await withTimeout(
         saveProjectRecordToCloud(record),
         20000,
@@ -2604,7 +2605,7 @@ function subscribeToCloudProjects() {
     return;
   }
 
-  updateCloudStatus("מתחבר לענן ומסנכרן פרויקטים...", "warn");
+  updateCloudStatus("הענן מתחבר ברקע.", "ok");
   const localProjectsSeed = [...state.savedProjects];
   bootstrapCloudProjects(localProjectsSeed);
   projectsUnsubscribe = onSnapshot(
@@ -2945,6 +2946,7 @@ function persistProjectRecordImmediately(record, options = {}) {
   cloudSyncTimer = null;
   pendingCloudSync = false;
   lastCloudAppliedAt = record.updatedAtMs;
+  updateCloudStatus("שומר לענן...", "warn");
   withTimeout(
     saveProjectRecordToCloud(record, { forceOverwrite }),
     20000,
@@ -3281,7 +3283,7 @@ function loadState() {
     state.currentScreen = "home";
     state.inspectionMode = "new";
     state.areas = buildPresetAreas();
-    updateCloudStatus("טוען פרויקטים מהענן...", "warn");
+    updateCloudStatus("האפליקציה מוכנה; הענן יתחבר ברקע.", "ok");
     return;
   }
   const parsed = JSON.parse(raw);
@@ -3301,7 +3303,7 @@ function loadState() {
     activeInspectionAreaId: parsed.activeInspectionAreaId || null,
     areas: Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas()
   });
-  updateCloudStatus("טוען פרויקטים מהענן...", "warn");
+  updateCloudStatus("האפליקציה מוכנה; הענן יתחבר ברקע.", "ok");
 }
 
 function render(options = {}) {
