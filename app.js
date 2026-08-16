@@ -150,6 +150,7 @@ const storage = firebaseApp ? getStorage(firebaseApp) : null;
 const PROJECTS_COLLECTION = SETTINGS?.firestoreCollections?.projects || "inspector_projects";
 const PROJECT_BACKUPS_COLLECTION = `${PROJECTS_COLLECTION}_backups`;
 const PROJECT_DELETIONS_COLLECTION = `${PROJECTS_COLLECTION}_deletions`;
+const PROJECT_GUARDS_COLLECTION = `${PROJECTS_COLLECTION}_guards`;
 
 let projectsUnsubscribe = null;
 let cloudSyncTimer = null;
@@ -187,7 +188,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.08.16.174";
+const APP_VERSION = "2026.08.16.175";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1023,6 +1024,141 @@ function writeProjectBackupToCloud(record, reason, sourceProjectId) {
   }).catch((error) => {
     console.error(error);
   });
+}
+
+function getProjectGuardDocId(projectId) {
+  const canonicalId = getCanonicalProjectId({ id: projectId }) || projectId;
+  return canonicalId ? `guard_${canonicalId}` : null;
+}
+
+function shouldReplaceProjectGuard(existingRecord, candidateRecord) {
+  if (!existingRecord) return true;
+  return getProjectInspectionFootprint(candidateRecord).score >= getProjectInspectionFootprint(existingRecord).score;
+}
+
+async function fetchProjectGuardRecord(projectId) {
+  if (!db || !projectId) return null;
+  try {
+    const guardDocId = getProjectGuardDocId(projectId);
+    if (!guardDocId) return null;
+    const snapshot = await getDoc(doc(db, PROJECT_GUARDS_COLLECTION, guardDocId));
+    if (!snapshot.exists()) return null;
+    const guardData = snapshot.data() || {};
+    const guardedRecord = guardData.record && guardData.record.id
+      ? guardData.record
+      : {
+          id: guardData.id || projectId,
+          updatedAt: guardData.updatedAt,
+          updatedAtMs: guardData.updatedAtMs,
+          title: guardData.title,
+          propertyAddress: guardData.propertyAddress,
+          data: guardData.data
+        };
+    return normalizeProjectRecord(guardedRecord);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function writeProjectGuardToCloud(record, reason = "auto-guard") {
+  if (!db || !record?.id || !record?.data || !hasProjectDraftContent(record)) return;
+
+  try {
+    const compactRecord = compactProjectRecordForStorage(record, { keepLocalPreviews: false });
+    const guardDocId = getProjectGuardDocId(compactRecord.id);
+    if (!guardDocId) return;
+
+    const guardRef = doc(db, PROJECT_GUARDS_COLLECTION, guardDocId);
+    const existingSnapshot = await getDoc(guardRef);
+    const existingGuard = existingSnapshot.exists()
+      ? normalizeProjectRecord(existingSnapshot.data()?.record || existingSnapshot.data())
+      : null;
+
+    preserveExistingPhotoSources(compactRecord, existingGuard);
+    const recordToKeep = shouldReplaceProjectGuard(existingGuard, compactRecord)
+      ? compactRecord
+      : existingGuard;
+    if (!recordToKeep) return;
+
+    await setDoc(guardRef, {
+      id: recordToKeep.id,
+      title: recordToKeep.title,
+      propertyAddress: recordToKeep.propertyAddress,
+      updatedAt: recordToKeep.updatedAt,
+      updatedAtMs: recordToKeep.updatedAtMs,
+      guardReason: reason,
+      guardedAt: new Date().toISOString(),
+      footprint: getProjectInspectionFootprint(recordToKeep),
+      record: recordToKeep
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function healProjectFromProtectionSources(projectId, options = {}) {
+  const { applyIfCurrent = false, syncCloudIfRecovered = false } = options;
+  if (!projectId) return null;
+
+  const currentProject = state.savedProjects.find((project) => (
+    (getCanonicalProjectId(project) || project.id) === projectId
+  ));
+  const localBackup = getLatestProjectBackup(projectId)?.record
+    ? normalizeProjectRecord(getLatestProjectBackup(projectId).record)
+    : null;
+  const cloudGuard = await fetchProjectGuardRecord(projectId);
+  const sources = [currentProject, localBackup, cloudGuard].filter(Boolean);
+  if (!sources.length) return null;
+
+  let healedRecord = normalizeProjectRecord(sources[0]);
+  for (const source of sources.slice(1)) {
+    const normalizedSource = normalizeProjectRecord(source);
+    preserveExistingPhotoSources(healedRecord, normalizedSource);
+    preserveExistingPhotoSources(normalizedSource, healedRecord);
+    healedRecord = chooseProjectRecordToKeep(healedRecord, normalizedSource);
+  }
+
+  if (!healedRecord) return null;
+  const currentSignature = currentProject ? projectDataSignature(currentProject.data) : "";
+  const healedSignature = projectDataSignature(healedRecord.data);
+  const improved = !currentProject || currentSignature !== healedSignature;
+  if (!improved) return healedRecord;
+
+  upsertSavedProjectRecord(healedRecord, { forceOverwrite: true });
+  saveProjectsLibrary();
+  backupProjectSnapshot(healedRecord, "auto-photo-heal");
+
+  if (applyIfCurrent && state.currentProjectId === healedRecord.id) {
+    isApplyingCloudProject = true;
+    try {
+      applyProjectData(healedRecord.data);
+      render({ preserveScroll: false });
+    } finally {
+      isApplyingCloudProject = false;
+    }
+  }
+
+  if (syncCloudIfRecovered && db) {
+    saveProjectRecordToCloud(healedRecord, { forceOverwrite: true })
+      .catch((error) => console.error(error));
+    writeProjectGuardToCloud(healedRecord, "auto-photo-heal");
+  }
+
+  return healedRecord;
+}
+
+function scheduleProjectProtectionSweep(projectIds = []) {
+  if (!projectIds.length) return;
+  window.setTimeout(() => {
+    const uniqueIds = [...new Set(projectIds.filter(Boolean))].slice(0, 20);
+    uniqueIds.forEach((projectId) => {
+      healProjectFromProtectionSources(projectId, {
+        applyIfCurrent: projectId === state.currentProjectId,
+        syncCloudIfRecovered: projectId === state.currentProjectId
+      }).catch((error) => console.error(error));
+    });
+  }, 180);
 }
 
 function withTimeout(promise, ms, message) {
@@ -2626,20 +2762,27 @@ async function saveProjectRecordToCloud(record, options = {}) {
   const existingRecord = existingSnapshot.exists()
     ? normalizeProjectRecord({ id: existingSnapshot.id, rawCloudId: existingSnapshot.id, ...existingSnapshot.data() })
     : null;
+  const guardRecord = await fetchProjectGuardRecord(normalizedRecord.id);
   preserveExistingPhotoSources(normalizedRecord, existingRecord);
+  preserveExistingPhotoSources(normalizedRecord, guardRecord);
   const recordToSave = forceOverwrite
     ? normalizedRecord
-    : keepRicherProjectRecord(existingRecord, normalizedRecord);
+    : keepRicherProjectRecord(guardRecord, keepRicherProjectRecord(existingRecord, normalizedRecord));
 
   if (recordToSave !== normalizedRecord) {
     if (existingRecord && projectDataSignature(existingRecord.data) !== projectDataSignature(recordToSave.data)) {
       backupProjectRecordLocally(existingRecord, "cloud-before-protected-merge");
       writeProjectBackupToCloud(existingRecord, "cloud-before-protected-merge", normalizedRecord.id);
-      await setProjectDocWithPreviewFallback(projectRef, recordToSave);
     }
+    if (guardRecord && projectDataSignature(guardRecord.data) !== projectDataSignature(recordToSave.data)) {
+      backupProjectRecordLocally(guardRecord, "guard-before-protected-merge");
+      writeProjectBackupToCloud(guardRecord, "guard-before-protected-merge", normalizedRecord.id);
+    }
+    await setProjectDocWithPreviewFallback(projectRef, recordToSave);
     upsertSavedProjectRecord(recordToSave);
     saveProjectsLibrary();
     updateCurrentProjectFromProtectedRecord(recordToSave);
+    writeProjectGuardToCloud(recordToSave, "cloud-protected-merge");
     return { ...recordToSave, protectedFromOverwrite: true };
   }
 
@@ -2651,6 +2794,7 @@ async function saveProjectRecordToCloud(record, options = {}) {
   const savedRecord = await setProjectDocWithPreviewFallback(projectRef, normalizedRecord);
   if (hasProjectDraftContent(savedRecord)) {
     writeProjectBackupToCloud(savedRecord, "saved-version", savedRecord.id);
+    writeProjectGuardToCloud(savedRecord, "saved-version");
   }
   return savedRecord;
 }
@@ -2799,6 +2943,7 @@ function subscribeToCloudProjects() {
       renderSavedProjects();
       updateCloudStatus("סנכרון ענן פעיל. אותם פרויקטים זמינים במחשב ובנייד.", "ok");
       cleanupDuplicateOwnerProjects(duplicateProjects);
+      scheduleProjectProtectionSweep(state.savedProjects.map((project) => project.id));
 
       const activeProject = state.currentProjectId
         ? state.savedProjects.find((project) => project.id === state.currentProjectId)
@@ -2860,6 +3005,7 @@ async function saveCurrentProject() {
     console.error(error);
   }
   renderSavedProjects();
+  scheduleProjectProtectionSweep([id]);
   return true;
 }
 
@@ -2877,6 +3023,10 @@ function loadProject(projectId) {
   syncActiveInspectionArea();
   render({ preserveScroll: false });
   setScreen(targetScreen, { scroll: true });
+  healProjectFromProtectionSources(project.id, {
+    applyIfCurrent: true,
+    syncCloudIfRecovered: true
+  }).catch((error) => console.error(error));
 }
 
 async function restoreProjectBackup(projectId = state.currentProjectId) {
@@ -3463,6 +3613,7 @@ function loadState() {
     state.inspectionMode = "new";
     state.areas = buildPresetAreas();
     updateCloudStatus("האפליקציה מוכנה; הענן יתחבר ברקע.", "ok");
+    scheduleProjectProtectionSweep(state.savedProjects.map((project) => project.id));
     return;
   }
   const parsed = JSON.parse(raw);
@@ -3498,6 +3649,7 @@ function loadState() {
     }
   }
   updateCloudStatus("האפליקציה מוכנה; הענן יתחבר ברקע.", "ok");
+  scheduleProjectProtectionSweep(state.savedProjects.map((project) => project.id));
 }
 
 function render(options = {}) {
