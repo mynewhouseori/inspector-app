@@ -187,7 +187,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.07.22.report-signatures-lower-1";
+const APP_VERSION = "2026.08.16.174";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -605,6 +605,7 @@ function dedupeProjectRecords(projects = []) {
     return (b?.updatedAtMs || 0) - (a?.updatedAtMs || 0);
   });
 
+  dedupedProjects.sort((a, b) => (b.updatedAtMs || 0) - (a.updatedAtMs || 0));
   return { dedupedProjects, duplicateProjects };
 }
 
@@ -2489,6 +2490,75 @@ function serializeCurrentProject() {
   };
 }
 
+function extractProjectRecordFromBackupEntry(entry = {}) {
+  const candidates = [
+    entry?.project,
+    entry?.record,
+    entry?.projectRecord,
+    entry?.data?.project,
+    entry?.data?.record,
+    entry
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate?.id && candidate?.data) {
+      return normalizeProjectRecord(candidate);
+    }
+  }
+
+  if (entry?.projectId && entry?.areas) {
+    return normalizeProjectRecord({
+      id: entry.projectId,
+      title: entry.title,
+      updatedAt: entry.updatedAt,
+      updatedAtMs: entry.updatedAtMs,
+      data: {
+        inspectionMode: entry.inspectionMode,
+        propertyName: entry.propertyName || entry.title || "",
+        propertyAddress: entry.propertyAddress,
+        inspectionDate: entry.inspectionDate,
+        clientName: entry.clientName,
+        clientPhone: entry.clientPhone,
+        clientEmail: entry.clientEmail,
+        inspectorName: entry.inspectorName,
+        activeInspectionAreaId: entry.activeInspectionAreaId,
+        areas: entry.areas
+      }
+    });
+  }
+
+  return null;
+}
+
+function restoreProjectsFromBackups(projects = []) {
+  const backupRecords = readProjectBackups()
+    .map((entry) => extractProjectRecordFromBackupEntry(entry))
+    .filter(Boolean);
+  const restoredProjects = [...projects];
+
+  backupRecords.forEach((backupRecord) => {
+    const backupId = getCanonicalProjectId(backupRecord) || backupRecord.id;
+    if (!backupId || isProjectDeletedLocally(backupRecord)) return;
+
+    const existingIndex = restoredProjects.findIndex((project) => (
+      (getCanonicalProjectId(project) || project.id) === backupId
+    ));
+
+    if (existingIndex >= 0) {
+      const existingRecord = normalizeProjectRecord(restoredProjects[existingIndex]);
+      const candidateRecord = normalizeProjectRecord(backupRecord);
+      preserveExistingPhotoSources(existingRecord, candidateRecord);
+      preserveExistingPhotoSources(candidateRecord, existingRecord);
+      restoredProjects[existingIndex] = chooseProjectRecordToKeep(existingRecord, candidateRecord);
+      return;
+    }
+
+    restoredProjects.push(normalizeProjectRecord(backupRecord));
+  });
+
+  return dedupeProjectRecords(restoredProjects).dedupedProjects;
+}
+
 function saveProjectsLibrary() {
   const richProjects = state.savedProjects.map((project) => (
     compactProjectRecordForStorage(project, { keepLocalPreviews: true })
@@ -2540,6 +2610,7 @@ function syncCurrentProjectDraft(options = {}) {
   clearProjectDeletionMarker(record.id);
   upsertSavedProjectRecord(record, { forceOverwrite: forceLibraryOverwrite });
   saveProjectsLibrary();
+  backupProjectSnapshot(record, "local-current-version");
   return record;
 }
 
@@ -2722,14 +2793,16 @@ function subscribeToCloudProjects() {
         ...state.savedProjects,
         ...incomingProjects
       ]);
-      state.savedProjects = dedupedProjects;
+      state.savedProjects = restoreProjectsFromBackups(dedupedProjects);
       backupSavedProjectSnapshots("cloud-library-snapshot");
       saveProjectsLibrary();
       renderSavedProjects();
       updateCloudStatus("סנכרון ענן פעיל. אותם פרויקטים זמינים במחשב ובנייד.", "ok");
       cleanupDuplicateOwnerProjects(duplicateProjects);
 
-      const activeProject = state.currentProjectId ? dedupedProjects.find((project) => project.id === state.currentProjectId) : null;
+      const activeProject = state.currentProjectId
+        ? state.savedProjects.find((project) => project.id === state.currentProjectId)
+        : null;
       if (isPickerOpen || isUserEditingField()) return;
       const localIsIdle = Date.now() - lastLocalMutationAt > 1200;
       const remoteDiffersFromLocal = activeProject
@@ -3381,7 +3454,7 @@ function renderSummaryReports() {
 function loadState() {
   const projectsRaw = localStorage.getItem(projectsKey);
   const localProjects = projectsRaw ? JSON.parse(projectsRaw) : [];
-  state.savedProjects = dedupeProjectRecords(localProjects).dedupedProjects;
+  state.savedProjects = restoreProjectsFromBackups(dedupeProjectRecords(localProjects).dedupedProjects);
   backupSavedProjectSnapshots("local-library-load");
   saveProjectsLibrary();
   const raw = localStorage.getItem(storageKey);
@@ -3409,6 +3482,21 @@ function loadState() {
     activeInspectionAreaId: parsed.activeInspectionAreaId || null,
     areas: Array.isArray(parsed.areas) ? parsed.areas : buildPresetAreas()
   });
+  if (state.currentProjectId) {
+    const savedProject = state.savedProjects.find((project) => project.id === state.currentProjectId);
+    if (savedProject) {
+      const currentDraft = normalizeProjectRecord({
+        id: state.currentProjectId,
+        updatedAtMs: Date.now(),
+        updatedAt: new Date().toISOString(),
+        data: serializeCurrentProject()
+      });
+      const preferredRecord = chooseProjectRecordToKeep(currentDraft, savedProject);
+      if (preferredRecord?.id === savedProject.id && projectDataSignature(savedProject.data) !== projectDataSignature(currentDraft?.data || {})) {
+        applyProjectData(savedProject.data);
+      }
+    }
+  }
   updateCloudStatus("האפליקציה מוכנה; הענן יתחבר ברקע.", "ok");
 }
 
