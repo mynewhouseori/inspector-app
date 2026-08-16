@@ -151,6 +151,9 @@ const PROJECTS_COLLECTION = SETTINGS?.firestoreCollections?.projects || "inspect
 const PROJECT_BACKUPS_COLLECTION = `${PROJECTS_COLLECTION}_backups`;
 const PROJECT_DELETIONS_COLLECTION = `${PROJECTS_COLLECTION}_deletions`;
 const PROJECT_GUARDS_COLLECTION = `${PROJECTS_COLLECTION}_guards`;
+const PHOTO_RECOVERY_DB_NAME = "inspector-photo-recovery";
+const PHOTO_RECOVERY_STORE = "projects";
+const PHOTO_RECOVERY_DB_VERSION = 1;
 
 let projectsUnsubscribe = null;
 let cloudSyncTimer = null;
@@ -162,6 +165,8 @@ let isPickerOpen = false;
 let pendingCloudSync = false;
 let pendingFocusAreaId = null;
 let cloudStatusWatchdogTimer = null;
+let photoRecoveryDbPromise = null;
+let photoRecoveryRestoreTimer = null;
 
 const inspectionModeLabels = {
   new: "בדיקת נכס חדש",
@@ -188,7 +193,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.08.16.175";
+const APP_VERSION = "2026.08.16.176";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -683,6 +688,213 @@ function compactProjectRecordForStorage(record, options = {}) {
     area.photoCaptures = cleanPhotoCaptures(area.photoCaptures).map((photo) => compactPhotoForStorage(photo, keepLocalPreviews));
   });
   return clone;
+}
+
+function openPhotoRecoveryDb() {
+  if (!("indexedDB" in window)) return Promise.resolve(null);
+  if (photoRecoveryDbPromise) return photoRecoveryDbPromise;
+
+  photoRecoveryDbPromise = new Promise((resolve, reject) => {
+    const request = window.indexedDB.open(PHOTO_RECOVERY_DB_NAME, PHOTO_RECOVERY_DB_VERSION);
+    request.onupgradeneeded = () => {
+      const dbInstance = request.result;
+      if (!dbInstance.objectStoreNames.contains(PHOTO_RECOVERY_STORE)) {
+        dbInstance.createObjectStore(PHOTO_RECOVERY_STORE, { keyPath: "projectId" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error("Photo recovery DB failed to open"));
+  }).catch((error) => {
+    console.error(error);
+    photoRecoveryDbPromise = Promise.resolve(null);
+    return null;
+  });
+
+  return photoRecoveryDbPromise;
+}
+
+function buildPhotoRecoverySnapshot(record) {
+  const normalizedRecord = normalizeProjectRecord(record);
+  if (!normalizedRecord?.id) return null;
+
+  const areas = (Array.isArray(normalizedRecord.data?.areas) ? normalizedRecord.data.areas : [])
+    .map((area) => ({
+      id: area.id || "",
+      name: area.name || "",
+      photoCaptures: cleanPhotoCaptures(area.photoCaptures).map((photo) => ({
+        id: photo.id || "",
+        checkCode: photo.checkCode || "",
+        checkName: photo.checkName || "",
+        fileName: photo.fileName || "",
+        capturedAt: photo.capturedAt || "",
+        storagePath: photo.storagePath || "",
+        downloadURL: photo.downloadURL || "",
+        previewDataUrl: photo.previewDataUrl || ""
+      }))
+    }))
+    .filter((area) => area.photoCaptures.length > 0);
+
+  return {
+    projectId: normalizedRecord.id,
+    propertyName: normalizedRecord.data.propertyName || normalizedRecord.propertyName || "",
+    updatedAt: normalizedRecord.updatedAt || new Date(normalizedRecord.updatedAtMs || Date.now()).toISOString(),
+    updatedAtMs: Number(normalizedRecord.updatedAtMs || Date.now()),
+    savedAt: new Date().toISOString(),
+    areas
+  };
+}
+
+async function saveProjectPhotoRecovery(record) {
+  const snapshot = buildPhotoRecoverySnapshot(record);
+  if (!snapshot?.projectId) return;
+
+  const dbInstance = await openPhotoRecoveryDb();
+  if (!dbInstance) return;
+
+  await new Promise((resolve, reject) => {
+    const transaction = dbInstance.transaction(PHOTO_RECOVERY_STORE, "readwrite");
+    const store = transaction.objectStore(PHOTO_RECOVERY_STORE);
+    const request = snapshot.areas.length ? store.put(snapshot) : store.delete(snapshot.projectId);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error || new Error("Photo recovery save failed"));
+  }).catch((error) => {
+    console.error(error);
+  });
+}
+
+async function getProjectPhotoRecovery(projectId) {
+  if (!projectId) return null;
+  const dbInstance = await openPhotoRecoveryDb();
+  if (!dbInstance) return null;
+
+  return new Promise((resolve) => {
+    const transaction = dbInstance.transaction(PHOTO_RECOVERY_STORE, "readonly");
+    const store = transaction.objectStore(PHOTO_RECOVERY_STORE);
+    const request = store.get(projectId);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => {
+      console.error(request.error || new Error("Photo recovery read failed"));
+      resolve(null);
+    };
+  });
+}
+
+async function deleteProjectPhotoRecovery(projectId) {
+  if (!projectId) return;
+  const dbInstance = await openPhotoRecoveryDb();
+  if (!dbInstance) return;
+
+  await new Promise((resolve, reject) => {
+    const transaction = dbInstance.transaction(PHOTO_RECOVERY_STORE, "readwrite");
+    const store = transaction.objectStore(PHOTO_RECOVERY_STORE);
+    const request = store.delete(projectId);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error || new Error("Photo recovery delete failed"));
+  }).catch((error) => {
+    console.error(error);
+  });
+}
+
+function mergeProjectPhotosFromRecovery(record, recoverySnapshot) {
+  const normalizedRecord = normalizeProjectRecord(record);
+  if (!normalizedRecord?.data?.areas?.length || !Array.isArray(recoverySnapshot?.areas) || !recoverySnapshot.areas.length) {
+    return { record: normalizedRecord, changed: false };
+  }
+
+  let changed = false;
+  normalizedRecord.data.areas.forEach((area) => {
+    const recoveryArea = recoverySnapshot.areas.find((item) => normalizeAreaName(item.name) === normalizeAreaName(area.name));
+    if (!recoveryArea) return;
+
+    const currentPhotos = cleanPhotoCaptures(area.photoCaptures);
+    const currentByKey = new Map(currentPhotos.map((photo) => [getPhotoMergeKey(area.name, photo), photo]));
+    const mergedPhotos = [...currentPhotos];
+
+    cleanPhotoCaptures(recoveryArea.photoCaptures).forEach((recoveryPhoto) => {
+      const photoKey = getPhotoMergeKey(area.name, recoveryPhoto);
+      const existingPhoto = currentByKey.get(photoKey);
+      if (existingPhoto) {
+        const nextStoragePath = existingPhoto.storagePath || recoveryPhoto.storagePath || "";
+        const nextDownloadURL = existingPhoto.downloadURL || recoveryPhoto.downloadURL || "";
+        const nextPreviewDataUrl = existingPhoto.previewDataUrl || recoveryPhoto.previewDataUrl || "";
+        if (
+          nextStoragePath !== existingPhoto.storagePath
+          || nextDownloadURL !== existingPhoto.downloadURL
+          || nextPreviewDataUrl !== existingPhoto.previewDataUrl
+        ) {
+          existingPhoto.storagePath = nextStoragePath;
+          existingPhoto.downloadURL = nextDownloadURL;
+          existingPhoto.previewDataUrl = nextPreviewDataUrl;
+          changed = true;
+        }
+        return;
+      }
+
+      mergedPhotos.push({
+        ...recoveryPhoto,
+        storagePath: recoveryPhoto.storagePath || "",
+        downloadURL: recoveryPhoto.downloadURL || "",
+        previewDataUrl: recoveryPhoto.previewDataUrl || ""
+      });
+      currentByKey.set(photoKey, recoveryPhoto);
+      changed = true;
+    });
+
+    area.photoCaptures = mergedPhotos;
+  });
+
+  return { record: normalizedRecord, changed };
+}
+
+async function restoreProjectPhotosFromRecovery(record, options = {}) {
+  const { syncCloudIfRecovered = false } = options;
+  const normalizedRecord = normalizeProjectRecord(record);
+  if (!normalizedRecord?.id) return normalizedRecord;
+
+  const recoverySnapshot = await getProjectPhotoRecovery(normalizedRecord.id);
+  const restored = mergeProjectPhotosFromRecovery(normalizedRecord, recoverySnapshot);
+  if (!restored.changed) return restored.record;
+
+  if (syncCloudIfRecovered && db) {
+    saveProjectRecordToCloud(restored.record, { forceOverwrite: true }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+  return restored.record;
+}
+
+function queuePhotoRecoverySave(record) {
+  if (!record?.id) return;
+  saveProjectPhotoRecovery(record).catch((error) => {
+    console.error(error);
+  });
+}
+
+function schedulePhotoRecoveryRestore() {
+  clearTimeout(photoRecoveryRestoreTimer);
+  photoRecoveryRestoreTimer = window.setTimeout(async () => {
+    photoRecoveryRestoreTimer = null;
+    const restoredProjects = [];
+
+    for (const project of state.savedProjects) {
+      restoredProjects.push(await restoreProjectPhotosFromRecovery(project, { syncCloudIfRecovered: true }));
+    }
+
+    if (restoredProjects.length) {
+      state.savedProjects = dedupeProjectRecords(restoredProjects).dedupedProjects;
+      saveProjectsLibrary();
+    }
+
+    if (!state.currentProjectId) return;
+    const currentRecord = buildProjectRecord(state.currentProjectId);
+    const restoredCurrent = await restoreProjectPhotosFromRecovery(currentRecord, { syncCloudIfRecovered: true });
+    if (projectDataSignature(restoredCurrent.data) !== projectDataSignature(currentRecord.data)) {
+      applyProjectData(restoredCurrent.data);
+      saveState({ skipCloud: true });
+      render({ preserveScroll: true });
+    }
+  }, 240);
 }
 
 function hasInlinePhotoPreviews(record) {
@@ -1685,6 +1897,7 @@ async function handleCheckCameraFile(area, check, file) {
     ...(Array.isArray(area.photoCaptures) ? area.photoCaptures : []),
     pendingPhotoRecord
   ];
+  if (state.currentProjectId) queuePhotoRecoverySave(buildProjectRecord(state.currentProjectId));
   startPhotoUpload(area.id, check.code);
   render({ preserveScroll: true });
   let uploadedPhoto;
@@ -1710,6 +1923,7 @@ async function handleCheckCameraFile(area, check, file) {
   ));
 
   finishPhotoUpload(area.id, check.code);
+  if (state.currentProjectId) queuePhotoRecoverySave(buildProjectRecord(state.currentProjectId));
   saveState({ immediateCloud: true });
   render({ preserveScroll: true });
 }
@@ -1729,6 +1943,7 @@ function deleteCheckPhotoAtIndex(area, check, photoIndex) {
   area.photoCaptures = photos.filter((photo, index) => (
     index !== targetIndex && !(photo.checkCode === check.code && !hasPhotoSource(photo))
   ));
+  if (state.currentProjectId) queuePhotoRecoverySave(buildProjectRecord(state.currentProjectId));
   updateCloudStatus("הצילום נמחק", "ok");
   persistAndRender(
     { preserveScroll: true },
@@ -1855,6 +2070,7 @@ function resetArea(area) {
   area.checks = defaultChecks(area.type, area.name);
   area.dimensions = createDimensions();
   area.photoCaptures = [];
+  if (state.currentProjectId) queuePhotoRecoverySave(buildProjectRecord(state.currentProjectId));
 }
 
 function toggleAreaLock(area) {
@@ -2783,6 +2999,7 @@ async function saveProjectRecordToCloud(record, options = {}) {
     saveProjectsLibrary();
     updateCurrentProjectFromProtectedRecord(recordToSave);
     writeProjectGuardToCloud(recordToSave, "cloud-protected-merge");
+    queuePhotoRecoverySave(recordToSave);
     return { ...recordToSave, protectedFromOverwrite: true };
   }
 
@@ -2796,6 +3013,7 @@ async function saveProjectRecordToCloud(record, options = {}) {
     writeProjectBackupToCloud(savedRecord, "saved-version", savedRecord.id);
     writeProjectGuardToCloud(savedRecord, "saved-version");
   }
+  queuePhotoRecoverySave(savedRecord);
   return savedRecord;
 }
 
@@ -2944,6 +3162,7 @@ function subscribeToCloudProjects() {
       updateCloudStatus("סנכרון ענן פעיל. אותם פרויקטים זמינים במחשב ובנייד.", "ok");
       cleanupDuplicateOwnerProjects(duplicateProjects);
       scheduleProjectProtectionSweep(state.savedProjects.map((project) => project.id));
+      schedulePhotoRecoveryRestore();
 
       const activeProject = state.currentProjectId
         ? state.savedProjects.find((project) => project.id === state.currentProjectId)
@@ -3091,6 +3310,7 @@ async function deleteProject(projectId) {
   if ((getCanonicalProjectId({ id: state.currentProjectId }) || state.currentProjectId) === canonicalId) {
     state.currentProjectId = null;
   }
+  deleteProjectPhotoRecovery(canonicalId);
   saveProjectsLibrary();
   saveState();
   if (db) {
@@ -3308,6 +3528,7 @@ function saveState(options = {}) {
     updateCloudStatus("הזיכרון המקומי מלא. הנתונים נשמרים לענן, וגיבויים כבדים צומצמו.", "warn");
     console.error(error);
   }
+  if (record) queuePhotoRecoverySave(record);
   if (skipCloud || !record) {
     if (!pendingPhotoUploads.size && els.cloudStatus?.classList.contains("status-error")) {
       updateCloudStatus("הענן מחובר.", "ok");
@@ -3663,6 +3884,7 @@ function render(options = {}) {
   renderRoomSelection();
   renderAreas();
   renderSummaryReports();
+  schedulePhotoRecoveryRestore();
   applyScreenState(state.currentScreen);
   if (preserveScroll) window.scrollTo(0, previousScrollY);
 }
