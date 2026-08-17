@@ -196,7 +196,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.08.17.187";
+const APP_VERSION = "2026.08.17.188";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1548,11 +1548,11 @@ function sanitizeChecks(checks) {
 }
 
 function mergeChecksWithDefaults(existingChecks, expectedChecks) {
-  const existingByCode = new Map(
-    sanitizeChecks(existingChecks).map((check) => [check.code, check])
-  );
+  const sanitizedExistingChecks = sanitizeChecks(existingChecks);
+  const existingByCode = new Map(sanitizedExistingChecks.map((check) => [check.code, check]));
+  const expectedCodes = new Set(expectedChecks.map((check) => check.code));
 
-  return expectedChecks.map((check) => {
+  const mergedChecks = expectedChecks.map((check) => {
     const existing = existingByCode.get(check.code);
     return existing
       ? {
@@ -1562,6 +1562,11 @@ function mergeChecksWithDefaults(existingChecks, expectedChecks) {
         }
       : check;
   });
+
+  return [
+    ...mergedChecks,
+    ...sanitizedExistingChecks.filter((check) => !expectedCodes.has(check.code))
+  ];
 }
 
 function hydrateArea(area) {
