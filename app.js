@@ -196,7 +196,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.08.17.186";
+const APP_VERSION = "2026.08.17.187";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1567,19 +1567,30 @@ function mergeChecksWithDefaults(existingChecks, expectedChecks) {
 function hydrateArea(area) {
   const expectedChecks = defaultChecks(area.type, area.name);
   const areaChecks = Array.isArray(area.checks) ? area.checks : expectedChecks;
+  const mergedChecks = mergeChecksWithDefaults(areaChecks, expectedChecks);
+  const checksByCode = new Map(mergedChecks.map((check) => [check.code, check]));
+  const checksByName = new Map(mergedChecks.map((check) => [check.name, check]));
+  const fallbackCheck = mergedChecks[0] || null;
 
   return {
     ...area,
     name: normalizeAreaName(area.name),
     selected: area.selected !== false,
     locked: area.locked === true,
-    checks: mergeChecksWithDefaults(areaChecks, expectedChecks),
+    checks: mergedChecks,
     dimensions: area.dimensions || createDimensions(),
     photoCaptures: Array.isArray(area.photoCaptures)
-      ? cleanPhotoCaptures(area.photoCaptures, { keepPending: true }).map((photo) => ({
-          ...photo,
-          previewDataUrl: photo.previewDataUrl || ""
-        }))
+      ? cleanPhotoCaptures(area.photoCaptures, { keepPending: true }).map((photo) => {
+          const resolvedCheck = checksByCode.get(photo.checkCode)
+            || checksByName.get(photo.checkName)
+            || fallbackCheck;
+          return {
+            ...photo,
+            checkCode: resolvedCheck?.code || photo.checkCode || "",
+            checkName: resolvedCheck?.name || photo.checkName || "",
+            previewDataUrl: photo.previewDataUrl || ""
+          };
+        })
       : []
   };
 }
