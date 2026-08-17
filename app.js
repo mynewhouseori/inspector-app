@@ -196,7 +196,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.08.17.184";
+const APP_VERSION = "2026.08.17.185";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -4002,13 +4002,14 @@ if (els.welcomeNavBtn) {
       els.propertyName.focus();
       return;
     }
-    if (!state.currentProjectId) {
+    const isNewProject = !state.currentProjectId;
+    if (isNewProject) {
       state.currentProjectId = getCanonicalProjectId({
         inspectionMode: state.inspectionMode,
         propertyName: state.propertyName
       }) || uid();
     }
-    saveState({ immediateCloud: true });
+    saveState(isNewProject ? { immediateCloud: true } : { skipCloud: true });
     setScreen("rooms", { scroll: true });
   });
 }
