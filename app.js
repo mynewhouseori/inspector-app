@@ -196,7 +196,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.08.17.185";
+const APP_VERSION = "2026.08.17.186";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2180,7 +2180,7 @@ function openInspectionArea(areaId) {
   applyScreenState("inspection");
   window.scrollTo({ top: 0, behavior: "smooth" });
   // Opening a room changes navigation state only; it must not enqueue a cloud write.
-  saveState({ skipCloud: true });
+  saveState({ skipCloud: true, skipProjectSync: true, markMutation: false });
 }
 
 function openSelectedRoomFromControl() {
@@ -3584,11 +3584,15 @@ function saveState(options = {}) {
     immediateCloud = false,
     allowEmptyOwnerDraft = false,
     skipCloud = false,
+    skipProjectSync = false,
+    markMutation = true,
     forceCloudOverwrite = false,
     forceLibraryOverwrite = forceCloudOverwrite
   } = options;
-  markLocalMutation();
-  const record = syncCurrentProjectDraft({ allowEmptyOwnerDraft, forceLibraryOverwrite });
+  if (markMutation) markLocalMutation();
+  const record = skipProjectSync
+    ? null
+    : syncCurrentProjectDraft({ allowEmptyOwnerDraft, forceLibraryOverwrite });
   try {
     localStorage.setItem(storageKey, JSON.stringify(compactStateForStorage()));
   } catch (error) {
@@ -3624,7 +3628,7 @@ function setScreen(screen, options = {}) {
   const { scroll = true } = options;
   state.currentScreen = screen;
   applyScreenState(screen);
-  saveState({ skipCloud: true });
+  saveState({ skipCloud: true, skipProjectSync: true, markMutation: false });
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
