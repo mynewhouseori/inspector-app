@@ -193,7 +193,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.08.16.176";
+const APP_VERSION = "2026.08.17.180";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -890,7 +890,7 @@ function schedulePhotoRecoveryRestore() {
     const currentRecord = buildProjectRecord(state.currentProjectId);
     const restoredCurrent = await restoreProjectPhotosFromRecovery(currentRecord, { syncCloudIfRecovered: true });
     if (projectDataSignature(restoredCurrent.data) !== projectDataSignature(currentRecord.data)) {
-      applyProjectData(restoredCurrent.data);
+      applyProjectDataPreservingUiState(restoredCurrent.data);
       saveState({ skipCloud: true });
       render({ preserveScroll: true });
     }
@@ -1185,7 +1185,7 @@ function updateCurrentProjectFromProtectedRecord(record) {
   if (!record?.data || record.id !== state.currentProjectId) return;
   isApplyingCloudProject = true;
   try {
-    applyProjectData(record.data);
+    applyProjectDataPreservingUiState(record.data);
     lastCloudAppliedAt = record.updatedAtMs || Date.now();
     render({ preserveScroll: false });
   } finally {
@@ -1344,7 +1344,7 @@ async function healProjectFromProtectionSources(projectId, options = {}) {
   if (applyIfCurrent && state.currentProjectId === healedRecord.id) {
     isApplyingCloudProject = true;
     try {
-      applyProjectData(healedRecord.data);
+      applyProjectDataPreservingUiState(healedRecord.data);
       render({ preserveScroll: false });
     } finally {
       isApplyingCloudProject = false;
@@ -1617,6 +1617,22 @@ function applyProjectData(projectData) {
   els.inspectorName.value = state.inspectorName;
   if (els.generalNotes) els.generalNotes.value = state.generalNotes;
   updateInspectionDateBadge();
+}
+
+function applyProjectDataPreservingUiState(projectData) {
+  const activeAreaId = state.activeInspectionAreaId;
+  const localLocksByName = new Map(
+    state.areas.map((area) => [normalizeAreaName(area.name), area.locked === true])
+  );
+
+  applyProjectData(projectData);
+  state.areas.forEach((area) => {
+    const key = normalizeAreaName(area.name);
+    if (localLocksByName.has(key)) area.locked = localLocksByName.get(key);
+  });
+  if (activeAreaId && state.areas.some((area) => area.id === activeAreaId)) {
+    state.activeInspectionAreaId = activeAreaId;
+  }
 }
 
 function updateAppVersionLabel() {
@@ -2077,7 +2093,9 @@ function toggleAreaLock(area) {
   const shouldFocusAfterUnlock = area.locked === true;
   area.locked = !area.locked;
   pendingFocusAreaId = shouldFocusAfterUnlock && !area.locked ? area.id : null;
-  persistAndRender({}, { immediateCloud: true, allowEmptyOwnerDraft: true });
+  // Apply the lock state locally first so editing never depends on network health.
+  persistAndRender({}, { skipCloud: true, allowEmptyOwnerDraft: true });
+  queueCloudSync();
 }
 
 function bindAreaLockButton(lockBtn, area) {
@@ -2147,7 +2165,8 @@ function openInspectionArea(areaId) {
   render({ preserveScroll: false });
   applyScreenState("inspection");
   window.scrollTo({ top: 0, behavior: "smooth" });
-  saveState({ immediateCloud: true });
+  // Opening a room changes navigation state only; it must not enqueue a cloud write.
+  saveState({ skipCloud: true });
 }
 
 function openSelectedRoomFromControl() {
@@ -2785,14 +2804,12 @@ function projectDataSignature(projectData = {}) {
     clientEmail: projectData.clientEmail || "",
     inspectorName: projectData.inspectorName || "",
     generalNotes: projectData.generalNotes || "",
-    activeInspectionAreaId: projectData.activeInspectionAreaId || null,
     areas: Array.isArray(projectData.areas)
       ? projectData.areas.map((area) => ({
           id: area.id || "",
           name: area.name || "",
           type: area.type || "",
           selected: area.selected !== false,
-          locked: area.locked === true,
           dimensions: {
             planWidth: area.dimensions?.planWidth || "",
             planLength: area.dimensions?.planLength || "",
@@ -3171,10 +3188,12 @@ function subscribeToCloudProjects() {
       const localIsIdle = Date.now() - lastLocalMutationAt > 1200;
       const remoteDiffersFromLocal = activeProject
         && projectDataSignature(activeProject.data) !== projectDataSignature(serializeCurrentProject());
-      if (activeProject && localIsIdle && remoteDiffersFromLocal) {
+      const remoteIsNewerThanLocal = activeProject
+        && Number(activeProject.updatedAtMs || 0) > lastLocalMutationAt;
+      if (activeProject && localIsIdle && remoteDiffersFromLocal && remoteIsNewerThanLocal) {
         isApplyingCloudProject = true;
         try {
-          applyProjectData(activeProject.data);
+          applyProjectDataPreservingUiState(activeProject.data);
           lastCloudAppliedAt = activeProject.updatedAtMs;
           render({ preserveScroll: false });
         } finally {
