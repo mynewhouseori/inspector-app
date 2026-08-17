@@ -163,10 +163,13 @@ let hasBootstrappedCloud = false;
 let isApplyingCloudProject = false;
 let isPickerOpen = false;
 let pendingCloudSync = false;
+let pendingCloudForceOverwrite = false;
+let cloudSaveInFlight = 0;
 let pendingFocusAreaId = null;
 let cloudStatusWatchdogTimer = null;
 let photoRecoveryDbPromise = null;
 let photoRecoveryRestoreTimer = null;
+let hasScheduledStartupRecovery = false;
 
 const inspectionModeLabels = {
   new: "בדיקת נכס חדש",
@@ -193,7 +196,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.08.17.180";
+const APP_VERSION = "2026.08.17.184";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -878,7 +881,7 @@ function schedulePhotoRecoveryRestore() {
     const restoredProjects = [];
 
     for (const project of state.savedProjects) {
-      restoredProjects.push(await restoreProjectPhotosFromRecovery(project, { syncCloudIfRecovered: true }));
+      restoredProjects.push(await restoreProjectPhotosFromRecovery(project, { syncCloudIfRecovered: false }));
     }
 
     if (restoredProjects.length) {
@@ -888,8 +891,11 @@ function schedulePhotoRecoveryRestore() {
 
     if (!state.currentProjectId) return;
     const currentRecord = buildProjectRecord(state.currentProjectId);
-    const restoredCurrent = await restoreProjectPhotosFromRecovery(currentRecord, { syncCloudIfRecovered: true });
-    if (projectDataSignature(restoredCurrent.data) !== projectDataSignature(currentRecord.data)) {
+    const restoredCurrent = await restoreProjectPhotosFromRecovery(currentRecord, { syncCloudIfRecovered: false });
+    if (
+      !hasPendingLocalCloudSave()
+      && projectDataSignature(restoredCurrent.data) !== projectDataSignature(currentRecord.data)
+    ) {
       applyProjectDataPreservingUiState(restoredCurrent.data);
       saveState({ skipCloud: true });
       render({ preserveScroll: true });
@@ -1183,6 +1189,7 @@ function dedupeSavedProjectsLibrary() {
 
 function updateCurrentProjectFromProtectedRecord(record) {
   if (!record?.data || record.id !== state.currentProjectId) return;
+  if (hasPendingLocalCloudSave()) return;
   isApplyingCloudProject = true;
   try {
     applyProjectDataPreservingUiState(record.data);
@@ -1341,7 +1348,7 @@ async function healProjectFromProtectionSources(projectId, options = {}) {
   saveProjectsLibrary();
   backupProjectSnapshot(healedRecord, "auto-photo-heal");
 
-  if (applyIfCurrent && state.currentProjectId === healedRecord.id) {
+  if (applyIfCurrent && state.currentProjectId === healedRecord.id && !hasPendingLocalCloudSave()) {
     isApplyingCloudProject = true;
     try {
       applyProjectDataPreservingUiState(healedRecord.data);
@@ -1367,7 +1374,7 @@ function scheduleProjectProtectionSweep(projectIds = []) {
     uniqueIds.forEach((projectId) => {
       healProjectFromProtectionSources(projectId, {
         applyIfCurrent: projectId === state.currentProjectId,
-        syncCloudIfRecovered: projectId === state.currentProjectId
+        syncCloudIfRecovered: false
       }).catch((error) => console.error(error));
     });
   }, 180);
@@ -2031,6 +2038,10 @@ function isUserEditingField() {
   return isEditableElement(document.activeElement);
 }
 
+function hasPendingLocalCloudSave() {
+  return pendingCloudSync || cloudSyncTimer !== null || cloudSaveInFlight > 0;
+}
+
 function flushPendingCloudSync() {
   if (!pendingCloudSync || isPickerOpen || isUserEditingField()) return;
   pendingCloudSync = false;
@@ -2094,8 +2105,11 @@ function toggleAreaLock(area) {
   area.locked = !area.locked;
   pendingFocusAreaId = shouldFocusAfterUnlock && !area.locked ? area.id : null;
   // Apply the lock state locally first so editing never depends on network health.
-  persistAndRender({}, { skipCloud: true, allowEmptyOwnerDraft: true });
-  queueCloudSync();
+  persistAndRender({}, {
+    skipCloud: true,
+    allowEmptyOwnerDraft: true,
+    forceLibraryOverwrite: true
+  });
 }
 
 function bindAreaLockButton(lockBtn, area) {
@@ -2216,7 +2230,7 @@ function getAreaProgress(area) {
 function refreshProgressAndSummary() {
   renderRoomSelection();
   renderSummaryReports();
-  saveState();
+  saveState({ forceCloudOverwrite: true });
 }
 
 function computeSummary() {
@@ -3120,22 +3134,33 @@ async function bootstrapCloudProjects(localProjects = []) {
   }
 }
 
-function queueCloudSync() {
+function queueCloudSync(options = {}) {
+  const { forceOverwrite = false } = options;
   if (!db || !state.currentProjectId) return;
-  if (isPickerOpen || isUserEditingField()) {
+  if (forceOverwrite) pendingCloudForceOverwrite = true;
+  if ((isPickerOpen || isUserEditingField()) && !forceOverwrite) {
     pendingCloudSync = true;
     return;
   }
   clearTimeout(cloudSyncTimer);
+  const syncDelay = pendingCloudForceOverwrite ? 120 : 700;
   cloudSyncTimer = window.setTimeout(async () => {
     cloudSyncTimer = null;
+    const shouldForceOverwrite = pendingCloudForceOverwrite;
+    pendingCloudForceOverwrite = false;
+    if (cloudSaveInFlight > 0) {
+      pendingCloudSync = true;
+      if (shouldForceOverwrite) pendingCloudForceOverwrite = true;
+      return;
+    }
+    cloudSaveInFlight += 1;
     try {
       updateProjectFields();
       const record = buildProjectRecord(state.currentProjectId);
       if (state.inspectionMode === "owner" && !hasProjectDraftContent(record)) return;
       updateCloudStatus("שומר לענן...", "warn");
       const savedRecord = await withTimeout(
-        saveProjectRecordToCloud(record),
+        saveProjectRecordToCloud(record, { forceOverwrite: shouldForceOverwrite }),
         20000,
         "Cloud save timed out"
       );
@@ -3147,8 +3172,31 @@ function queueCloudSync() {
     } catch (error) {
       updateCloudStatus("שמירה מקומית פועלת, אבל הסנכרון לענן נכשל כרגע.", "error");
       console.error(error);
+      if (els.cloudStatus) els.cloudStatus.title = String(error?.message || error || "Cloud sync failed");
+    } finally {
+      cloudSaveInFlight = Math.max(0, cloudSaveInFlight - 1);
+      if (pendingCloudSync) {
+        pendingCloudSync = false;
+        queueCloudSync({ forceOverwrite: pendingCloudForceOverwrite });
+      }
     }
-  }, 700);
+  }, syncDelay);
+}
+
+function scheduleStartupRecoveryWhenIdle() {
+  if (hasScheduledStartupRecovery) return;
+  hasScheduledStartupRecovery = true;
+
+  const runWhenIdle = () => {
+    const recentlyEdited = Date.now() - lastLocalMutationAt < 2500;
+    if (hasPendingLocalCloudSave() || recentlyEdited || isUserEditingField()) {
+      window.setTimeout(runWhenIdle, 2500);
+      return;
+    }
+    schedulePhotoRecoveryRestore();
+  };
+
+  window.setTimeout(runWhenIdle, 3500);
 }
 
 function subscribeToCloudProjects() {
@@ -3158,8 +3206,6 @@ function subscribeToCloudProjects() {
   }
 
   updateCloudStatus("הענן מתחבר ברקע.", "ok");
-  const localProjectsSeed = [...state.savedProjects];
-  bootstrapCloudProjects(localProjectsSeed);
   projectsUnsubscribe = onSnapshot(
     collection(db, PROJECTS_COLLECTION),
     async (snapshot) => {
@@ -3178,8 +3224,7 @@ function subscribeToCloudProjects() {
       renderSavedProjects();
       updateCloudStatus("סנכרון ענן פעיל. אותם פרויקטים זמינים במחשב ובנייד.", "ok");
       cleanupDuplicateOwnerProjects(duplicateProjects);
-      scheduleProjectProtectionSweep(state.savedProjects.map((project) => project.id));
-      schedulePhotoRecoveryRestore();
+      scheduleStartupRecoveryWhenIdle();
 
       const activeProject = state.currentProjectId
         ? state.savedProjects.find((project) => project.id === state.currentProjectId)
@@ -3190,7 +3235,13 @@ function subscribeToCloudProjects() {
         && projectDataSignature(activeProject.data) !== projectDataSignature(serializeCurrentProject());
       const remoteIsNewerThanLocal = activeProject
         && Number(activeProject.updatedAtMs || 0) > lastLocalMutationAt;
-      if (activeProject && localIsIdle && remoteDiffersFromLocal && remoteIsNewerThanLocal) {
+      if (
+        activeProject
+        && localIsIdle
+        && remoteDiffersFromLocal
+        && remoteIsNewerThanLocal
+        && !hasPendingLocalCloudSave()
+      ) {
         isApplyingCloudProject = true;
         try {
           applyProjectDataPreservingUiState(activeProject.data);
@@ -3261,10 +3312,6 @@ function loadProject(projectId) {
   syncActiveInspectionArea();
   render({ preserveScroll: false });
   setScreen(targetScreen, { scroll: true });
-  healProjectFromProtectionSources(project.id, {
-    applyIfCurrent: true,
-    syncCloudIfRecovered: true
-  }).catch((error) => console.error(error));
 }
 
 async function restoreProjectBackup(projectId = state.currentProjectId) {
@@ -3509,6 +3556,7 @@ function persistProjectRecordImmediately(record, options = {}) {
   clearTimeout(cloudSyncTimer);
   cloudSyncTimer = null;
   pendingCloudSync = false;
+  pendingCloudForceOverwrite = false;
   lastCloudAppliedAt = record.updatedAtMs;
   updateCloudStatus("שומר לענן...", "warn");
   withTimeout(
@@ -3558,7 +3606,7 @@ function saveState(options = {}) {
     persistProjectRecordImmediately(record, { forceOverwrite: forceCloudOverwrite });
     return;
   }
-  queueCloudSync();
+  queueCloudSync({ forceOverwrite: forceCloudOverwrite });
 }
 
 function persistAndRender(renderOptions = {}, stateOptions = {}) {
@@ -3853,7 +3901,6 @@ function loadState() {
     state.inspectionMode = "new";
     state.areas = buildPresetAreas();
     updateCloudStatus("האפליקציה מוכנה; הענן יתחבר ברקע.", "ok");
-    scheduleProjectProtectionSweep(state.savedProjects.map((project) => project.id));
     return;
   }
   const parsed = JSON.parse(raw);
@@ -3889,7 +3936,6 @@ function loadState() {
     }
   }
   updateCloudStatus("האפליקציה מוכנה; הענן יתחבר ברקע.", "ok");
-  scheduleProjectProtectionSweep(state.savedProjects.map((project) => project.id));
 }
 
 function render(options = {}) {
