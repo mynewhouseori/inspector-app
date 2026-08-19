@@ -3244,8 +3244,13 @@ textarea:focus {
   .report-check-item {
     padding: 6px 8px;
     border-radius: 8px;
-    break-inside: auto;
-    page-break-inside: auto;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  .report-finding-item {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
   }
 
   .report-check-item strong {
@@ -3323,15 +3328,22 @@ textarea:focus {
 
   .report-area-photos {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
     max-width: 88mm;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
   }
 
   .report-area-photos img {
+    display: block;
     width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 3;
+    height: 58mm;
+    max-height: 58mm;
+    object-fit: contain;
+    object-position: center;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
     border-radius: 8px;
   }
 }
