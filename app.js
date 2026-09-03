@@ -196,7 +196,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.08.19.190";
+const APP_VERSION = "2026.09.03.191";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2388,7 +2388,7 @@ function getReportPhotosForCheck(area, check) {
 }
 
 function buildReportPhotosMarkup(area, check) {
-  const photos = getReportPhotosForCheck(area, check).slice(0, 1);
+  const photos = getReportPhotosForCheck(area, check);
   if (!photos.length) return "";
 
   return `
@@ -4120,10 +4120,36 @@ if (els.resetBtn) {
   });
 }
 
-bindPressAction(els.printBtn, () => {
+async function waitForReportImagesReady(timeoutMs = 6000) {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const images = [...els.reportDocument.querySelectorAll("img")];
+  const imagePromises = images.map(async (image) => {
+    if (!image.complete || image.naturalWidth === 0) {
+      await new Promise((resolve) => {
+        image.addEventListener("load", resolve, { once: true });
+        image.addEventListener("error", resolve, { once: true });
+      });
+    }
+    if (typeof image.decode === "function" && image.naturalWidth > 0) {
+      await image.decode().catch(() => {});
+    }
+  });
+  await Promise.race([
+    Promise.allSettled(imagePromises),
+    new Promise((resolve) => setTimeout(resolve, timeoutMs))
+  ]);
+}
+
+bindPressAction(els.printBtn, async () => {
   setScreen("summary", { scroll: true });
   renderSummaryReports();
-  setTimeout(() => window.print(), 80);
+  els.printBtn.disabled = true;
+  try {
+    await waitForReportImagesReady();
+    window.print();
+  } finally {
+    els.printBtn.disabled = false;
+  }
 });
 
 loadState();
@@ -4145,6 +4171,6 @@ document.addEventListener("focusout", () => {
 });
 
 window.addEventListener("beforeprint", () => {
-  renderSummaryReports();
+  applyScreenState("summary");
 });
 
