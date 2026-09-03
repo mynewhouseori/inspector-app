@@ -196,7 +196,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.03.191";
+const APP_VERSION = "2026.09.03.192";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -3247,15 +3247,19 @@ function subscribeToCloudProjects() {
         : null;
       if (isPickerOpen || isUserEditingField()) return;
       const localIsIdle = Date.now() - lastLocalMutationAt > 1200;
+      const localProjectData = activeProject ? serializeCurrentProject() : null;
       const remoteDiffersFromLocal = activeProject
-        && projectDataSignature(activeProject.data) !== projectDataSignature(serializeCurrentProject());
+        && projectDataSignature(activeProject.data) !== projectDataSignature(localProjectData);
       const remoteIsNewerThanLocal = activeProject
         && Number(activeProject.updatedAtMs || 0) > lastLocalMutationAt;
+      const remoteIsRicherThanLocal = activeProject
+        && getProjectInspectionFootprint(activeProject.data).score
+          > getProjectInspectionFootprint(localProjectData).score;
       if (
         activeProject
         && localIsIdle
         && remoteDiffersFromLocal
-        && remoteIsNewerThanLocal
+        && (remoteIsNewerThanLocal || remoteIsRicherThanLocal)
         && !hasPendingLocalCloudSave()
       ) {
         isApplyingCloudProject = true;
