@@ -3189,8 +3189,8 @@ textarea:focus {
   }
 
   .report-rooms-section {
-    break-before: page;
-    page-break-before: always;
+    break-before: auto;
+    page-break-before: auto;
   }
 
   .report-topics-section {
