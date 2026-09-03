@@ -196,7 +196,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.03.192";
+const APP_VERSION = "2026.09.03.193";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -3242,9 +3242,21 @@ function subscribeToCloudProjects() {
       cleanupDuplicateOwnerProjects(duplicateProjects);
       scheduleStartupRecoveryWhenIdle();
 
-      const activeProject = state.currentProjectId
+      const libraryActiveProject = state.currentProjectId
         ? state.savedProjects.find((project) => project.id === state.currentProjectId)
         : null;
+      const incomingActiveProject = state.currentProjectId
+        ? incomingProjects.find((project) => project.id === state.currentProjectId)
+        : null;
+      const libraryPhotoCount = getProjectInspectionFootprint(libraryActiveProject).photoCount;
+      const incomingPhotoCount = getProjectInspectionFootprint(incomingActiveProject).photoCount;
+      const activeProject = incomingPhotoCount > libraryPhotoCount
+        ? incomingActiveProject
+        : libraryActiveProject;
+      if (activeProject === incomingActiveProject && incomingActiveProject) {
+        upsertSavedProjectRecord(incomingActiveProject, { forceOverwrite: true });
+        saveProjectsLibrary();
+      }
       if (isPickerOpen || isUserEditingField()) return;
       const localIsIdle = Date.now() - lastLocalMutationAt > 1200;
       const localProjectData = activeProject ? serializeCurrentProject() : null;
