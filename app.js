@@ -197,7 +197,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.08.195";
+const APP_VERSION = "2026.09.08.196";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -2174,17 +2174,52 @@ function bindPressAction(element, handler, options = {}) {
   if (!element || typeof handler !== "function") return;
   const { delay = 350 } = options;
   let handledAt = 0;
+  let pressStart = null;
+  let gestureMoved = false;
+  let suppressClickUntil = 0;
+
+  const getPoint = (event) => event?.touches?.[0] || event?.changedTouches?.[0] || event;
+  const startTracking = (event) => {
+    const point = getPoint(event);
+    if (!Number.isFinite(point?.clientX) || !Number.isFinite(point?.clientY)) return;
+    pressStart = { x: point.clientX, y: point.clientY };
+    gestureMoved = false;
+  };
+  const trackMovement = (event) => {
+    if (!pressStart) return;
+    const point = getPoint(event);
+    if (!Number.isFinite(point?.clientX) || !Number.isFinite(point?.clientY)) return;
+    if (Math.hypot(point.clientX - pressStart.x, point.clientY - pressStart.y) > 10) {
+      gestureMoved = true;
+      suppressClickUntil = Date.now() + 700;
+    }
+  };
+  const cancelTracking = () => {
+    gestureMoved = true;
+    suppressClickUntil = Date.now() + 700;
+  };
   const run = (event) => {
+    const now = Date.now();
+    if (gestureMoved || (event?.type === "click" && now < suppressClickUntil)) {
+      if (event?.cancelable) event.preventDefault();
+      event?.stopPropagation();
+      return;
+    }
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
-    const now = Date.now();
     if (now - handledAt < delay) return;
     handledAt = now;
     handler(event);
   };
 
+  element.addEventListener("pointerdown", startTracking, { passive: true });
+  element.addEventListener("pointermove", trackMovement, { passive: true });
+  element.addEventListener("pointercancel", cancelTracking, { passive: true });
+  element.addEventListener("touchstart", startTracking, { passive: true });
+  element.addEventListener("touchmove", trackMovement, { passive: true });
+  element.addEventListener("touchcancel", cancelTracking, { passive: true });
   element.addEventListener("click", run);
   element.addEventListener("pointerup", run);
   element.addEventListener("touchend", run, { passive: false });
