@@ -151,6 +151,7 @@ const PROJECTS_COLLECTION = SETTINGS?.firestoreCollections?.projects || "inspect
 const PROJECT_BACKUPS_COLLECTION = `${PROJECTS_COLLECTION}_backups`;
 const PROJECT_DELETIONS_COLLECTION = `${PROJECTS_COLLECTION}_deletions`;
 const PROJECT_GUARDS_COLLECTION = `${PROJECTS_COLLECTION}_guards`;
+const PROJECT_PHOTO_PAYLOADS_COLLECTION = `${PROJECTS_COLLECTION}_photo_payloads`;
 const PHOTO_RECOVERY_DB_NAME = "inspector-photo-recovery";
 const PHOTO_RECOVERY_STORE = "projects";
 const PHOTO_RECOVERY_DB_VERSION = 1;
@@ -196,7 +197,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.03.194";
+const APP_VERSION = "2026.09.08.195";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -661,7 +662,75 @@ function compactPhotoForStorage(photo = {}, keepLocalPreviews = false) {
 }
 
 function hasPhotoSource(photo = {}) {
-  return Boolean(photo.downloadURL || photo.previewDataUrl || photo.storagePath);
+  return Boolean(photo.downloadURL || photo.previewDataUrl || photo.storagePath || photo.firestorePhotoId);
+}
+
+function getFirestorePhotoId(projectId, photo = {}) {
+  if (photo.firestorePhotoId) return photo.firestorePhotoId;
+  const photoId = String(photo.id || "").replaceAll("/", "_");
+  return projectId && photoId ? `${projectId}__${photoId}` : "";
+}
+
+async function persistProjectPhotoPayloadsToCloud(record) {
+  if (!db || !record?.id || !Array.isArray(record?.data?.areas)) return record;
+
+  const writes = [];
+  record.data.areas.forEach((area) => {
+    (Array.isArray(area.photoCaptures) ? area.photoCaptures : []).forEach((photo) => {
+      if (!photo.previewDataUrl || photo.downloadURL || photo.storagePath) return;
+      const firestorePhotoId = getFirestorePhotoId(record.id, photo);
+      if (!firestorePhotoId) return;
+      photo.firestorePhotoId = firestorePhotoId;
+      writes.push(setDoc(doc(db, PROJECT_PHOTO_PAYLOADS_COLLECTION, firestorePhotoId), {
+        projectId: record.id,
+        photoId: photo.id || "",
+        areaId: area.id || "",
+        areaName: area.name || "",
+        checkCode: photo.checkCode || "",
+        checkName: photo.checkName || "",
+        fileName: photo.fileName || "",
+        capturedAt: photo.capturedAt || "",
+        previewDataUrl: photo.previewDataUrl,
+        savedAt: new Date().toISOString()
+      }));
+    });
+  });
+
+  await Promise.all(writes);
+  return record;
+}
+
+async function hydrateProjectPhotoPayloadsFromCloud(record) {
+  const normalizedRecord = normalizeProjectRecord(record);
+  if (!db || !normalizedRecord?.id) return normalizedRecord;
+
+  const reads = [];
+  normalizedRecord.data.areas.forEach((area) => {
+    (Array.isArray(area.photoCaptures) ? area.photoCaptures : []).forEach((photo) => {
+      if (photo.downloadURL || photo.previewDataUrl || photo.storagePath || !photo.firestorePhotoId) return;
+      reads.push(
+        getDoc(doc(db, PROJECT_PHOTO_PAYLOADS_COLLECTION, photo.firestorePhotoId))
+          .then((snapshot) => {
+            if (!snapshot.exists()) return;
+            const payload = snapshot.data() || {};
+            photo.previewDataUrl = payload.previewDataUrl || "";
+          })
+          .catch((error) => console.error(error))
+      );
+    });
+  });
+
+  await Promise.all(reads);
+  return normalizedRecord;
+}
+
+function deleteProjectPhotoPayloadFromCloud(projectId, photo = {}) {
+  if (!db || !projectId) return;
+  const firestorePhotoId = getFirestorePhotoId(projectId, photo);
+  if (!firestorePhotoId) return;
+  deleteDoc(doc(db, PROJECT_PHOTO_PAYLOADS_COLLECTION, firestorePhotoId)).catch((error) => {
+    console.error(error);
+  });
 }
 
 function isPendingPhotoRecord(photo = {}) {
@@ -732,7 +801,8 @@ function buildPhotoRecoverySnapshot(record) {
         capturedAt: photo.capturedAt || "",
         storagePath: photo.storagePath || "",
         downloadURL: photo.downloadURL || "",
-        previewDataUrl: photo.previewDataUrl || ""
+        previewDataUrl: photo.previewDataUrl || "",
+        firestorePhotoId: photo.firestorePhotoId || ""
       }))
     }))
     .filter((area) => area.photoCaptures.length > 0);
@@ -747,9 +817,47 @@ function buildPhotoRecoverySnapshot(record) {
   };
 }
 
-async function saveProjectPhotoRecovery(record) {
-  const snapshot = buildPhotoRecoverySnapshot(record);
+function mergePhotoRecoverySnapshots(existingSnapshot, candidateSnapshot) {
+  if (!existingSnapshot?.areas?.length) return candidateSnapshot;
+  if (!candidateSnapshot?.areas?.length) return existingSnapshot;
+
+  const merged = JSON.parse(JSON.stringify(candidateSnapshot));
+  existingSnapshot.areas.forEach((existingArea) => {
+    let targetArea = merged.areas.find((area) => normalizeAreaName(area.name) === normalizeAreaName(existingArea.name));
+    if (!targetArea) {
+      merged.areas.push(existingArea);
+      return;
+    }
+
+    const targetByKey = new Map(
+      targetArea.photoCaptures.map((photo) => [getPhotoMergeKey(targetArea.name, photo), photo])
+    );
+    existingArea.photoCaptures.forEach((existingPhoto) => {
+      const key = getPhotoMergeKey(existingArea.name, existingPhoto);
+      const targetPhoto = targetByKey.get(key);
+      if (!targetPhoto) {
+        targetArea.photoCaptures.push(existingPhoto);
+        targetByKey.set(key, existingPhoto);
+        return;
+      }
+      targetPhoto.storagePath = targetPhoto.storagePath || existingPhoto.storagePath || "";
+      targetPhoto.downloadURL = targetPhoto.downloadURL || existingPhoto.downloadURL || "";
+      targetPhoto.previewDataUrl = targetPhoto.previewDataUrl || existingPhoto.previewDataUrl || "";
+      targetPhoto.firestorePhotoId = targetPhoto.firestorePhotoId || existingPhoto.firestorePhotoId || "";
+    });
+  });
+  return merged;
+}
+
+async function saveProjectPhotoRecovery(record, options = {}) {
+  const { forceReplace = false } = options;
+  let snapshot = buildPhotoRecoverySnapshot(record);
   if (!snapshot?.projectId) return;
+
+  if (!forceReplace) {
+    const existingSnapshot = await getProjectPhotoRecovery(snapshot.projectId);
+    snapshot = mergePhotoRecoverySnapshots(existingSnapshot, snapshot);
+  }
 
   const dbInstance = await openPhotoRecoveryDb();
   if (!dbInstance) return;
@@ -820,14 +928,17 @@ function mergeProjectPhotosFromRecovery(record, recoverySnapshot) {
         const nextStoragePath = existingPhoto.storagePath || recoveryPhoto.storagePath || "";
         const nextDownloadURL = existingPhoto.downloadURL || recoveryPhoto.downloadURL || "";
         const nextPreviewDataUrl = existingPhoto.previewDataUrl || recoveryPhoto.previewDataUrl || "";
+        const nextFirestorePhotoId = existingPhoto.firestorePhotoId || recoveryPhoto.firestorePhotoId || "";
         if (
           nextStoragePath !== existingPhoto.storagePath
           || nextDownloadURL !== existingPhoto.downloadURL
           || nextPreviewDataUrl !== existingPhoto.previewDataUrl
+          || nextFirestorePhotoId !== existingPhoto.firestorePhotoId
         ) {
           existingPhoto.storagePath = nextStoragePath;
           existingPhoto.downloadURL = nextDownloadURL;
           existingPhoto.previewDataUrl = nextPreviewDataUrl;
+          existingPhoto.firestorePhotoId = nextFirestorePhotoId;
           changed = true;
         }
         return;
@@ -837,7 +948,8 @@ function mergeProjectPhotosFromRecovery(record, recoverySnapshot) {
         ...recoveryPhoto,
         storagePath: recoveryPhoto.storagePath || "",
         downloadURL: recoveryPhoto.downloadURL || "",
-        previewDataUrl: recoveryPhoto.previewDataUrl || ""
+        previewDataUrl: recoveryPhoto.previewDataUrl || "",
+        firestorePhotoId: recoveryPhoto.firestorePhotoId || ""
       });
       currentByKey.set(photoKey, recoveryPhoto);
       changed = true;
@@ -881,7 +993,18 @@ function schedulePhotoRecoveryRestore() {
     const restoredProjects = [];
 
     for (const project of state.savedProjects) {
-      restoredProjects.push(await restoreProjectPhotosFromRecovery(project, { syncCloudIfRecovered: false }));
+      let restoredProject = await restoreProjectPhotosFromRecovery(project, { syncCloudIfRecovered: false });
+      const recoveredFromDevice = projectDataSignature(restoredProject?.data) !== projectDataSignature(project?.data);
+      if (recoveredFromDevice && db) {
+        try {
+          updateCloudStatus("משחזר תמונות מהמכשיר לענן...", "warn");
+          restoredProject = await saveProjectRecordToCloud(restoredProject, { forceOverwrite: true }) || restoredProject;
+        } catch (error) {
+          updateCloudStatus("התמונות נמצאו במכשיר, אך העלאת השחזור לענן נכשלה.", "error");
+          console.error(error);
+        }
+      }
+      restoredProjects.push(restoredProject);
     }
 
     if (restoredProjects.length) {
@@ -899,6 +1022,20 @@ function schedulePhotoRecoveryRestore() {
       applyProjectDataPreservingUiState(restoredCurrent.data);
       saveState({ skipCloud: true });
       render({ preserveScroll: true });
+      if (db) {
+        try {
+          updateCloudStatus("משחזר תמונות מהמכשיר לענן...", "warn");
+          const recoveredRecord = await saveProjectRecordToCloud(restoredCurrent, { forceOverwrite: true });
+          if (recoveredRecord) {
+            upsertSavedProjectRecord(recoveredRecord, { forceOverwrite: true });
+            saveProjectsLibrary();
+            updateCloudStatus("התמונות שוחזרו מהמכשיר ונשמרו בענן.", "ok");
+          }
+        } catch (error) {
+          updateCloudStatus("התמונות נמצאו במכשיר, אך העלאת השחזור לענן נכשלה.", "error");
+          console.error(error);
+        }
+      }
     }
   }, 240);
 }
@@ -964,7 +1101,8 @@ function preserveExistingPhotoSources(candidateRecord, existingRecord) {
         ...photo,
         storagePath: photo.storagePath || existingPhoto.storagePath || "",
         downloadURL: photo.downloadURL || existingPhoto.downloadURL || "",
-        previewDataUrl: photo.previewDataUrl || existingPhoto.previewDataUrl || ""
+        previewDataUrl: photo.previewDataUrl || existingPhoto.previewDataUrl || "",
+        firestorePhotoId: photo.firestorePhotoId || existingPhoto.firestorePhotoId || ""
       };
     });
   });
@@ -1930,7 +2068,10 @@ async function handleCheckCameraFile(area, check, file) {
     capturedAt: new Date().toISOString(),
     storagePath: "",
     downloadURL: "",
-    previewDataUrl
+    previewDataUrl,
+    firestorePhotoId: state.currentProjectId
+      ? getFirestorePhotoId(state.currentProjectId, { id: pendingPhotoId })
+      : ""
   };
   area.photoCaptures = [
     ...(Array.isArray(area.photoCaptures) ? area.photoCaptures : []),
@@ -1939,13 +2080,27 @@ async function handleCheckCameraFile(area, check, file) {
   if (state.currentProjectId) queuePhotoRecoverySave(buildProjectRecord(state.currentProjectId));
   startPhotoUpload(area.id, check.code);
   render({ preserveScroll: true });
+  let previewStoredInCloud = false;
+  if (state.currentProjectId && previewDataUrl) {
+    try {
+      await persistProjectPhotoPayloadsToCloud(buildProjectRecord(state.currentProjectId));
+      previewStoredInCloud = true;
+    } catch (error) {
+      console.error(error);
+    }
+  }
   let uploadedPhoto;
   try {
     uploadedPhoto = await uploadCapturedPhoto(preparedFile, area, check, fileName);
   } catch (error) {
     finishPhotoUpload(area.id, check.code);
     saveState({ immediateCloud: true });
-    updateCloudStatus("התמונה נשמרה לדוח ותסתנכרן למחשב כגרסה מכווצת. העלאת הקובץ המקורי לענן נכשלה.", "warn");
+    updateCloudStatus(
+      previewStoredInCloud
+        ? "התמונה נשמרה בענן ותופיע גם במחשב ובדוח."
+        : "התמונה נשמרה במכשיר, אך העלאתה לענן נכשלה כרגע.",
+      previewStoredInCloud ? "ok" : "warn"
+    );
     render({ preserveScroll: true });
     console.error(error);
     return;
@@ -1979,10 +2134,16 @@ function deleteCheckPhotoAtIndex(area, check, photoIndex) {
   const targetPhoto = photos[targetIndex];
   if (!Number.isInteger(targetIndex) || !targetPhoto || targetPhoto.checkCode !== check.code) return;
 
+  deleteProjectPhotoPayloadFromCloud(state.currentProjectId, targetPhoto);
+
   area.photoCaptures = photos.filter((photo, index) => (
     index !== targetIndex && !(photo.checkCode === check.code && !hasPhotoSource(photo))
   ));
-  if (state.currentProjectId) queuePhotoRecoverySave(buildProjectRecord(state.currentProjectId));
+  if (state.currentProjectId) {
+    saveProjectPhotoRecovery(buildProjectRecord(state.currentProjectId), { forceReplace: true }).catch((error) => {
+      console.error(error);
+    });
+  }
   updateCloudStatus("הצילום נמחק", "ok");
   persistAndRender(
     { preserveScroll: true },
@@ -2855,7 +3016,8 @@ function projectDataSignature(projectData = {}) {
                 capturedAt: photo.capturedAt || "",
                 storagePath: photo.storagePath || "",
                 downloadURL: photo.downloadURL || "",
-                previewDataUrl: photo.previewDataUrl || ""
+                previewDataUrl: photo.previewDataUrl || "",
+                firestorePhotoId: photo.firestorePhotoId || ""
               }))
             : [],
           checks: Array.isArray(area.checks)
@@ -3019,6 +3181,7 @@ async function saveProjectRecordToCloud(record, options = {}) {
   const normalizedRecord = compactProjectRecordForStorage(normalizeProjectRecord(record) || record, {
     keepLocalPreviews: true
   });
+  await persistProjectPhotoPayloadsToCloud(normalizedRecord);
   if (isProjectDeletedLocally(normalizedRecord)) return null;
   const projectRef = doc(db, PROJECTS_COLLECTION, normalizedRecord.id);
   const existingSnapshot = await getDoc(projectRef);
@@ -3226,10 +3389,11 @@ function subscribeToCloudProjects() {
     collection(db, PROJECTS_COLLECTION),
     async (snapshot) => {
       const deletionMarkers = await getMergedDeletionMarkersFromCloud();
-      const incomingProjects = snapshot.docs
+      const incomingProjects = await Promise.all(snapshot.docs
         .map((item) => normalizeProjectRecord({ id: item.id, rawCloudId: item.id, ...item.data() }))
         .filter((project) => !isProjectDeletedByMarkers(project, deletionMarkers))
-        .filter(Boolean);
+        .filter(Boolean)
+        .map((project) => hydrateProjectPhotoPayloadsFromCloud(project)));
       const { dedupedProjects, duplicateProjects } = dedupeProjectRecords([
         ...state.savedProjects,
         ...incomingProjects
@@ -3330,14 +3494,19 @@ async function saveCurrentProject() {
   return true;
 }
 
-function loadProject(projectId) {
+async function loadProject(projectId) {
   const project = state.savedProjects.find((item) => item.id === projectId);
   if (!project || !project.data) return;
 
-  state.currentProjectId = project.id;
+  const hydratedProject = await hydrateProjectPhotoPayloadsFromCloud(project);
+  if (hydratedProject) {
+    upsertSavedProjectRecord(hydratedProject, { forceOverwrite: true });
+  }
+
+  state.currentProjectId = hydratedProject?.id || project.id;
   isApplyingCloudProject = true;
-  applyProjectData(project.data);
-  lastCloudAppliedAt = project.updatedAtMs || Date.now();
+  applyProjectData(hydratedProject?.data || project.data);
+  lastCloudAppliedAt = hydratedProject?.updatedAtMs || project.updatedAtMs || Date.now();
   isApplyingCloudProject = false;
   const targetScreen = "rooms";
   state.currentScreen = targetScreen;
