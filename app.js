@@ -197,7 +197,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.08.196";
+const APP_VERSION = "2026.09.08.197";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -4069,20 +4069,30 @@ function renderAreas() {
 
 function renderOwnerApartments() {
   if (!els.ownerApartmentsGrid) return;
-  els.ownerApartmentsGrid.innerHTML = ownerApartmentLabels.map((apartmentName) => {
-    const status = getOwnerApartmentCardStatus(apartmentName);
-    const isInspected = status.key === "inspected";
-    const isSaved = status.key === "saved";
-    return `
-    <button class="owner-apartment-card ${apartmentName.startsWith("כניסה-17") ? "owner-apartment-card-17" : "owner-apartment-card-19"} ${isInspected ? "is-inspected" : ""} ${isSaved ? "is-saved" : ""}" type="button" data-owner-apartment="${apartmentName}">
-      <span class="owner-apartment-icon" aria-hidden="true">${STATUS_ICON_MARKUP.saved}</span>
-      <span class="owner-apartment-copy">
-        <strong>${apartmentName}</strong>
-        ${status.label ? `<span class="owner-apartment-status status-${status.key}">${status.label}</span>` : ""}
-      </span>
-    </button>
-  `;
-  }).join("");
+  els.ownerApartmentsGrid.innerHTML = ["17", "19"].map((entrance) => `
+    <section class="owner-entrance-group owner-entrance-group-${entrance}">
+      <h3>כניסה ${entrance}</h3>
+      <div class="owner-entrance-list">
+        ${ownerApartmentLabels
+          .filter((apartmentName) => apartmentName.startsWith(`כניסה-${entrance}`))
+          .map((apartmentName) => {
+            const status = getOwnerApartmentCardStatus(apartmentName);
+            const isInspected = status.key === "inspected";
+            const isSaved = status.key === "saved";
+            const apartmentLabel = apartmentName.replace(`כניסה-${entrance} `, "");
+            return `
+              <button class="owner-apartment-card owner-apartment-card-${entrance} ${isInspected ? "is-inspected" : ""} ${isSaved ? "is-saved" : ""}" type="button" data-owner-apartment="${apartmentName}">
+                <span class="owner-apartment-icon" aria-hidden="true">${STATUS_ICON_MARKUP.saved}</span>
+                <span class="owner-apartment-copy">
+                  <strong>${apartmentLabel}</strong>
+                  ${status.label ? `<span class="owner-apartment-status status-${status.key}">${status.label}</span>` : ""}
+                </span>
+              </button>
+            `;
+          }).join("")}
+      </div>
+    </section>
+  `).join("");
 
   els.ownerApartmentsGrid.querySelectorAll("[data-owner-apartment]").forEach((button) => {
     bindPressAction(button, () => openOwnerApartment(button.dataset.ownerApartment));
