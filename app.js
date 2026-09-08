@@ -198,7 +198,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.08.199";
+const APP_VERSION = "2026.09.08.200";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -754,9 +754,28 @@ function isPendingPhotoRecord(photo = {}) {
 
 function cleanPhotoCaptures(photos = [], options = {}) {
   const { keepPending = false } = options;
-  return (Array.isArray(photos) ? photos : []).filter((photo) => (
+  const cleanedPhotos = (Array.isArray(photos) ? photos : []).filter((photo) => (
     hasPhotoSource(photo) || (keepPending && isPendingPhotoRecord(photo))
   ));
+  const uniquePhotos = [];
+  const photosByIdentity = new Map();
+
+  cleanedPhotos.forEach((photo) => {
+    const identity = getPhotoIdentity(photo);
+    if (!identity || !photosByIdentity.has(identity)) {
+      uniquePhotos.push(photo);
+      if (identity) photosByIdentity.set(identity, photo);
+      return;
+    }
+
+    const existingPhoto = photosByIdentity.get(identity);
+    existingPhoto.storagePath = existingPhoto.storagePath || photo.storagePath || "";
+    existingPhoto.downloadURL = existingPhoto.downloadURL || photo.downloadURL || "";
+    existingPhoto.previewDataUrl = existingPhoto.previewDataUrl || photo.previewDataUrl || "";
+    existingPhoto.firestorePhotoId = existingPhoto.firestorePhotoId || photo.firestorePhotoId || "";
+  });
+
+  return uniquePhotos;
 }
 
 function compactProjectRecordForStorage(record, options = {}) {
