@@ -6,6 +6,7 @@ import {
   setDoc,
   deleteDoc,
   getDoc,
+  getDocFromServer,
   getDocs,
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
@@ -197,7 +198,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.08.198";
+const APP_VERSION = "2026.09.08.199";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -716,7 +717,8 @@ async function hydrateProjectPhotoPayloadsFromCloud(record) {
     (Array.isArray(area.photoCaptures) ? area.photoCaptures : []).forEach((photo) => {
       if (photo.downloadURL || photo.previewDataUrl || photo.storagePath || !photo.firestorePhotoId) return;
       reads.push(
-        getDoc(doc(db, PROJECT_PHOTO_PAYLOADS_COLLECTION, photo.firestorePhotoId))
+        getDocFromServer(doc(db, PROJECT_PHOTO_PAYLOADS_COLLECTION, photo.firestorePhotoId))
+          .catch(() => getDoc(doc(db, PROJECT_PHOTO_PAYLOADS_COLLECTION, photo.firestorePhotoId)))
           .then((snapshot) => {
             if (!snapshot.exists()) return;
             const payload = snapshot.data() || {};
