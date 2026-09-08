@@ -198,7 +198,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.08.200";
+const APP_VERSION = "2026.09.08.201";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -673,6 +673,10 @@ function hasPhotoSource(photo = {}) {
   return Boolean(photo.downloadURL || photo.previewDataUrl || photo.storagePath || photo.firestorePhotoId);
 }
 
+function hasRenderablePhotoSource(photo = {}) {
+  return Boolean(photo.downloadURL || photo.previewDataUrl);
+}
+
 function getFirestorePhotoId(projectId, photo = {}) {
   if (photo.firestorePhotoId) return photo.firestorePhotoId;
   const photoId = String(photo.id || "").replaceAll("/", "_");
@@ -708,6 +712,46 @@ async function persistProjectPhotoPayloadsToCloud(record) {
   return record;
 }
 
+async function fetchPhotoPayloadViaRest(firestorePhotoId) {
+  const projectId = SETTINGS?.firebase?.projectId;
+  const apiKey = SETTINGS?.firebase?.apiKey;
+  if (!projectId || !apiKey || !firestorePhotoId) return "";
+
+  const encodedCollection = encodeURIComponent(PROJECT_PHOTO_PAYLOADS_COLLECTION);
+  const encodedPhotoId = encodeURIComponent(firestorePhotoId);
+  const endpoint = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases/(default)/documents/${encodedCollection}/${encodedPhotoId}?key=${encodeURIComponent(apiKey)}&cache=${Date.now()}`;
+  const response = await fetch(endpoint, { cache: "no-store" });
+  if (!response.ok) return "";
+  const payload = await response.json();
+  return payload?.fields?.previewDataUrl?.stringValue || "";
+}
+
+async function fetchPhotoPayloadDataUrl(firestorePhotoId) {
+  const payloadRef = doc(db, PROJECT_PHOTO_PAYLOADS_COLLECTION, firestorePhotoId);
+  try {
+    const serverSnapshot = await getDocFromServer(payloadRef);
+    const serverDataUrl = serverSnapshot.exists() ? serverSnapshot.data()?.previewDataUrl || "" : "";
+    if (serverDataUrl) return serverDataUrl;
+  } catch (error) {
+    console.warn("Direct photo payload read failed; trying alternate reads.", error);
+  }
+
+  try {
+    const cachedSnapshot = await getDoc(payloadRef);
+    const cachedDataUrl = cachedSnapshot.exists() ? cachedSnapshot.data()?.previewDataUrl || "" : "";
+    if (cachedDataUrl) return cachedDataUrl;
+  } catch (error) {
+    console.warn("Cached photo payload read failed; trying REST.", error);
+  }
+
+  try {
+    return await fetchPhotoPayloadViaRest(firestorePhotoId);
+  } catch (error) {
+    console.error("Photo payload REST read failed.", error);
+    return "";
+  }
+}
+
 async function hydrateProjectPhotoPayloadsFromCloud(record) {
   const normalizedRecord = normalizeProjectRecord(record);
   if (!db || !normalizedRecord?.id) return normalizedRecord;
@@ -716,16 +760,9 @@ async function hydrateProjectPhotoPayloadsFromCloud(record) {
   normalizedRecord.data.areas.forEach((area) => {
     (Array.isArray(area.photoCaptures) ? area.photoCaptures : []).forEach((photo) => {
       if (photo.downloadURL || photo.previewDataUrl || photo.storagePath || !photo.firestorePhotoId) return;
-      reads.push(
-        getDocFromServer(doc(db, PROJECT_PHOTO_PAYLOADS_COLLECTION, photo.firestorePhotoId))
-          .catch(() => getDoc(doc(db, PROJECT_PHOTO_PAYLOADS_COLLECTION, photo.firestorePhotoId)))
-          .then((snapshot) => {
-            if (!snapshot.exists()) return;
-            const payload = snapshot.data() || {};
-            photo.previewDataUrl = payload.previewDataUrl || "";
-          })
-          .catch((error) => console.error(error))
-      );
+      reads.push(fetchPhotoPayloadDataUrl(photo.firestorePhotoId).then((previewDataUrl) => {
+        photo.previewDataUrl = previewDataUrl || "";
+      }));
     });
   });
 
@@ -1083,21 +1120,12 @@ function getJsonByteSize(value) {
 }
 
 async function setProjectDocWithPreviewFallback(projectRef, record) {
-  try {
-    await setDoc(projectRef, record);
-    return record;
-  } catch (error) {
-    if (!hasInlinePhotoPreviews(record)) throw error;
-
-    const slimRecord = compactProjectRecordForStorage(record, { keepLocalPreviews: false });
-    await setDoc(projectRef, slimRecord);
-    console.warn("Cloud save retried without inline photo previews.", {
-      originalBytes: getJsonByteSize(record),
-      slimBytes: getJsonByteSize(slimRecord),
-      originalError: error
-    });
-    return slimRecord;
-  }
+  // Image bytes live in one Firestore document per photo. The main inspection
+  // document must always remain metadata-only so it cannot cross Firestore's
+  // document-size limit as more rooms and photos are added.
+  const slimRecord = compactProjectRecordForStorage(record, { keepLocalPreviews: false });
+  await setDoc(projectRef, slimRecord);
+  return record;
 }
 
 function getPhotoMergeKey(areaName, photo = {}) {
@@ -1895,10 +1923,18 @@ function updateCloudStatus(message, tone = "") {
 }
 
 function getAreaPhotoCount(area) {
-  return cleanPhotoCaptures(area.photoCaptures, { keepPending: true }).length;
+  return cleanPhotoCaptures(area.photoCaptures, { keepPending: true })
+    .filter(hasRenderablePhotoSource)
+    .length;
 }
 
 function getCheckPhotoCount(area, checkCode) {
+  return cleanPhotoCaptures(area.photoCaptures, { keepPending: true })
+    .filter((photo) => photo.checkCode === checkCode && hasRenderablePhotoSource(photo))
+    .length;
+}
+
+function getStoredCheckPhotoCount(area, checkCode) {
   return cleanPhotoCaptures(area.photoCaptures, { keepPending: true })
     .filter((photo) => photo.checkCode === checkCode)
     .length;
@@ -2079,7 +2115,7 @@ async function uploadCapturedPhoto(file, area, check, fileName) {
 async function handleCheckCameraFile(area, check, file) {
   if (!file) return;
 
-  if (getCheckPhotoCount(area, check.code) >= MAX_CHECK_PHOTOS) {
+  if (getStoredCheckPhotoCount(area, check.code) >= MAX_CHECK_PHOTOS) {
     window.alert(`אפשר לשמור עד ${MAX_CHECK_PHOTOS} תמונות לכל סעיף בדיקה.`);
     return;
   }
@@ -2117,18 +2153,25 @@ async function handleCheckCameraFile(area, check, file) {
       console.error(error);
     }
   }
+  // The dedicated Firestore payload document is the canonical cloud save. Do
+  // not follow a successful save with the legacy Storage upload, because this
+  // Firebase project has no Storage bucket and that failed request used to make
+  // successfully saved photos look broken.
+  if (previewStoredInCloud) {
+    finishPhotoUpload(area.id, check.code);
+    saveState({ immediateCloud: true });
+    updateCloudStatus("התמונה נשמרה בענן ותופיע גם במחשב ובדוח.", "ok");
+    render({ preserveScroll: true });
+    return;
+  }
+
   let uploadedPhoto;
   try {
     uploadedPhoto = await uploadCapturedPhoto(preparedFile, area, check, fileName);
   } catch (error) {
     finishPhotoUpload(area.id, check.code);
     saveState({ immediateCloud: true });
-    updateCloudStatus(
-      previewStoredInCloud
-        ? "התמונה נשמרה בענן ותופיע גם במחשב ובדוח."
-        : "התמונה נשמרה במכשיר, אך העלאתה לענן נכשלה כרגע.",
-      previewStoredInCloud ? "ok" : "warn"
-    );
+    updateCloudStatus("התמונה נשמרה במכשיר, אך העלאתה לענן נכשלה כרגע.", "warn");
     render({ preserveScroll: true });
     console.error(error);
     return;
@@ -3960,6 +4003,20 @@ function bindRoomSelectionOpenHandler() {
   document.addEventListener("touchstart", handleRoomOpen, { capture: true, passive: false });
 }
 
+function syncRenderedPhotoCounters(areaNode) {
+  let loadedAreaPhotos = 0;
+  areaNode.querySelectorAll(".check-row").forEach((checkNode) => {
+    const loadedPhotos = [...checkNode.querySelectorAll(".check-photo-list img")]
+      .filter((image) => image.complete && image.naturalWidth > 0)
+      .length;
+    loadedAreaPhotos += loadedPhotos;
+    const cameraCount = checkNode.querySelector(".camera-count");
+    if (cameraCount) cameraCount.textContent = `${loadedPhotos}/${MAX_CHECK_PHOTOS}`;
+  });
+  const areaPhotoCount = areaNode.querySelector(".area-photo-count");
+  if (areaPhotoCount) areaPhotoCount.textContent = `תמונות חדר: ${loadedAreaPhotos}`;
+}
+
 function renderAreas() {
   els.areasContainer.innerHTML = "";
   const activeArea = ensureActiveInspectionArea();
@@ -4010,15 +4067,16 @@ function renderAreas() {
       const noteInput = checkNode.querySelector(".note-input");
       const photoList = checkNode.querySelector(".check-photo-list");
       const checkPhotoCount = getCheckPhotoCount(area, check.code);
+      const storedCheckPhotoCount = getStoredCheckPhotoCount(area, check.code);
       const uploadPending = isPhotoUploadPending(area.id, check.code);
       const cameraAllowed = isCameraAllowedForCheck(area, check);
       const checkPhotos = (Array.isArray(area.photoCaptures) ? area.photoCaptures : [])
         .map((photo, sourceIndex) => ({ photo, sourceIndex }))
-        .filter(({ photo }) => photo.checkCode === check.code && (hasPhotoSource(photo) || isPendingPhotoRecord(photo)));
+        .filter(({ photo }) => photo.checkCode === check.code && hasRenderablePhotoSource(photo));
       statusSelect.value = check.status;
       noteInput.value = check.note;
       cameraCount.textContent = `${checkPhotoCount}/${MAX_CHECK_PHOTOS}`;
-      applyCameraButtonState(cameraBtn, checkPhotoCount);
+      applyCameraButtonState(cameraBtn, storedCheckPhotoCount);
       cameraBtn.classList.toggle("is-uploading", uploadPending);
       cameraBtn.classList.toggle("is-disabled", !cameraAllowed);
       applyCheckVisualState(checkNode, check);
@@ -4040,6 +4098,14 @@ function renderAreas() {
               : `<div class="check-photo-item"><div class="check-photo-thumb is-pending" title="התמונה נשמרת כעת">שומר</div>${deleteButton}</div>`;
           }).join("")
         : "";
+      checkNode.querySelectorAll(".check-photo-list img").forEach((image) => {
+        const syncCounters = () => syncRenderedPhotoCounters(node);
+        image.addEventListener("load", syncCounters, { once: true });
+        image.addEventListener("error", () => {
+          image.closest(".check-photo-item")?.classList.add("is-broken");
+          syncCounters();
+        }, { once: true });
+      });
       photoList.querySelectorAll("[data-photo-index]").forEach((button) => {
         let handledAt = 0;
         const handleDelete = (event) => {
@@ -4082,6 +4148,7 @@ function renderAreas() {
     });
 
     els.areasContainer.appendChild(node);
+    syncRenderedPhotoCounters(node);
 
     if (!area.locked && pendingFocusAreaId === area.id) {
       const firstEditableField = node.querySelector(".status-select, .note-input");
