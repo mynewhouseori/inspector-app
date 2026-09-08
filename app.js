@@ -197,7 +197,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.08.197";
+const APP_VERSION = "2026.09.08.198";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -577,6 +577,13 @@ function mergeProjectDetailsIntoProtectedRecord(existingRecord, candidateRecord)
 function chooseProjectRecordToKeep(existingRecord, candidateRecord) {
   if (!existingRecord) return candidateRecord;
   if (!candidateRecord) return existingRecord;
+
+  // A local library copy and a freshly hydrated cloud copy can describe the
+  // same inspection while only one of them currently holds the image bytes.
+  // Merge photo sources in both directions before choosing by timestamp so a
+  // newer metadata-only copy can never hide photos already loaded from cloud.
+  preserveExistingPhotoSources(existingRecord, candidateRecord);
+  preserveExistingPhotoSources(candidateRecord, existingRecord);
 
   const existingFootprint = getProjectInspectionFootprint(existingRecord);
   const candidateFootprint = getProjectInspectionFootprint(candidateRecord);
