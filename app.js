@@ -198,7 +198,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.08.201";
+const APP_VERSION = "2026.09.09.202";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1671,6 +1671,8 @@ const els = {
   reportExecutiveSummary: document.querySelector("#reportExecutiveSummary"),
   reportSummaryStats: document.querySelector("#reportSummaryStats"),
   reportCriticalFindings: document.querySelector("#reportCriticalFindings"),
+  reportAdditionalPhotosSection: document.querySelector("#reportAdditionalPhotosSection"),
+  reportAdditionalPhotos: document.querySelector("#reportAdditionalPhotos"),
   reportAreaDetails: document.querySelector("#reportAreaDetails"),
   reportClosingNote: document.querySelector("#reportClosingNote"),
   reportTitle: document.querySelector("#reportTitle"),
@@ -2849,6 +2851,29 @@ function renderReportDocument(summary, issues) {
           ${buildReportPhotosMarkup(area, check)}
         </article>
       `).join("");
+  }
+
+  const additionalPhotoEntries = reportAreas.flatMap((area) => {
+    const checksByCode = new Map(area.checks.map((check) => [check.code, check]));
+    return cleanPhotoCaptures(area.photoCaptures)
+      .filter(hasRenderablePhotoSource)
+      .filter((photo) => checksByCode.get(photo.checkCode)?.status !== "issue")
+      .map((photo) => ({ area, photo, check: checksByCode.get(photo.checkCode) }));
+  });
+  if (els.reportAdditionalPhotosSection && els.reportAdditionalPhotos) {
+    els.reportAdditionalPhotosSection.hidden = additionalPhotoEntries.length === 0;
+    els.reportAdditionalPhotos.innerHTML = additionalPhotoEntries.map(({ area, photo, check }) => {
+      const src = photo.downloadURL || photo.previewDataUrl || "";
+      const checkName = photo.checkName || check?.name || "צילום מהבדיקה";
+      return `
+        <article class="report-finding-item">
+          <strong>${escapeHtml(area.name)} | ${escapeHtml(checkName)}</strong>
+          <div class="report-area-photos">
+            <img src="${escapeHtml(src)}" alt="${escapeHtml(`${area.name} - ${checkName}`)}">
+          </div>
+        </article>
+      `;
+    }).join("");
   }
 
   const areaCards = reportAreas.map((area) => {
