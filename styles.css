@@ -3566,3 +3566,23 @@ textarea:focus {
   font-size: 14px;
   line-height: 1.55;
 }
+
+.rooms-general-notes-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.rooms-general-notes-actions .primary-btn {
+  min-height: 42px;
+  padding: 9px 16px;
+  white-space: nowrap;
+}
+
+.general-notes-save-status {
+  color: #1d766f;
+  font-size: 12px;
+  font-weight: 700;
+}

@@ -198,7 +198,7 @@ const ownerApartmentLabels = [
 ];
 
 const MAX_CHECK_PHOTOS = 3;
-const APP_VERSION = "2026.09.09.202";
+const APP_VERSION = "2026.09.09.203";
 const pendingPhotoUploads = new Map();
 const PHOTO_UPLOAD_MAX_DIMENSION = 1600;
 const PHOTO_UPLOAD_QUALITY = 0.72;
@@ -1626,6 +1626,8 @@ const els = {
   clientEmail: document.querySelector("#clientEmail"),
   inspectorName: document.querySelector("#inspectorName"),
   generalNotes: document.querySelector("#generalNotes"),
+  saveGeneralNotesBtn: document.querySelector("#saveGeneralNotesBtn"),
+  generalNotesSaveStatus: document.querySelector("#generalNotesSaveStatus"),
   cloudStatus: document.querySelector("#cloudStatus"),
   saveProjectBtn: document.querySelector("#saveProjectBtn"),
   jumpToSavedProjectsBtn: document.querySelector("#jumpToSavedProjectsBtn"),
@@ -4422,6 +4424,18 @@ if (els.roomJumpBtn) {
 
 if (els.roomJumpSelect) {
   els.roomJumpSelect.addEventListener("change", openSelectedRoomFromControl);
+}
+
+if (els.saveGeneralNotesBtn) {
+  bindPressAction(els.saveGeneralNotesBtn, () => {
+    updateProjectFields();
+    saveState({ immediateCloud: true, allowEmptyOwnerDraft: true });
+    els.saveGeneralNotesBtn.textContent = "נשמר";
+    if (els.generalNotesSaveStatus) els.generalNotesSaveStatus.textContent = "ההערות נשמרו במכשיר ומסתנכרנות לענן";
+    window.setTimeout(() => {
+      els.saveGeneralNotesBtn.textContent = "שמור הערות כלליות";
+    }, 1800);
+  });
 }
 
 [els.propertyName, els.propertyAddress, els.inspectionDate, els.clientName, els.clientPhone, els.clientEmail, els.inspectorName, els.generalNotes].filter(Boolean).forEach((input) => {
